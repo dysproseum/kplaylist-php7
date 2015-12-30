@@ -59,6 +59,15 @@ $db = array(
 	'pass' => 'kplaylist', # MySql password
 	'prepend' => 'tbl_'    # To prepend before the table names
 );
+if (isset($cfg['db_host'])) {
+  $db = array(
+    'host' => $cfg['db_host'], # MySql server
+    'name' => $cfg['db_name'], # Database name
+    'user' => $cfg['db_user'], # MySql user
+    'pass' => $cfg['db_pass'], # MySql password
+    'prepend' => $cfg['db_prepend'], # To prepend before the table names
+  );
+}
 
 
 // what to prepend before the table names, don't change this after installing! Do it before.
@@ -1647,6 +1656,8 @@ function kprintcss()
 		if (strlen($css) > 0)
 		{
 			echo '<link href="'.$css.'" rel="stylesheet" type="text/css"/>';
+			echo '<script type="text/javascript" src="/include/jquery.js"></script>';
+			echo '<script type="text/javascript" src="external.js"></script>';
 		} else
 		{
 			if (function_exists('kpdefcss'))
@@ -14475,6 +14486,10 @@ function parseurl($url, $title = '', $artist = '', $album = '')
 	return $urlr;
 }
 
+function print_html5video() {
+  echo '<div id="html5container"><video id="html5video" style="display:none"></video></div>';
+}
+
 function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid = -1)
 {
 	global $u_cookieid, $setctl, $cfg, $marksid;
@@ -14525,6 +14540,8 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 		$link = $f2->mklink();
 	}
 	
+        echo '<a href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return video(this);">';
+        echo '<span class="newfile">' . $f2->fname . '</span></a>';
 	echo file_parse($f2, $link, $useclass);
 	echo '</td></tr>';
 }
@@ -15369,6 +15386,8 @@ class kpdir
 			$imgurl = '';
 			if ($ci->geturl($imgurl)) echo '<tr><td>'.$imgurl.'</td></tr><tr><td height="6"></td></tr>';
 		} 
+
+                print_html5video();
 		
 		for ($i=0,$c=count($viewrows);$i<$c;$i++) print_file($viewrows[$i],0,1);
 		return $c;
