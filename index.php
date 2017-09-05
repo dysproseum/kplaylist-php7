@@ -52,6 +52,8 @@ Script information:
 // if you for any reason want to reset the configuration, set this variable to true, reload the page and set it back to false.
 $resetconfiguration = false;
 
+if (file_exists('kpconfig.php')) include('kpconfig.php');
+
 $db = array(
 	'host' => 'localhost', # MySql server
 	'name' => 'kplaylist', # Database name
@@ -68,7 +70,7 @@ if (isset($cfg['db_host'])) {
     'prepend' => $cfg['db_prepend'], # To prepend before the table names
   );
 }
-
+$link = false;
 
 // what to prepend before the table names, don't change this after installing! Do it before.
 $cfg['dbprepend'] = $db['prepend'];
@@ -2227,11 +2229,13 @@ function getid3support()
 function db_gconnect()
 {
 	global $db;
-	if (@mysql_connect($db['host'], $db['user'], $db['pass']) && mysql_select_db ($db['name'])) return true;
+	global $link;
+	$link = @mysqli_connect($db['host'], $db['user'], $db['pass']);
+	if (mysqli_select_db ($link, $db['name'])) return true;
 	return false;
 }
 
-if (!function_exists('mysql_connect')) die('Function \'mysql_connect()\' does not exist! You need to compile PHP with MySQL support or enable MySQL support in your php configuration.');
+//if (!function_exists('mysql_connect')) die('Function \'mysql_connect()\' does not exist! You need to compile PHP with MySQL support or enable MySQL support in your php configuration.');
 
 if (function_exists('mysql_real_escape_string')) define('REALESCAPE', true); else define('REALESCAPE', false);
 
@@ -2272,8 +2276,9 @@ if ($cfg['authtype'] == 2)
 
 function myescstr($str)
 {
-	if (REALESCAPE && DBCONNECTION) return mysql_real_escape_string($str);
-	return @mysql_escape_string($str);
+	global $link;
+	if (REALESCAPE && DBCONNECTION) return mysqli_real_escape_string($link, $str);
+	return @mysqli_escape_string($link, $str);
 }
 
 class kpdbconnection
@@ -2284,17 +2289,20 @@ class kpdbconnection
 		$this->res = false;
 	}
 	
-	function preparestmt($sql)
+	function preparestmt($sql, $arguments = array())
 	{
 		$query = $sql;
 		$spos = 0;
 		$replaced = 0;
-		if (func_num_args() > 1)
+                $num_args = sizeof($arguments);
+		if (sizeof($arguments) > 0)
 		{
-			$argments = func_get_args();
-			for ($i=1;$i<func_num_args();$i++)
+			//$argments = func_get_args();
+			for ($i=0; $i < $num_args; $i++)
 			{
-				$arg = myescstr($argments[$i]);
+                                // @todo implement real prepared statement here.
+				//$arg = myescstr($argments[$i]);
+                                $arg = $arguments[$i];
 				$lpos = strpos($query, '?', $spos);
 				if ($lpos !== false)
 				{
@@ -2305,9 +2313,10 @@ class kpdbconnection
 			}
 		}
 
-		if ((func_num_args() - 1) == $replaced)
+		if ($num_args == $replaced)
 		{
 			$this->query = $query;
+error_log($query);
 		} else user_error('too few arguments passed!!');
 	}
 
@@ -2318,11 +2327,12 @@ class kpdbconnection
 
 	function query()
 	{
+		global $link;
 		$this->res = false;
 		
 		if (strlen($this->query) > 0)
 		{
-			$this->res = mysql_query($this->query);
+			$this->res = mysqli_query($link, $this->query);
 			if ($this->res) return true;
 		}
 
@@ -2331,24 +2341,26 @@ class kpdbconnection
 
 	function getautoid()
 	{
-		return mysql_insert_id();
+		global $link;
+		return mysqli_insert_id($link);
 	}
 
 	function nextrow()
 	{
-		return mysql_fetch_assoc($this->res);
+		return mysqli_fetch_assoc($this->res);
 	}
 
 	function num()
 	{
-		return mysql_num_rows($this->res);
+		return mysqli_num_rows($this->res);
 	}
 }
 
 function db_execquery($query, $fast=false)
 {
-	if ($fast && function_exists('mysql_unbuffered_query')) $res = mysql_unbuffered_query($query); else
-	$res = mysql_query($query);
+	global $link;
+	//if ($fast && function_exists('mysql_unbuffered_query')) $res = mysql_unbuffered_query($query); else
+	$res = mysqli_query($link, $query);
 	return $res;
 }
 
@@ -2359,12 +2371,12 @@ function db_thread_id()
 
 function db_fetch_assoc($res)
 {
-	return mysql_fetch_assoc($res);
+	return mysqli_fetch_assoc($res);
 }
 
 function db_fetch_row($res)
 {
-	return mysql_fetch_row($res);
+	return mysqli_fetch_row($res);
 }
 
 function db_insert_id()
@@ -2374,12 +2386,12 @@ function db_insert_id()
 
 function db_num_rows($res)
 {
-	return mysql_num_rows($res);
+	return mysqli_num_rows($res);
 }
 
 function db_free($res)
 {
-	if ($res) mysql_free_result($res);
+	if ($res) mysqli_free_result($res);
 }
 
 function db_list_processes()
@@ -2389,7 +2401,8 @@ function db_list_processes()
 
 function db_execcheck($query)
 {
-	if (db_gconnect()) return mysql_query($query); else return 0;	
+	global $link;
+	if (db_gconnect()) return mysqli_query($link, $query); else return 0;
 }
 
 class settings
@@ -2633,7 +2646,7 @@ function getcache($id, &$data)
 	} else
 	{
 		$res = db_execquery('SELECT id, value FROM '.TBL_CACHE);
-		if (mysql_num_rows($res) > 0) 
+		if (mysqli_num_rows($res) > 0)
 		{
 			while ($row = db_fetch_row($res)) $varcache[$row[0]] = $row[1];
 			if (isset($varcache[$id])) 
@@ -6378,14 +6391,14 @@ class kpsqlinstall
 	{
 		global $db;
 		$status = 0;
-		$link = @mysql_connect($db['host'], $user, $pass, true);
+		$link = @mysqli_connect($db['host'], $user, $pass, true);
 		if ($link)
 		{
-			if (mysql_select_db($db['name'], $link)) $status = 1;
+			if (mysqli_select_db($link, $db['name'])) $status = 1;
 			else
 			{
-				$errmsg = mysql_error($link);
-				$errno = mysql_errno($link);
+				$errmsg = mysqli_error($link);
+				$errno = mysqli_errno($link);
 				switch ($errno)
 				{
 					case 1049: $status = 1; break; // database not exist. OK.
@@ -6395,8 +6408,8 @@ class kpsqlinstall
 			mysql_close($link);
 		} else 
 		{
-			$errno = mysql_errno();
-			$errmsg = mysql_error();
+			$errno = mysqli_errno($link);
+			$errmsg = mysqli_error($link);
 		}
 		return $status;
 	}
@@ -6571,8 +6584,8 @@ class kpsqlinstall
 					{
 						$userok = true;
 					} else $this->insterror('The MySQL user was created successfully, but login with this user is failing. The SQL that was used: '.$sqluser[0]);								
-				} else $this->insterror('Unable to update privileges. The SQL that was used: '.$sqluser[2].', MySQL response: '.mysql_error($link));
-			} else $this->insterror('Unable to create the MySQL user. The SQL that was used: '.$sqluser[0].', MySQL response: '.mysql_error($link));				
+				} else $this->insterror('Unable to update privileges. The SQL that was used: '.$sqluser[2].', MySQL response: '.mysqli_error($link));
+			} else $this->insterror('Unable to create the MySQL user. The SQL that was used: '.$sqluser[0].', MySQL response: '.mysqli_error($link));
 		} else $userok = true;
 
 		return $userok;
@@ -6582,7 +6595,7 @@ class kpsqlinstall
 	{
 		global $db;
 
-		$link = @mysql_connect($db['host'], $this->user, $this->pass, true);		
+		$link = @mysqli_connect($db['host'], $this->user, $this->pass, true);
 
 		if ($link) 
 		{
@@ -6608,18 +6621,18 @@ class kpsqlinstall
 					{	
 						// ok, now relogin
 						mysql_close($link);
-						$link = @mysql_connect($db['host'], $db['user'], $db['pass'], true);
+						$link = @mysqli_connect($db['host'], $db['user'], $db['pass'], true);
 						if ($link) 
 						{
 							$dbaccess = true;
 						} else $this->insterror('Could not re-connect to MySQL with new user!');
-					} else $this->insterror('Unable to create database. The SQL that was used: '.$installdb[1].', MySQL response: '.mysql_error($link));	
+					} else $this->insterror('Unable to create database. The SQL that was used: '.$installdb[1].', MySQL response: '.mysqli_error($link));
 				}
 			} else $dbaccess = true;
 			
 			if ($dbaccess)
 			{			
-				if (mysql_select_db($db['name'], $link))
+				if (mysqli_select_db($db['name'], $link))
 				{
 					$cnt = 0;
 					$sql = $this->check_all_tables($cnt);
@@ -6632,7 +6645,7 @@ class kpsqlinstall
 							if (!$result) 
 							{ 
 								$errors .= 'Failed query: '.str_replace("\n", '<br/>', $sql[$i]).'<br/>';
-								$errors .= mysql_error($link).'<br/>';
+								$errors .= mysqli_error($link).'<br/>';
 								$error = $i;
 							}
 						}
@@ -6673,7 +6686,7 @@ class kpsqlinstall
 				} else 
 				{
 					$error = true;
-					$this->insterror('Could not use the database ('.$db['name'].'), does it exist? MySQL response: '.mysql_error($link));
+					$this->insterror('Could not use the database ('.$db['name'].'), does it exist? MySQL response: '.mysqli_error($link));
 				}				
 			}
 		} else $this->insterror('Could not establish connection to MySQL!');
@@ -7022,12 +7035,12 @@ class kpsqlinstall
 		
 		$error = '';
 		
-		$link = @mysql_connect($db['host'], $this->user, $this->pass, true);
+		$link = @mysqli_connect($db['host'], $this->user, $this->pass, true);
 		if ($link)
 		{
 			$this->mysqlserverv = mysql_get_server_info($link);			
 
-			if (mysql_select_db($db['name'], $link))
+			if (mysqli_select_db($db['name'], $link))
 			{
 				for ($i=0,$c=count($sql);$i<$c;$i++)
 				{
@@ -7035,7 +7048,7 @@ class kpsqlinstall
 					{
 						if (!mysql_query($sql[$i], $link))
 						{
-							$error = 'Could not execute: '.$sql[$i].'<br/>MySQL response: '.mysql_error($link).'<br/>';
+							$error = 'Could not execute: '.$sql[$i].'<br/>MySQL response: '.mysqli_error($link).'<br/>';
 							break;
 						}
 					}
@@ -8979,7 +8992,7 @@ function webauthenticate()
 					$hkey = gen_hkey();
 										
 					$kpdb = new kpdbconnection();
-					$kpdb->preparestmt('INSERT INTO '.TBL_SESSION.' SET u_id = ?, hkey = "?", login = ?, refreshed = ?, ip = ?', $kpu->getid(), $hkey, time(), time(), ip2long($phpenv['remote']));
+					$kpdb->preparestmt('INSERT INTO '.TBL_SESSION.' SET u_id = ?, hkey = "?", login = ?, refreshed = ?, ip = ?', array($kpu->getid(), $hkey, time(), time(), ip2long($phpenv['remote'])));
 					if ($kpdb->query())
 					{
 						$cookie_value = $kpdb->getautoid().'-'.$hkey;
@@ -8988,7 +9001,7 @@ function webauthenticate()
 						{
 							if ($cfg['numberlogins'] > 0)
 							{
-								$kpdb->preparestmt('SELECT sessionid FROM '.TBL_SESSION.' WHERE u_id = ? AND logout = 0 ORDER BY sessionid DESC', $kpu->getid());
+								$kpdb->preparestmt('SELECT sessionid FROM '.TBL_SESSION.' WHERE u_id = ? AND logout = 0 ORDER BY sessionid DESC', array($kpu->getid()));
 								if ($kpdb->query())
 								{
 									$cnt = 0;
@@ -10000,7 +10013,8 @@ class kpuser
 
 	function loadbyuserpass($user, $pass)
 	{
-		$this->kpdb->preparestmt('SELECT u_id FROM '.TBL_USERS.' WHERE u_login = "?" AND u_pass = "?" AND u_booted = 0 AND u_status != 2 AND utemplate = 0', $user, md5($pass));
+
+		$this->kpdb->preparestmt('SELECT u_id FROM '.TBL_USERS.' WHERE u_login = "?" AND u_pass = "?" AND u_booted = 0 AND u_status != 2 AND utemplate = 0', array($user, md5($pass)));
 		$this->kpdb->query();
 		if ($this->kpdb->num() == 1)
 		{
