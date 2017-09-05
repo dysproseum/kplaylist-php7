@@ -2381,7 +2381,8 @@ function db_fetch_row($res)
 
 function db_insert_id()
 {
-	return mysql_insert_id();
+	global $link;
+	return mysqli_insert_id($link);
 }
 
 function db_num_rows($res)
@@ -11243,6 +11244,8 @@ class kpsearch
 		$extra = '';
 		if ($this->rows > $max) $extra = get_lang(6, $max); 
 		showdir('',get_lang(8, checkchs($this->what, false)),0);
+
+		print_html5video();
 
 		echo '<table width="100%" cellspacing="0" cellpadding="0" border="0">';
 
