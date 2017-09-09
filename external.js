@@ -8,6 +8,18 @@ function song(obj) {
   return false;
 }
 
+var current;
+
+function playlist(obj, video) {
+  current = obj;
+  video.addEventListener('ended', function () {
+    var next = $(current).parent().parent().next("tr").find("a")[1];
+    video.src=next.href; video.play();
+    current = next;
+  })
+  return false;
+}
+
 function video(obj) {
   var parent = document.getElementById("html5container");
   var child = document.getElementById("html5video");
@@ -24,5 +36,8 @@ function video(obj) {
   var video = arVideos[0];
   video.setAttribute("style","display:block");
   video.src=obj.href; video.play();
+
+  playlist(obj, video);
+
   return false;
 }
