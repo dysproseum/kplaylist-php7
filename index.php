@@ -2291,18 +2291,17 @@ class kpdbconnection
 	
 	function preparestmt($sql, $arguments = array())
 	{
+                global $link;
 		$query = $sql;
 		$spos = 0;
 		$replaced = 0;
                 $num_args = sizeof($arguments);
 		if (sizeof($arguments) > 0)
 		{
-			//$argments = func_get_args();
 			for ($i=0; $i < $num_args; $i++)
 			{
-                                // @todo implement real prepared statement here.
-				//$arg = myescstr($argments[$i]);
-                                $arg = $arguments[$i];
+                                // Use updated escape string method.
+                                $arg = mysqli_real_escape_string($link, $arguments[$i]);
 				$lpos = strpos($query, '?', $spos);
 				if ($lpos !== false)
 				{
