@@ -11,3 +11,4 @@ $cfg['db_host'] = 'localhost';
 $cfg['db_name'] = 'kplaylist';
 $cfg['db_user'] = 'kplaylist';
 $cfg['db_pass'] = 'kplaylist';
+$cfg['db_prepend'] = 'tbl_';
