@@ -1,0 +1,23 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="jquery.form.min.js"></script>
+<script src="autocomplete.js"></script>
+<link rel="stylesheet" href="autocomplete.css" type="text/css">
+</head>
+<body>
+<form name="search" action="index.php" method="post" id="searchform">
+<input type="text" name="searchtext" id="searchtext" />
+<input type="hidden" name="action" value="search" />
+<input type="hidden" name="searchwh" value="3" />
+<input type="hidden" name="hitsas" value="0" />
+<input type="hidden" name="startsearch" value="Search" />
+
+<!-- include to return minimal html -->
+<input type="hidden" name="headless" value="1" />
+</form>
+
+<div id="player">
+  <audio controls></audio>
+</div>
+<div id="results"></div>

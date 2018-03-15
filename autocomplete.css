@@ -1,0 +1,45 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+form#searchform input[type=text] {
+  width: 100%;
+  text-align: center;
+  height: 72px;
+  font-size: 36px;
+}
+
+#results > table > tbody > tr > td:nth-of-type(0) {
+  display: none;
+}
+
+#html5container {
+/* display: none; */
+}
+
+#player {
+  text-align: center;
+}
+
+#player audio {
+  width: 100%;
+}
+
+a.playable {
+  text-decoration: none;
+  color: #527CAC;
+  float: left;
+  padding: 5px;
+}
+
+a.playable:hover {
+  background-color: #eeeeee;
+}
+
+a.now-playing {
+  background-color: pink;
+}
+
+a.now-playing:hover {
+  background-color: pink;
+}
