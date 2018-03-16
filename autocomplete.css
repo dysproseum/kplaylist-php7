@@ -4,9 +4,15 @@ body {
 
 form#searchform input[type=text] {
   width: 100%;
-  text-align: center;
   height: 72px;
   font-size: 36px;
+  border: 1px solid black;
+  border-left: 20px solid black;
+  padding-left: 10px;
+}
+
+#results {
+  margin-top: 20px;
 }
 
 #results > table > tbody > tr > td:nth-of-type(0) {
@@ -21,25 +27,55 @@ form#searchform input[type=text] {
   text-align: center;
 }
 
-#player audio {
+#player .progress {
   width: 100%;
+  display: block;
+  float: left;
+}
+
+#player #currentTime {
+  float: left;
+}
+
+#player #title {
+  display: inline;
+}
+
+#player #duration {
+  float: right;
+}
+
+#player #seekbar {
+  width: 80%;
+}
+
+#player #volume {
+  width: 10%;
+}
+
+#player #status {
+  display: inline;
 }
 
 a.playable {
   text-decoration: none;
-  color: #527CAC;
   float: left;
   padding: 5px;
+  color: black;
 }
 
 a.playable:hover {
   background-color: #eeeeee;
+  color: #ce79fd;
 }
 
 a.now-playing {
-  background-color: pink;
+  background-color: #ce79fd;
+  color: white;
+  border: 2px solid black;
 }
 
 a.now-playing:hover {
-  background-color: pink;
+  background-color: #ce79fd;
+  color: white;
 }
