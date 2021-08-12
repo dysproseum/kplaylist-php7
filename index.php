@@ -2285,9 +2285,9 @@ if ($cfg['authtype'] == 2)
 
 function myescstr($str)
 {
-	global $link;
-	if (REALESCAPE && DBCONNECTION) return mysqli_real_escape_string($link, $str);
-	return @mysqli_escape_string($link, $str);
+	global $mysqli;
+	if (REALESCAPE && DBCONNECTION) return $mysqli->real_escape_string($str);
+	return $mysqli->escape_string($str);
 }
 
 class kpdbconnection
