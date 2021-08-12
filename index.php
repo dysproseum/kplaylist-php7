@@ -2229,10 +2229,19 @@ function getid3support()
 function db_gconnect()
 {
 	global $db;
-	global $link;
-	$link = @mysqli_connect($db['host'], $db['user'], $db['pass']);
-	if (mysqli_select_db ($link, $db['name'])) return true;
-	return false;
+	global $mysqli;
+
+	$mysqli = new mysqli($db['host'], $db['user'], $db['pass'], $db['name']);
+
+	if ($mysqli->connect_errno) {
+	  echo "Failed to connect to MySQL: " . $mysqli -> connect_error;
+	  echo $cfg['db_host'];
+	  return false;
+	}
+	else {
+		return true;
+	}
+
 }
 
 //if (!function_exists('mysql_connect')) die('Function \'mysql_connect()\' does not exist! You need to compile PHP with MySQL support or enable MySQL support in your php configuration.');
@@ -2291,7 +2300,7 @@ class kpdbconnection
 	
 	function preparestmt($sql, $arguments = array())
 	{
-                global $link;
+                global $mysqli;
 		$query = $sql;
 		$spos = 0;
 		$replaced = 0;
@@ -2301,7 +2310,7 @@ class kpdbconnection
 			for ($i=0; $i < $num_args; $i++)
 			{
                                 // Use updated escape string method.
-                                $arg = mysqli_real_escape_string($link, $arguments[$i]);
+                                $arg = mysqli_real_escape_string($mysqli, $arguments[$i]);
 				$lpos = strpos($query, '?', $spos);
 				if ($lpos !== false)
 				{
@@ -2326,12 +2335,12 @@ error_log($query);
 
 	function query()
 	{
-		global $link;
+		global $mysqli;
 		$this->res = false;
 		
 		if (strlen($this->query) > 0)
 		{
-			$this->res = mysqli_query($link, $this->query);
+			$this->res = $mysqli->query($this->query);
 			if ($this->res) return true;
 		}
 
@@ -2340,8 +2349,8 @@ error_log($query);
 
 	function getautoid()
 	{
-		global $link;
-		return mysqli_insert_id($link);
+		global $mysqli;
+		return mysqli_insert_id($mysqli);
 	}
 
 	function nextrow()
@@ -2357,9 +2366,9 @@ error_log($query);
 
 function db_execquery($query, $fast=false)
 {
-	global $link;
+	global $mysqli;
 	//if ($fast && function_exists('mysql_unbuffered_query')) $res = mysql_unbuffered_query($query); else
-	$res = mysqli_query($link, $query);
+	$res = $mysqli->query($query);
 	return $res;
 }
 
@@ -2380,8 +2389,8 @@ function db_fetch_row($res)
 
 function db_insert_id()
 {
-	global $link;
-	return mysqli_insert_id($link);
+	global $mysqli;
+	return mysqli_insert_id($mysqli);
 }
 
 function db_num_rows($res)
@@ -2401,8 +2410,8 @@ function db_list_processes()
 
 function db_execcheck($query)
 {
-	global $link;
-	if (db_gconnect()) return mysqli_query($link, $query); else return 0;
+	global $mysqli;
+	if (db_gconnect()) return $mysqli->query($query); else return 0;
 }
 
 class settings
@@ -6391,25 +6400,15 @@ class kpsqlinstall
 	{
 		global $db;
 		$status = 0;
-		$link = @mysqli_connect($db['host'], $user, $pass, true);
-		if ($link)
-		{
-			if (mysqli_select_db($link, $db['name'])) $status = 1;
-			else
-			{
-				$errmsg = mysqli_error($link);
-				$errno = mysqli_errno($link);
-				switch ($errno)
-				{
-					case 1049: $status = 1; break; // database not exist. OK.
-					default: $status = 0; break;
-				}
-			}
-			mysql_close($link);
-		} else 
-		{
-			$errno = mysqli_errno($link);
-			$errmsg = mysqli_error($link);
+
+		$mysqli = new mysqli($db['host'], $db['user'], $db['pass'], $db['name']);
+		
+		if ($mysqli -> connect_errno) {
+			$errno = $mysqli->connect_errno;
+			$errmsg = $mysqli->connect_error;
+		}
+		else {
+			$status = 1;
 		}
 		return $status;
 	}
@@ -6563,29 +6562,29 @@ class kpsqlinstall
 		kprintend();
 	}
 
-	function createuser($link, $sqluser)
+	function createuser($mysqli, $sqluser)
 	{
 		global $db;
 		$userok = false;
 		if (!$this->checkaccess($db['user'], $db['pass'], $err, $errno))
 		{
-			if (mysql_query($sqluser[0], $link))
+			if ($mysqli->query($sqluser[0]))
 			{
-				if (mysql_query($sqluser[2], $link))
+				if ($mysqli->query($sqluser[2]))
 				{					
 					if (!$this->checkaccess($db['user'], $db['pass'], $err, $errno))
 					{
 						// ok - test with 4.1.					
-						mysql_query($sqluser[1], $link);
-						mysql_query($sqluser[2], $link);			
+						$mysqli->query($sqluser[1]);
+						$mysqli->query($sqluser[2]);			
 					}
 									
 					if ($this->checkaccess($db['user'], $db['pass'], $err, $errno)) 
 					{
 						$userok = true;
 					} else $this->insterror('The MySQL user was created successfully, but login with this user is failing. The SQL that was used: '.$sqluser[0]);								
-				} else $this->insterror('Unable to update privileges. The SQL that was used: '.$sqluser[2].', MySQL response: '.mysqli_error($link));
-			} else $this->insterror('Unable to create the MySQL user. The SQL that was used: '.$sqluser[0].', MySQL response: '.mysqli_error($link));
+				} else $this->insterror('Unable to update privileges. The SQL that was used: '.$sqluser[2].', MySQL response: '.$mysqli->error);
+			} else $this->insterror('Unable to create the MySQL user. The SQL that was used: '.$sqluser[0].', MySQL response: '.$mysqli->_error);
 		} else $userok = true;
 
 		return $userok;
@@ -6594,12 +6593,13 @@ class kpsqlinstall
 	function install()
 	{
 		global $db;
+		global $mysqli;
+		db_gconnect();
 
-		$link = @mysqli_connect($db['host'], $this->user, $this->pass, true);
 
-		if ($link) 
+		if ($mysqli) 
 		{
-			$this->mysqlserverv = mysql_get_server_info($link);
+			$this->mysqlserverv = $mysqli->get_server_info();
 
 			$kpsql = new kpmysqltable();
 			$installdb = $kpsql->getinstallsql();
@@ -6614,9 +6614,9 @@ class kpsqlinstall
 			{
 				$dbaccess = false;
 				
-				if ($this->createuser($link, $installdbuser))
+				if ($this->createuser($mysqli, $installdbuser))
 				{				
-					$result = mysql_query($installdb[1], $link);
+					$result = $mysqli->query($installdb[1]);
 					if ($result)
 					{	
 						// ok, now relogin
@@ -6632,7 +6632,7 @@ class kpsqlinstall
 			
 			if ($dbaccess)
 			{			
-				if (mysqli_select_db($db['name'], $link))
+				if ($mysqli)
 				{
 					$cnt = 0;
 					$sql = $this->check_all_tables($cnt);
@@ -6641,11 +6641,11 @@ class kpsqlinstall
 					{
 						if (strlen($sql[$i]) > 0)
 						{
-							$result = mysql_query($sql[$i], $link);
+							$result = $mysqli->query($sql[$i]);
 							if (!$result) 
 							{ 
 								$errors .= 'Failed query: '.str_replace("\n", '<br/>', $sql[$i]).'<br/>';
-								$errors .= mysqli_error($link).'<br/>';
+								$errors .= $mysqli->error.'<br/>';
 								$error = $i;
 							}
 						}
@@ -6686,7 +6686,7 @@ class kpsqlinstall
 				} else 
 				{
 					$error = true;
-					$this->insterror('Could not use the database ('.$db['name'].'), does it exist? MySQL response: '.mysqli_error($link));
+					$this->insterror('Could not use the database ('.$db['name'].'), does it exist? MySQL response: '.$mysqli->error);
 				}				
 			}
 		} else $this->insterror('Could not establish connection to MySQL!');
@@ -6753,7 +6753,7 @@ class kpsqlinstall
 
 		if ($this->dbmethod == NEWDBINSTALL)
 		{
-			if ($this->checkaccess($db['user'], $db['pass'], $err, $errno) == 0) $this->user = 'root';
+			if ($this->checkaccess($db['user'], $db['pass'], $err, $errno) == 0) $this->user = $db['user'];
 		} else
 		if ($this->dbmethod == USEDBINSTALL) 
 		{
@@ -7046,7 +7046,7 @@ class kpsqlinstall
 				{
 					if (strlen($sql[$i]) > 0)
 					{
-						if (!mysql_query($sql[$i], $link))
+						if (!$mysqli->query($sql[$i], $link))
 						{
 							$error = 'Could not execute: '.$sql[$i].'<br/>MySQL response: '.mysqli_error($link).'<br/>';
 							break;
