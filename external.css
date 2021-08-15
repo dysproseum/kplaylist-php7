@@ -143,7 +143,7 @@ a {
 }
 .filemarked {
   font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: xx-small;
+  font-size: 18px;
   font-style: normal;
   color: #EF6100
 }
@@ -229,9 +229,9 @@ a {
   background-color: #ECEFF2;
 }
 .file img, .dir img, input[type="checkbox"] { 
-  height: 32px;
-  width: 32px;
+/*  height: 32px;
+  width: 32px;*/
 }
 a span.file {
-  display: none;
+/*  display: none; */
 }

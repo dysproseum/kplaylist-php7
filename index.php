@@ -1513,7 +1513,10 @@ function kprintheader($title='', $ajax=0, $addonload='')
 		ajax($cfg['livestreamajax'], SHOUTBOX);
 	}
 
-	if (strlen($extjs) == 0) jsfunctions(); else echo '<script type="text/javascript" src="'.$extjs.'"></script>';
+	jsfunctions();
+	if (strlen($extjs) > 0) {
+		echo '<script type="text/javascript" src="'.$extjs.'"></script>';
+	}
 
 	if ($setctl->get('includeheaders', 1, 1))
 	{
@@ -1654,22 +1657,19 @@ function kprintcss()
 			}
 		}
 
+		if (function_exists('kpdefcss'))
+		{
+			?>
+			<style type="text/css">
+			<?php kpdefcss(); ?>
+			</style>
+			<?php
+		}
+
 		$css = $setctl->get('externalcss'); 
 		if (strlen($css) > 0)
 		{
 			echo '<link href="'.$css.'" rel="stylesheet" type="text/css"/>';
-			echo '<script type="text/javascript" src="/include/jquery.js"></script>';
-			echo '<script type="text/javascript" src="external.js"></script>';
-		} else
-		{
-			if (function_exists('kpdefcss'))
-			{
-				?>
-				<style type="text/css">
-				<?php kpdefcss(); ?>
-				</style>
-				<?php
-			}
 		}
 	}
 }
@@ -2524,11 +2524,13 @@ class settings
 				'streamurl'					=> array('http://', 0),
 				'externalcss'				=> array('', 0),
 				'includeheaders'			=> array(1, 1),
-				'homepage'					=> array('http://www.kplaylist.net/&#63;ver=KVER&amp;build=KBUILD', 0),
+				'homepage'					=> array('http://www.kplaylist.com/&#63;ver=KVER&amp;build=KBUILD', 0),
 				'unauthorizedstreams'		=> array(0, 1),
 				'sendfileextension'			=> array(1, 1),
 				'disksync'					=> array(1, 1),
 				'externaljavascript'		=> array('', 0),
+				'html5video'			=> array(0,1),
+				'html5audio'			=> array(0,1),
 				'ajaxurl'					=> array('', 0),
 				'showupgrade'				=> array(1,1),
 				'showstatistics'			=> array(0, 1),
@@ -2854,6 +2856,8 @@ $setctl->publish('disksync');
 $setctl->publish('bulletin');
 $setctl->publish('filetemplate');
 $setctl->publish('urlsecurity');
+$setctl->publish('html5video');
+$setctl->publish('html5audio');
 $setctl->publish('showlyricslink');
 $setctl->publish('networkmode');
 $setctl->publish('virtualdir');
@@ -8071,6 +8075,8 @@ function settings_save($data, $page)
 
 			case 1:
 				$setctl->set('includeheaders', 0);
+				$setctl->set('html5video', 0);
+				$setctl->set('html5audio', 0);
 				$setctl->set('showupgrade', 0);
 				$setctl->set('showstatistics', 0);
 				$setctl->set('albumcover', 0);
@@ -8465,6 +8471,16 @@ function settings_page($page)
 			<tr>
 				<td class="wtext"><?php echo get_lang(196); ?></td>
 				<td class="wtext"><input type="text" class="fatbuttom" name="externaljavascript" maxlength="50" size="50" value="<?php echo $setctl->get('externaljavascript'); ?>"/></td>
+				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext">Enable HTML5 video player</td>
+				<td class="wtext"><input type="checkbox" value="1" name="html5video" <?php echo $setctl->getchecked('html5video'); ?>/></td>
+				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext">Enable HTML5 audio player</td>
+				<td class="wtext"><input type="checkbox" value="1" name="html5audio" <?php echo $setctl->getchecked('html5audio'); ?>"/></td>
 				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
 			</tr>
 			<tr>
@@ -14525,7 +14541,7 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 	if (ALLOWDOWNLOAD && db_guinfo('u_allowdownload'))
 	{
 		if (URLSECURITY) $urlextra = '&amp;'.urlsecurity($f2->fdate, $sid); else $urlextra = '';
-		echo '<span class="file"><a href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'">'.
+		echo '<span class="file"><a title="'.get_lang(117).'" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'">'.
 		'<img src="'.getimagelink('saveicon.gif').'" alt="'.get_lang(117).'" border="0"/></a></span> ';
 	}
 
@@ -14555,9 +14571,21 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 	{
 		$link = $f2->mklink();
 	}
-	
-        echo '<a href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return video(this);">';
-        echo '<span class="newfile">' . $f2->fname . '</span></a>';
+
+	if (HTML5VIDEO) {
+		echo '<span class="newfile">';
+		echo '<a title="Play HTML5 video" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return video(this);">';
+		echo '<img src="images/html5video.gif" alt="Play HTML5 video" border="0" />';
+		echo '</a></span> ';
+	}
+
+	if (HTML5AUDIO) {
+		echo '<span class="newfile">';
+		echo '<a title"Play HTML5 audio" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return song(this);">';
+		echo '<img src="images/html5audio.gif" alt=Play HTML5 audio" border="0" />';
+		echo '</a></span> ';
+	}
+
 	echo file_parse($f2, $link, $useclass);
 	echo '</td></tr>';
 }
