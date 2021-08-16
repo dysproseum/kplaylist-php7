@@ -920,7 +920,7 @@ $kdesign['infobox'] = '
 			<font color="#CCCCCC"><?php echo get_lang(78); ?></font></a><br/><?php
 		} 
 		?>
-		<a title="<?php echo get_lang(79); ?>" href="http://www.kplaylist.com/?ver=<?php echo $app_ver; ?>&amp;build=<?php echo $app_build; ?>" target="_blank"><img alt="<?php echo get_lang(79); ?>" src="<?php echo getimagelink(\'kplaylist.gif\'); ?>" border="0"/><span class="notice">v<?php echo $app_ver.\' \'.$app_build; ?></span></a>
+		<a title="<?php echo get_lang(79); ?>" href="<?php echo $homepage; ?>" <?php echo $homepage_target; ?>><img alt="<?php echo get_lang(79); ?>" src="<?php echo getimagelink(\'kplaylist.gif\'); ?>" border="0"/><span class="notice">v<?php echo $app_ver.\' \'.$app_build; ?></span></a>
 		</td>
 	</tr>
 	<tr>
@@ -1473,8 +1473,12 @@ function endmp3table($showalbum=1, $dirs=0, $files=0)
 
 function infobox()
 {
- 	global $cfg, $app_ver, $setctl, $app_build, $homepage, $runinit, $valuser;
+	global $cfg, $app_ver, $setctl, $app_build, $homepage, $homepage_target, $runinit, $valuser;
 	$homepage = str_replace('KBUILD', $app_build, str_replace('KVER', $app_ver, $setctl->get('homepage')));
+	$homepage_target = 'target="_blank"';
+	if (substr($homepage, 0, 4) != 'http') {
+		$homepage_target = '';
+	}
 	$ca = new caction();
 	$ca->updatelist();
 	$kpshout = new kpshoutmessage();
