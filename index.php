@@ -88,10 +88,10 @@ $cfg['assumeuserid'] = 1;
 
 // enable the getid3 package. getid package must reside under getid3/ under the directory
 // this file exists. If it does not, please change the 'include' statement below.
-$cfg['enablegetid3'] = 0;
+$cfg['enablegetid3'] = 1;
 
 // where the getid3.php file exists
-$cfg['getid3include'] = 'getid3/getid3.php';
+$cfg['getid3include'] = 'getid3/getid3/getid3.php';
 
 //how many titles of one album do we need to treat as a album? Turn to zero to show all.
 $cfg['titlesperalbum'] = 0;
