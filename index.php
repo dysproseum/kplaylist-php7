@@ -27,7 +27,7 @@ Are you a PHP programmer?
 	changing the code please send a mail to us and tell us that you want to help us. 
 	
 Note!
-	You can get updates and installation instructions here: http://www.kplaylist.net
+	You can get updates and installation instructions here: http://www.kplaylist.com
   
 	We develop other products than PHP applications, for commercial and non
 	commercial use. Contact our company FirstIT AS here: http://www.firstit.no
@@ -88,10 +88,10 @@ $cfg['assumeuserid'] = 1;
 
 // enable the getid3 package. getid package must reside under getid3/ under the directory
 // this file exists. If it does not, please change the 'include' statement below.
-$cfg['enablegetid3'] = 0;
+$cfg['enablegetid3'] = 1;
 
 // where the getid3.php file exists
-$cfg['getid3include'] = 'getid3/getid3.php';
+$cfg['getid3include'] = 'getid3/getid3/getid3.php';
 
 //how many titles of one album do we need to treat as a album? Turn to zero to show all.
 $cfg['titlesperalbum'] = 0;
@@ -107,7 +107,7 @@ $cfg['archivemodedebug'] = false;
 // where archivemode stores data. For UNIX it should be /tmp/, For win32 it should be: c:\\tmp\\
 $cfg['archivetemp'] = '/tmp/'; 
 
-// Read here before enabling: http://www.kplaylist.net/forum/viewtopic.php?t=196
+// Read here before enabling: http://www.kplaylist.com/forum/viewtopic.php?t=196
 $cfg['id3editor'] = 0;
 
 // cookie name
@@ -117,7 +117,7 @@ $cfg['cookie'] = 'kplaylist';
 $cfg['dirignorelist'] = array('..' => 1, '.' => 1, 'lost+found' => 1);
 
 // For use of automatic search engine update via lynx / cron. Turn to 1 to enable. Check
-// www.kplaylist.net for information how to run this update automatically.
+// www.kplaylist.com for information how to run this update automatically.
 $cfg['autoupdate'] = 0;
 $cfg['autoupdatehost'] = '127.0.0.1';
 $cfg['autoupdateuser'] = 'autooperate';
@@ -230,7 +230,7 @@ $cfg['jpeg-quality'] = 90;
 $cfg['id3v2albumresize'] = true;
 
 // map design to files instead of inbuilt ('' means inbuilt). set one or each to a relevant filename to customize,
-// download the template from here: http://www.kplaylist.net/getdesign.php
+// download the template from here: http://www.kplaylist.com/getdesign.php
 $cfg['designmap'] = 
 array(
 		'login' => '', 
@@ -802,7 +802,7 @@ $kdesign['login'] = '
 <p>&nbsp;</p>
 <table width="600" border="0" cellspacing="0" cellpadding="0" align="center">
 	<tr>
-	<td align="left"><a href="http://www.kplaylist.net/"><font class="loginkplaylist">www.kplaylist.net</font></a></td>
+	<td align="left"><a href="http://www.kplaylist.com/"><font class="loginkplaylist">www.kplaylist.com</font></a></td>
 	</tr>
 	<tr>
 		<td height="5"></td>
@@ -916,11 +916,11 @@ $kdesign['infobox'] = '
 		<?php
 		if ($setctl->get(\'showupgrade\')) 
 		{
-			?><a title="<?php echo get_lang(120); ?>" href="http://www.kplaylist.net/?ver=<?php echo $app_ver; ?>&amp;build=<?php echo $app_build; ?>" target="_blank">
+			?><a title="<?php echo get_lang(120); ?>" href="http://www.kplaylist.com/?ver=<?php echo $app_ver; ?>&amp;build=<?php echo $app_build; ?>" target="_blank">
 			<font color="#CCCCCC"><?php echo get_lang(78); ?></font></a><br/><?php
 		} 
 		?>
-		<a title="<?php echo get_lang(79); ?>" href="<?php echo $homepage; ?>" target="_blank"><img alt="<?php echo get_lang(79); ?>" src="<?php echo getimagelink(\'kplaylist.gif\'); ?>" border="0"/><span class="notice">v<?php echo $app_ver.\' \'.$app_build; ?></span></a>
+		<a title="<?php echo get_lang(79); ?>" href="<?php echo $homepage; ?>" <?php echo $homepage_target; ?>><img alt="<?php echo get_lang(79); ?>" src="<?php echo getimagelink(\'kplaylist.gif\'); ?>" border="0"/><span class="notice">v<?php echo $app_ver.\' \'.$app_build; ?></span></a>
 		</td>
 	</tr>
 	<tr>
@@ -1220,7 +1220,7 @@ $kdesign['welcome'] =
 				
 				<br/><br/>Click Settings on the admin menu, choose \'File handling\' and enter the path to your music directory or directories in the \'base directory\' field. You can also click the <a class="importnantlink" href="#" onclick="javascript: newwinscroll(\'find\', \'<?php echo PHPSELF; ?>?action=findmusic\', 450, 600);">find</a> button to automatically detect music directories. Press F5 when finished.<br/><br/>
 				
-				If you have problems configuring kPlaylist, click <a class="importnantlink" href="http://kplaylist.net/index.php?install=true" target="_blank">here</a> for the kPlaylist installation manual.
+				If you have problems configuring kPlaylist, click <a class="importnantlink" href="http://kplaylist.com/index.php?install=true" target="_blank">here</a> for the kPlaylist installation manual.
 				<br/><br/>
 				</td>
 			</tr>
@@ -1256,7 +1256,7 @@ $kdesign['needupdate'] =
 
 
 $kdesign['missing_getid3'] = '<font color="red">You don\'t have the latest supported version of getid3. Running kPlaylist without getid3 or an old version of getid3 is not recommended. Please click 
-<a class="importnantlink" href="http://www.kplaylist.net/forum/viewtopic.php?t=1003" target="_blank">here</a> for more information.</font>';
+<a class="importnantlink" href="http://www.kplaylist.com/forum/viewtopic.php?t=1003" target="_blank">here</a> for more information.</font>';
 
 
 function klogon($msg = '')
@@ -1473,8 +1473,12 @@ function endmp3table($showalbum=1, $dirs=0, $files=0)
 
 function infobox()
 {
- 	global $cfg, $app_ver, $setctl, $app_build, $homepage, $runinit, $valuser;
+	global $cfg, $app_ver, $setctl, $app_build, $homepage, $homepage_target, $runinit, $valuser;
 	$homepage = str_replace('KBUILD', $app_build, str_replace('KVER', $app_ver, $setctl->get('homepage')));
+	$homepage_target = 'target="_blank"';
+	if (substr($homepage, 0, 4) != 'http') {
+		$homepage_target = '';
+	}
 	$ca = new caction();
 	$ca->updatelist();
 	$kpshout = new kpshoutmessage();
@@ -1513,7 +1517,10 @@ function kprintheader($title='', $ajax=0, $addonload='')
 		ajax($cfg['livestreamajax'], SHOUTBOX);
 	}
 
-	if (strlen($extjs) == 0) jsfunctions(); else echo '<script type="text/javascript" src="'.$extjs.'"></script>';
+	jsfunctions();
+	if (strlen($extjs) > 0) {
+		echo '<script type="text/javascript" src="'.$extjs.'"></script>';
+	}
 
 	if ($setctl->get('includeheaders', 1, 1))
 	{
@@ -1654,22 +1661,19 @@ function kprintcss()
 			}
 		}
 
+		if (function_exists('kpdefcss'))
+		{
+			?>
+			<style type="text/css">
+			<?php kpdefcss(); ?>
+			</style>
+			<?php
+		}
+
 		$css = $setctl->get('externalcss'); 
 		if (strlen($css) > 0)
 		{
 			echo '<link href="'.$css.'" rel="stylesheet" type="text/css"/>';
-			echo '<script type="text/javascript" src="/include/jquery.js"></script>';
-			echo '<script type="text/javascript" src="external.js"></script>';
-		} else
-		{
-			if (function_exists('kpdefcss'))
-			{
-				?>
-				<style type="text/css">
-				<?php kpdefcss(); ?>
-				</style>
-				<?php
-			}
 		}
 	}
 }
@@ -2524,11 +2528,13 @@ class settings
 				'streamurl'					=> array('http://', 0),
 				'externalcss'				=> array('', 0),
 				'includeheaders'			=> array(1, 1),
-				'homepage'					=> array('http://www.kplaylist.net/&#63;ver=KVER&amp;build=KBUILD', 0),
+				'homepage'					=> array('http://www.kplaylist.com/&#63;ver=KVER&amp;build=KBUILD', 0),
 				'unauthorizedstreams'		=> array(0, 1),
 				'sendfileextension'			=> array(1, 1),
 				'disksync'					=> array(1, 1),
 				'externaljavascript'		=> array('', 0),
+				'html5video'			=> array(0,1),
+				'html5audio'			=> array(0,1),
 				'ajaxurl'					=> array('', 0),
 				'showupgrade'				=> array(1,1),
 				'showstatistics'			=> array(0, 1),
@@ -2854,6 +2860,8 @@ $setctl->publish('disksync');
 $setctl->publish('bulletin');
 $setctl->publish('filetemplate');
 $setctl->publish('urlsecurity');
+$setctl->publish('html5video');
+$setctl->publish('html5audio');
 $setctl->publish('showlyricslink');
 $setctl->publish('networkmode');
 $setctl->publish('virtualdir');
@@ -5438,7 +5446,7 @@ class mailmp3
 		<tr><td colspan="2" height="15"></td></tr>
 		<tr><td colspan="2">'.$message.'</td></tr>
 		<tr><td colspan="2" height="35"></td></tr>
-		<tr><td class="notice"><a href="http://www.kplaylist.net" target="_blank"><img alt="kPlaylist" src="http://www.kplaylist.net/kplaylist_box.gif" border="0"/></a></td>
+		<tr><td class="notice"><a href="http://www.kplaylist.com" target="_blank"><img alt="kPlaylist" src="http://www.kplaylist.com/kplaylist_box.gif" border="0"/></a></td>
 		<td align="right" valign="bottom" height="15" class="notice">Powered by kPlaylist</td>
 		</tr>
 		</table>
@@ -6418,7 +6426,7 @@ class kpsqlinstall
 		?>
 		<table width="750" border="0" cellspacing="0" cellpadding="0" align="center">
 		<tr> 
-			<td><a href="http://www.kplaylist.net" title="Visit homepage"><img width="208" height="64" src="<?php echo getimagelink('kplaylist.gif'); ?>" alt="kPlaylist" border="0"/></a></td>
+			<td><a href="http://www.kplaylist.com" title="Visit homepage"><img width="208" height="64" src="<?php echo getimagelink('kplaylist.gif'); ?>" alt="kPlaylist" border="0"/></a></td>
 		</tr>
 		<tr>
 			<td height="20"></td>
@@ -6482,7 +6490,7 @@ class kpsqlinstall
 			if (isset($_SERVER['REMOTE_ADDR'])) $iid = getrand(10000) + ip2long($_SERVER['REMOTE_ADDR']); else $iid = time() + getrand(10000);
 			if (isset($_SERVER['SERVER_SOFTWARE'])) $os = $_SERVER['SERVER_SOFTWARE']; else $os = 'Unknown';
 		?>	
-		<form method="get" action="http://www.kplaylist.net/success.php">
+		<form method="get" action="http://www.kplaylist.com/success.php">
 		<input type="hidden" name="build" value="<?php echo $app_build; ?>"/>
 		<input type="hidden" name="iid" value="<?php echo $iid; ?>"/>
 		<input type="hidden" name="os" value="<?php echo $os; ?>"/>
@@ -6553,7 +6561,7 @@ class kpsqlinstall
 		<tr><td height="15"></td></tr>
 		<tr>
 			<td class="importnant">
-				Click <a class="importnantlink" href="http://www.kplaylist.net/index.php?install=true" target="_blank">here</a> for opening the INSTALL reference.
+				Click <a class="importnantlink" href="http://www.kplaylist.com/index.php?install=true" target="_blank">here</a> for opening the INSTALL reference.
 			</td>
 		</tr>
 		<tr><td height="25"></td></tr>
@@ -6676,7 +6684,7 @@ class kpsqlinstall
 
 								<?php $this->show_feedback(false); ?>
 								
-								Remember to visit <a class="importnantlink" href="http://www.kplaylist.net" target="_blank">http://www.kplaylist.net</a> for updates and help.
+								Remember to visit <a class="importnantlink" href="http://www.kplaylist.com" target="_blank">http://www.kplaylist.com</a> for updates and help.
 							</td>
 							</tr>
 							</table>
@@ -6702,7 +6710,7 @@ class kpsqlinstall
 		<tr>
 			<td class="importnant">
 			To install kPlaylist, you'll need a working and running copy of MySQL. kPlaylist is based on the GNU GPL license, you
-			can read the license here: <a class="importnantlink" href="http://www.kplaylist.net/COPYING" target="_blank">http://www.kplaylist.net/COPYING</a>
+			can read the license here: <a class="importnantlink" href="http://www.kplaylist.com/COPYING" target="_blank">http://www.kplaylist.com/COPYING</a>
 			</td>
 		</tr>
 		<tr><td height="25"></td></tr>		
@@ -6731,7 +6739,7 @@ class kpsqlinstall
 		<tr><td height="25"></td></tr>
 
 		<tr> 
-			<td colspan="4" align="right"><font class="wtext">Need help? You'll find documentation here:</font>&nbsp;<a href="http://www.kplaylist.net" target="_blank"><font color="#0000FF">kPlaylist Homepage</font></a></td>
+			<td colspan="4" align="right"><font class="wtext">Need help? You'll find documentation here:</font>&nbsp;<a href="http://www.kplaylist.com" target="_blank"><font color="#0000FF">kPlaylist Homepage</font></a></td>
 		</tr>  
 
 		</table>
@@ -6853,7 +6861,7 @@ class kpsqlinstall
 			</td>
 		</tr>
 		<tr> 
-			<td colspan="4" align="right"><font class="wtext">You'll find documentation here:</font>&nbsp;<a href="http://www.kplaylist.net" target="_blank"><font color="#0000FF">kPlaylist Homepage</font></a></td>
+			<td colspan="4" align="right"><font class="wtext">You'll find documentation here:</font>&nbsp;<a href="http://www.kplaylist.com" target="_blank"><font color="#0000FF">kPlaylist Homepage</font></a></td>
 		</tr> 
 		<tr>
 			<td height="3"></td>
@@ -6889,7 +6897,7 @@ class kpsqlinstall
 		} else 
 		{
 			$msg = '<font color="red" size="2">Could not login with the supplied user name and password! MySQL response: '.$err.'</font>'; 
-			if ($errno == 1251) $msg .= '<br/><br/><font color="red" size="2">Seems like you are running MySQL 4.1/5.0 or newer. Please go to the following location to read the solution: </font><a class="importnantlink" href="http://www.kplaylist.net/forum/viewtopic.php?p=2231" target="_blank">http://www.kplaylist.net/forum/viewtopic.php?p=2231</a>'; 
+			if ($errno == 1251) $msg .= '<br/><br/><font color="red" size="2">Seems like you are running MySQL 4.1/5.0 or newer. Please go to the following location to read the solution: </font><a class="importnantlink" href="http://www.kplaylist.com/forum/viewtopic.php?p=2231" target="_blank">http://www.kplaylist.com/forum/viewtopic.php?p=2231</a>';
 			$this->install_form($msg);
 		}
 	}
@@ -8071,6 +8079,8 @@ function settings_save($data, $page)
 
 			case 1:
 				$setctl->set('includeheaders', 0);
+				$setctl->set('html5video', 0);
+				$setctl->set('html5audio', 0);
 				$setctl->set('showupgrade', 0);
 				$setctl->set('showstatistics', 0);
 				$setctl->set('albumcover', 0);
@@ -8169,7 +8179,7 @@ function helplink($section, $name='?', $class='')
 {
 	global $deflanguage, $app_build;
 	if (!empty($class)) $x = ' class="'.$class.'"'; else $x = '';
-	return '<a'.$x.' target="_new" title="'.get_lang(161).'" href="http://www.kplaylist.net/?configuration='.$section.'&amp;lang='.$deflanguage.'&amp;b='.$app_build.'">'.$name.'</a>';
+	return '<a'.$x.' target="_new" title="'.get_lang(161).'" href="http://www.kplaylist.com/?configuration='.$section.'&amp;lang='.$deflanguage.'&amp;b='.$app_build.'">'.$name.'</a>';
 }
 
 function store_filetype($id, $m3u, $search, $logaccess, $mime, $extension='')
@@ -8465,6 +8475,16 @@ function settings_page($page)
 			<tr>
 				<td class="wtext"><?php echo get_lang(196); ?></td>
 				<td class="wtext"><input type="text" class="fatbuttom" name="externaljavascript" maxlength="50" size="50" value="<?php echo $setctl->get('externaljavascript'); ?>"/></td>
+				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext">Enable HTML5 video player</td>
+				<td class="wtext"><input type="checkbox" value="1" name="html5video" <?php echo $setctl->getchecked('html5video'); ?>/></td>
+				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext">Enable HTML5 audio player</td>
+				<td class="wtext"><input type="checkbox" value="1" name="html5audio" <?php echo $setctl->getchecked('html5audio'); ?>"/></td>
 				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
 			</tr>
 			<tr>
@@ -8798,7 +8818,7 @@ function settings_page($page)
 			<?php
 			} else
 			{
-				$infourl = 'http://www.kplaylist.net/forum/viewtopic.php?p=8200';
+				$infourl = 'http://www.kplaylist.com/forum/viewtopic.php?p=8200';
 				?>
 				<tr>
 					<td colspan="3" class="wtext"><?php echo get_lang(359, '<a href="'.$infourl.'" target="_blank">'.$infourl.'</a>'); ?></td>
@@ -8826,12 +8846,12 @@ function settings_page($page)
 					case 'php5':		if (isphp5()) $testok = true; 
 										break;
 					case 'getid3':		if (GETID3_V > 1) $testok = true; 
-										$info = 'http://www.kplaylist.net/forum/viewtopic.php?t=1003';
+										$info = 'http://www.kplaylist.com/forum/viewtopic.php?t=1003';
 										break;										
 					case 'iconv':		if (extension_loaded('iconv')) $testok = true; 
 										break;
 					case 'zip':			if (extension_loaded('zip')) $testok = true;
-										$info = 'http://www.kplaylist.net/forum/viewtopic.php?t=2187';
+										$info = 'http://www.kplaylist.com/forum/viewtopic.php?t=2187';
 										break;
 					case 'curl':		if (extension_loaded('curl')) $testok = true; 
 										break;
@@ -11745,7 +11765,7 @@ function search_updatelist($options='')
 	$filecntr = 0;
 	$file = '';
 
-	$fixurl = 'http://www.kplaylist.net/forum/viewtopic.php?p=3672';
+	$fixurl = 'http://www.kplaylist.com/forum/viewtopic.php?p=3672';
 
 	echo '<font class="notice">'.get_lang(296, '<a href="'.$fixurl.'" target="_blank">'.$fixurl.'</a>').'</font><br/><br/>';
 	echo '<font class="notice">'.get_lang(136).'..</font><br/>';
@@ -14525,7 +14545,7 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 	if (ALLOWDOWNLOAD && db_guinfo('u_allowdownload'))
 	{
 		if (URLSECURITY) $urlextra = '&amp;'.urlsecurity($f2->fdate, $sid); else $urlextra = '';
-		echo '<span class="file"><a href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'">'.
+		echo '<span class="file"><a title="'.get_lang(117).'" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'">'.
 		'<img src="'.getimagelink('saveicon.gif').'" alt="'.get_lang(117).'" border="0"/></a></span> ';
 	}
 
@@ -14555,9 +14575,21 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 	{
 		$link = $f2->mklink();
 	}
-	
-        echo '<a href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return video(this);">';
-        echo '<span class="newfile">' . $f2->fname . '</span></a>';
+
+	if (HTML5VIDEO) {
+		echo '<span class="newfile">';
+		echo '<a title="Play HTML5 video" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return video(this);">';
+		echo '<img src="images/html5video.gif" alt="Play HTML5 video" border="0" />';
+		echo '</a></span> ';
+	}
+
+	if (HTML5AUDIO) {
+		echo '<span class="newfile">';
+		echo '<a title"Play HTML5 audio" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return song(this);">';
+		echo '<img src="images/html5audio.gif" alt=Play HTML5 audio" border="0" />';
+		echo '</a></span> ';
+	}
+
 	echo file_parse($f2, $link, $useclass);
 	echo '</td></tr>';
 }
