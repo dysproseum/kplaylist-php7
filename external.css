@@ -228,10 +228,7 @@ a {
 .bboxtable {
   background-color: #ECEFF2;
 }
-.file img, .dir img, input[type="checkbox"] { 
-/*  height: 32px;
-  width: 32px;*/
-}
-a span.file {
-/*  display: none; */
+audio, video {
+  width: 300px;
+  height: 54px;
 }

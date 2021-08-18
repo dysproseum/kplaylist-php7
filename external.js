@@ -2,41 +2,66 @@
  * External JS file for kPlaylist
  */
 
-var audio = new Audio();
-function song(obj) {
-  audio.pause(); audio = new Audio(obj.href); audio.play();
-  return false;
-}
-
+var html5player = false;
 var current;
 
-function playlist(obj, video) {
+function playlist(obj, player) {
   current = obj;
-  video.addEventListener('ended', function () {
-    var next = $(current).parent().parent().next("tr").find("a")[1];
-    video.src=next.href; video.play();
-    current = next;
+  var player_type = obj.className;
+  player.addEventListener('ended', function () {
+    var this_tr = current.parentElement.parentElement.parentElement;
+    var tbody = this_tr.parentElement;
+    var next_tr = false;
+    for(i=0; i < tbody.children.length; i++) {
+      if (tbody.children[i] == this_tr) {
+        next_tr = tbody.children[i + 1];
+      }
+    }
+    var td = next_tr.children[0];
+    var span = false;
+    for(i=1; i < td.children.length; i++) {
+      if (td.children[i].className == "file " + player_type) {
+        span = td.children[i];
+      }
+    }
+    var link = span.children[0];
+    player.pause();
+    player.src=link.href;
+    player.play();
+    current = link;
   })
   return false;
 }
 
-function video(obj) {
-  var parent = document.getElementById("html5container");
-  var child = document.getElementById("html5video");
-  if (child) {
-    parent.removeChild(child);
-    var newvideo = document.createElement("video");
-    newvideo.id = "html5video";
-    newvideo.onclick = function() {
-      this.play();
-    };
-    parent.appendChild(newvideo); 
+function play_html5audio(obj) {
+  if (html5player) {
+    var video = document.getElementById('html5video');
+    video.pause();
+    video.hidden = true;
   }
-  var arVideos = document.getElementsByTagName("video");
-  var video = arVideos[0];
-  video.setAttribute("style","display:block");
-  video.src=obj.href; video.play();
+  html5player = true;
+  var audio = document.getElementById('html5audio');
+  audio.pause();
+  audio.hidden = false;
+  audio.src = obj.href;
+  audio.play();
+  playlist(obj, audio);
+  return false;
+}
 
+
+function play_html5video(obj) {
+  if (html5player) {
+    var audio = document.getElementById('html5audio');
+    audio.pause();
+    audio.hidden = true;
+  }
+  html5player = true;
+  var video = document.getElementById("html5video");
+  video.pause();
+  video.hidden = false;
+  video.src=obj.href;
+  video.play();
   playlist(obj, video);
 
   return false;
