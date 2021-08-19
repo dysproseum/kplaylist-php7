@@ -11264,7 +11264,7 @@ class kpsearch
 		if ($this->rows > $max) $extra = get_lang(6, $max); 
 		showdir('',get_lang(8, checkchs($this->what, false)),0);
 
-		print_html5video();
+		print_html5container();
 
 		echo '<table width="100%" cellspacing="0" cellpadding="0" border="0">';
 
@@ -14522,8 +14522,19 @@ function parseurl($url, $title = '', $artist = '', $album = '')
 	return $urlr;
 }
 
-function print_html5video() {
-  echo '<div id="html5container"><video id="html5video" style="display:none"></video></div>';
+function print_html5container() {
+  if (!HTML5VIDEO && !HTML5AUDIO) {
+    return;
+  }
+
+  echo '<div id="html5container">';
+  if (HTML5VIDEO) {
+    echo '<video id="html5video" controls hidden="true"></video>';
+  }
+  if (HTML5AUDIO) {
+    echo '<audio id="html5audio" controls hidden="true"></audio>';
+  }
+  echo '</div>';
 }
 
 function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid = -1)
@@ -14577,16 +14588,16 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 	}
 
 	if (HTML5VIDEO) {
-		echo '<span class="newfile">';
-		echo '<a title="Play HTML5 video" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return video(this);">';
+		echo '<span class="file html5video">';
+		echo '<a title="Play HTML5 video" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return play_html5video(this);" class="html5video">';
 		echo '<img src="images/html5video.gif" alt="Play HTML5 video" border="0" />';
 		echo '</a></span> ';
 	}
 
 	if (HTML5AUDIO) {
-		echo '<span class="newfile">';
-		echo '<a title"Play HTML5 audio" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return song(this);">';
-		echo '<img src="images/html5audio.gif" alt=Play HTML5 audio" border="0" />';
+		echo '<span class="file html5audio">';
+		echo '<a title="Play HTML5 audio" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return play_html5audio(this);" class="html5audio">';
+		echo '<img src="images/html5audio.gif" alt="Play HTML5 audio" border="0" />';
 		echo '</a></span> ';
 	}
 
@@ -15435,7 +15446,7 @@ class kpdir
 			if ($ci->geturl($imgurl)) echo '<tr><td>'.$imgurl.'</td></tr><tr><td height="6"></td></tr>';
 		} 
 
-                print_html5video();
+                print_html5container();
 		
 		for ($i=0,$c=count($viewrows);$i<$c;$i++) print_file($viewrows[$i],0,1);
 		return $c;
