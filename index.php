@@ -2301,7 +2301,8 @@ class kpdbconnection
 		$this->query = $query;
 		$this->res = false;
 	}
-	
+
+        // @todo make sure all prepared statements are secure.
 	function preparestmt($sql, $arguments = array())
 	{
                 global $mysqli;
@@ -2328,7 +2329,6 @@ class kpdbconnection
 		if ($num_args == $replaced)
 		{
 			$this->query = $query;
-error_log($query);
 		} else user_error('too few arguments passed!!');
 	}
 
@@ -2341,7 +2341,6 @@ error_log($query);
 	{
 		global $mysqli;
 		$this->res = false;
-		
 		if (strlen($this->query) > 0)
 		{
 			$this->res = $mysqli->query($this->query);
@@ -9010,9 +9009,11 @@ function webauthenticate()
 				{
 					$u_id = $kpu->getid();
 					$hkey = gen_hkey();
+					//$ip = ip2long($phpenv['remote']);
+					$ip = '0';
 										
 					$kpdb = new kpdbconnection();
-					$kpdb->preparestmt('INSERT INTO '.TBL_SESSION.' SET u_id = ?, hkey = "?", login = ?, refreshed = ?, ip = ?', array($kpu->getid(), $hkey, time(), time(), ip2long($phpenv['remote'])));
+					$kpdb->preparestmt('INSERT INTO '.TBL_SESSION.' SET u_id = ?, hkey = "?", login = ?, refreshed = ?, ip = ?', array($kpu->getid(), $hkey, time(), time(), $ip));
 					if ($kpdb->query())
 					{
 						$cookie_value = $kpdb->getautoid().'-'.$hkey;
