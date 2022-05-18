@@ -14590,7 +14590,9 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 
 	if (HTML5VIDEO) {
 		echo '<span class="file html5video">';
-		echo '<a title="Play HTML5 video" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return play_html5video(this);" class="html5video">';
+                // @todo replace downloadfile link with sid helps
+		echo '<a title="Play HTML5 video" href="'. PHPSELF. "?streamsid=".$sid.'&amp;c='.$u_cookieid.$urlextra.'&amp;file=.mp4" onclick="return play_html5video(this);" class="html5video">';
+		//echo '<a title="Play HTML5 video" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'&amp;file=.mp4" onclick="return play_html5video(this);" class="html5video">';
 		echo '<img src="images/html5video.gif" alt="Play HTML5 video" border="0" />';
 		echo '</a></span> ';
 	}
