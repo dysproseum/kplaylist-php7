@@ -3234,7 +3234,7 @@ class kpmysqltable
 		array(
 			'sessionid'		=> array('BIGINT', 16, 1, '', 'AUTO_INCREMENT'),
 			'u_id'			=> array('INT', 4, 1, '\'0\''),
-			'ip'			=> array('INT', 4, 1, '\'0\''),
+			'ip'			=> array('BIGINT', 4, 1, '\'0\''),
 			'login'			=> array('INT', 4, 1, '\'0\''),
 			'refreshed'		=> array('INT', 4, 1, '\'0\''),
 			'logout'		=> array('INT', 4, 1, '\'0\''),
