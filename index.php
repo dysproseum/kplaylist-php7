@@ -2328,7 +2328,6 @@ class kpdbconnection
 		if ($num_args == $replaced)
 		{
 			$this->query = $query;
-error_log($query);
 		} else user_error('too few arguments passed!!');
 	}
 
