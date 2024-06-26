@@ -1,0 +1,117 @@
+/* login screen hide w3c button */
+body > table:has(> tbody > tr > td > a > img) {
+  display: none;
+}
+
+body {
+  display: block;
+  float: left;
+  margin-bottom: 74px;
+}
+
+table {
+  width: 100%;
+  display: block;
+  float: left;
+}
+
+table > tbody > tr > td {
+  width: 100%;
+  display: block;
+  float: left;
+  text-align: left;
+}
+
+tbody {
+  width: 100%;
+  display: block;
+  float: left;
+}
+
+tr {
+  width: 100%;
+  display: block;
+  float: left;
+}
+
+/* center logo */
+body > table > tbody > tr > td > table > tbody > tr > td {
+  text-align: center;
+}
+
+/* center search bar */
+input[type=text].fatbuttom {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+td.wtext {
+  text-align: left;
+}
+
+.wtext {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+  padding-left: 3px;
+}
+
+.notice {
+  font-size: 14px;
+}
+
+.fatbuttom {
+  font-size: 14px;
+}
+
+.boxhotlist td {
+  width: 100%;
+}
+
+.box {
+  width: 100%;
+}
+
+/* box title */
+.bbox {
+  width: 100%;
+  font-size: 14px;
+  height: 9px;
+}
+
+.bboxtable td {
+  width: unset;
+  margin-left: 3px;
+}
+
+/* directory listing */
+.importnant {
+  margin-top: 14px;
+  display: block;
+}
+
+
+/* album image */
+body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > tr > td:has(> img) {
+  text-align: center;
+}
+
+/* exclude hard drive icon */
+body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > tr:first-child > td > .importnant {
+  text-align: left;
+}
+
+.file, .finfo {
+  font-size: 14px;
+}
+
+#html5container audio {
+  width: 100%;
+  position: fixed;
+  bottom: 10px;
+  left: 0;
+}
+
+audio::-webkit-media-controls-panel {
+  background: lightgray;
+}
