@@ -1675,6 +1675,14 @@ function kprintcss()
 		{
 			echo '<link href="'.$css.'" rel="stylesheet" type="text/css"/>';
 		}
+
+		$css = $setctl->get('mobilecss');
+		if (strlen($css) > 0)
+		{
+			echo "<link rel='stylesheet' media='only screen and (max-width: 768px)' href='$css' type='text/css' />";
+
+			echo '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,user-scalable=0" />';
+		}
 	}
 }
 
@@ -2532,6 +2540,7 @@ class settings
 				'sendfileextension'			=> array(1, 1),
 				'disksync'					=> array(1, 1),
 				'externaljavascript'		=> array('', 0),
+				'mobilecss'			=> array('', 0),
 				'html5video'			=> array(0,1),
 				'html5audio'			=> array(0,1),
 				'ajaxurl'					=> array('', 0),
@@ -8470,6 +8479,11 @@ function settings_page($page)
 				<td class="wtext"><?php echo get_lang(179); ?></td>
 				<td class="wtext"><input type="text" class="fatbuttom" name="externalcss" maxlength="50" size="50" value="<?php echo $setctl->get('externalcss'); ?>"/></td>
 				<td class="wtext"><?php echo helplink('s_externalcss'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext">Enable mobile CSS</td>
+				<td class="wtext"><input type="text" class="fatbuttom" name="mobilecss" maxlength="50" size="50" value="<?php echo $setctl->get('mobilecss'); ?>"/></td>
+				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
 			</tr>
 			<tr>
 				<td class="wtext"><?php echo get_lang(196); ?></td>
