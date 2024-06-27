@@ -8,31 +8,28 @@ var current;
 var listener = false;
 var listener_count = 0;
 
+function findNextSong(obj) {
+  var this_tr = obj.parentElement.parentElement.parentElement;
+  var next_tr = this_tr.nextElementSibling;
+  var td;
+  var link;
+  while(next_tr) {
+    td = next_tr.children[0];
+    link = td.querySelector("a." + player_type);
+    if (link) {
+      return link;
+    }
+    next_tr = next_tr.nextElementSibling;
+  }
+}
+
 function playlist(obj, player) {
   current = obj;
   player_type = obj.className;
 
   listener = function () {
     console.log("Event: playback ended, listener count: " + listener_count);
-    var this_tr = current.parentElement.parentElement.parentElement;
-    var tbody = this_tr.parentElement;
-    var next_tr = false;
-    for(i=0; i < tbody.children.length; i++) {
-      if (tbody.children[i] == this_tr) {
-        next_tr = tbody.children[i + 1];
-      }
-    }
-    if (!next_tr || next_tr.children.length == 0) {
-      return;
-    }
-    var td = next_tr.children[0];
-    var span = false;
-    for(i=1; i < td.children.length; i++) {
-      if (td.children[i].className == "file " + player_type) {
-        span = td.children[i];
-      }
-    }
-    var link = span.children[0];
+    var link = findNextSong(current);
     player.src=link.href;
     var playPromise = player.play();
 
