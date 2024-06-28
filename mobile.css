@@ -60,6 +60,11 @@ td.wtext {
   font-size: 14px;
 }
 
+span.notice {
+  width: 100%;
+  display: block;
+}
+
 .fatbuttom {
   font-size: 14px;
 }
@@ -96,20 +101,31 @@ body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > 
   text-align: center;
 }
 
+/* search result album image */
+body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > tr > td:has(a > img) {
+  text-align: center;
+}
+
+/* left align song listing */
+body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > tr > td:has(input[type=checkbox]) {
+  text-align: left;
+}
+
 /* exclude hard drive icon */
 body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > tr:first-child > td > .importnant {
   text-align: left;
 }
 
-.file, .finfo {
+.file, .finfo, .filemarked, .dirheadline, .dir, .hot {
   font-size: 14px;
 }
 
 #html5container audio {
   width: 100%;
   position: fixed;
-  bottom: 10px;
+  bottom: 0;
   left: 0;
+  background: lightgray;
 }
 
 audio::-webkit-media-controls-panel {
