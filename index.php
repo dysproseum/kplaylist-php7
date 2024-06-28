@@ -1,5 +1,5 @@
 <?php
-//kPlaylist 1.4 Build 363 (25-09-04_19.02) build by root
+//kPlaylist 1.5 Build 388 (30-12-04_10.51)
 
 /*****************************************************************************
 kPlaylist is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@ along with kPlaylist; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ##############################################################################
 
-kPlaylist v1.4 makes your MP3 archive available via the WEB. Play music, 
+kPlaylist v1.5 makes your MP3 archive available via the WEB. Play music, 
 	search, create and edit playlists from everywhere by just having a webbrowser 
 	and a MP3 player. Features include logon, accounts, account classes, user editor, 
 	automatic installation (MySQL) and automatic search engine update. 
@@ -37,7 +37,6 @@ Translate or errors in the grammar?
 
 Note!
 	You can get updates and installation instructions here: http://www.kplaylist.net
-	You can reach us at this e-mail address: kplaylist@kplaylist.net
   
 	Need answers? Goto the kPlaylist forum: http://www.kplaylist.net/forum/
 	
@@ -57,24 +56,14 @@ Script information:
 *****************************************************************************/
 
 
-// try to set the execution time to 1800 sec = 30 min. 
-@ini_set('max_execution_time', 1800);
+// try to set the execution time to 3600 sec = 60 min. 
+@ini_set('max_execution_time', 3600);
 @ini_set('register_globals', 'Off');
 @ini_set('display_errors', 'Off');
 
 // what to prepend before the db, don't change this after installing! Do it before. If you do after, change the db names manually or set enable_install = 1.
 
-$dbprepend = 'tbl_';
-
-function setuptblconstants()
-{
-	global $dbprepend;
-	$kpdbtables = array('playlist', 'playlist_list', 'search', 'users', 'kplayversion', 'mhistory', 'config', 'filetypes', 'settings');
-	foreach ($kpdbtables as $name) define('TBL_'.strtoupper($name), $dbprepend.$name);
-}
-
-setuptblconstants();
-
+$cfg['dbprepend'] = 'tbl_';
 
 ######################################################
 ## START OF EASY CONFIGURATION
@@ -117,51 +106,76 @@ $db = array(
 );
 
 
-// read here before enabling: http://www.kplaylist.net/forum/viewtopic.php?t=196
-$id3editor = 0; // set to 1 to enable editing of id3 information.
+// If you use the Bad Blue webserver, set the following value to 1
+$cfg['badblue'] = 0;
 
-// lame parameters (enable in web settings and then user.)
-$lamecmd = '/usr/local/bin/lame --silent --nores --mp3input -h -m s -b %bitrate% "%file%" -';
-
-$lamebitrates = array(0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320);
+// Read here before enabling: http://www.kplaylist.net/forum/viewtopic.php?t=196
+$cfg['id3editor'] = 0;
 
 // If you want to disable logins and let everybody with http access to your
 // site get in, change the two following options. (WARNING! ALL SECURITY NOW VANISH.)
-$disablelogin = false;
+$cfg['disablelogin'] = 0;
+
 // If you disable logins, a default user has to be chosen. Setting this to 1 means
 // the first user which is usually the admin.
-$assumeuserid = 1;
+$cfg['assumeuserid'] = 1;
 
 // enable the getid3 package. getid package must reside under getid3/ under the directory
 // this file exists. If it does not, please change the 'include' statement below.
-$enablegetid3 = 0;
-if ($enablegetid3) include('getid3/getid3.php');
+$cfg['enablegetid3'] = 0;
 
 //how many titles of one album do we need to treat as a album? Turn to zero to show all.
-$titlesperalbum = 0;
+$cfg['titlesperalbum'] = 0;
+
+// demo mode on/off. Default off.
+$cfg['demomode'] = 0; 
+
+// for multiple downloads.
+$cfg['archivemode'] = false;
+
+$cfg['archivefilelist_cr'] = "\n";
+
+// turn this on to show commands when creating instead of executing
+$cfg['archivemodedebug'] = false;
+
+// where archivemode stores data. For UNIX it should be /tmp/, For win32 it should be: c:\\tmp\\
+$cfg['archivetemp'] = '/tmp/'; 
+
+// cookie name
+$cfg['cookie'] = 'kplaylist';
+
+// list of directories to ignore.
+$cfg['dirignorelist'] = array('..' => 1, '.' => 1, 'lost+found' => 1);
 
 // For use of automatic search engine update via lynx / cron. Turn to 1 to enable. Check
 // www.kplaylist.net for information how to run this update automatically.
-$autoupdate = 0;
-$autoupdatehost = '127.0.0.1';
-$autoupdateuser = 'autooperate';
+$cfg['autoupdate'] = 0;
+$cfg['autoupdatehost'] = '127.0.0.1';
+$cfg['autoupdateuser'] = 'autooperate';
 
-// list of directories to ignore.
-$dirignorelist = array('..' => 1, '.' => 1, 'lost+found' => 1);
+// what date format to use. if you want to change, look here: http://php.net/date/ for the format
+$cfg['dateformat'] = 'd.m.y H:i:s';
 
-// demo mode on/off. Default off.
-$demo_mode = 0; 
+// small format
+$cfg['smalldateformat'] = 'd.m.y';
 
-// for multiple downloads.
-$archivemode = false;
+// if the dir count exceeds this count, it will not be considered a 'album' directory and albums will not be shown
+$cfg['isalbumdircount'] = 1;
 
-$archivetemp = '/tmp/'; 
+// sort the root? does not affect sorting in subdirs.
+$cfg['sortroot'] = true;
 
-//	enabled	(0/1)	name	cmd	(%D = destination file,	%F source.)
+// where to cut the front bulletin message
+$cfg['frontbulletinchars'] = 100;
+
+$lamebitrates = array(0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320);
+
+//	enabled	(0/1)	name	cmd	(%D = destination file,	%F source OR %LIST if using filelist.)
 // YOU MUST SUIT THESE ARCHIVERS TO YOUR OWN NEED. DO NOT USE THE DEFAULT BLINDLY.
 $archivers = array(
 	0 => array(1,	'zip', '/usr/bin/zip -j -0 %D "%F"', 'application/zip'),
-	1 => array(1,	'rar', 'C:\Programfiler\WinRAR\rar.exe -m0 a %D "%F"', 'application/x-rar')
+	1 => array(1,	'rar', 'C:\Programfiler\WinRAR\rar.exe -m0 a %D "%F"', 'application/x-rar'),
+	2 => array(0,	'rar2', 'C:\Programfiler\WinRAR\rar.exe -m0 a %D @"%LIST"', 'application/x-rar')
 );
 
 // stream 'engine' finetune settings. 
@@ -175,47 +189,55 @@ array(
 	'precision'		=> 1000
 );
 
-// syntax: .filename, mime header, file in M3U, get id function, search index
+// syntax: .filename, mime header, file in M3U, get id function, viewable, log access
 $streamtypes_default = array(
-	0 => array ('mp3',	'audio/mpeg',			1, 1, 1),
-	1 => array ('mp2',	'audio/mpeg',			1, 1, 1),
-	2 => array ('ogg',	'application/x-ogg',	1, 2, 1),
-	3 => array ('wav',	'audio/wave',			1, 0, 1),
-	4 => array ('wma',	'audio/x-ms-wma',		1, 0, 1),
-	5 => array ('mpg',	'video/mpeg',			0, 0, 1),
-	6 => array ('mpeg', 'video/mpeg',			0, 0, 1),
-	7 => array ('avi',	'video/avi',			0, 0, 1),
-	8 => array ('wmv',	'video/x-ms-wmv',		0, 0, 1),
-	9 => array('asf', 'application/vnd.ms-asf', 0, 0, 1),
-	10 => array('m3u', 'audio/x-mpegurl',		0, 0, 1),
-	11 => array('flac', 'audio/x-flac',			1, 0, 1),
-	12 => array('jpg' , 'image/jpeg',			0, 0, 1)
+	0 => array	('mp3',		'audio/mpeg',				1, 1, 1, 1),
+	1 => array	('mp2',		'audio/mpeg',				1, 1, 1, 1),
+	2 => array	('ogg',		'application/x-ogg',		1, 2, 1, 1),
+	3 => array	('wav',		'audio/wave',				1, 0, 1, 1),
+	4 => array	('wma',		'audio/x-ms-wma',			1, 0, 1, 1),
+	5 => array	('mpg',		'video/mpeg',				0, 0, 1, 1),
+	6 => array	('mpeg',	'video/mpeg',				0, 0, 1, 1),
+	7 => array	('avi',		'video/avi',				0, 0, 1, 1),
+	8 => array	('wmv',		'video/x-ms-wmv',			0, 0, 1, 1),
+	9 => array	('asf',		'application/vnd.ms-asf',	0, 0, 1, 1),
+	10 => array	('m3u',		'audio/x-mpegurl',			0, 0, 1, 0),
+	11 => array	('flac',	'audio/x-flac',				1, 0, 1, 1),
+	12 => array	('jpg' ,	'image/jpeg',				0, 0, 1, 0),
+	13 => array	('gif' ,	'image/gif',				0, 0, 1, 0),
+	14 => array	('png' ,	'image/png',				0, 0, 1, 0)
 ); 
 
+if (file_exists('kpconfig.php')) include('kpconfig.php');
 
-// fix for older versions of PHP.  
-if (!isset($_GET) && !isset($_POST))
+// end of configuration
+
+
+$app_ver  = 1.5;
+$app_build = 388;
+
+
+$kpdbtables = array('playlist', 'playlist_list', 'search', 'users', 'kplayversion', 'mhistory', 'config', 'filetypes', 'settings', 'bulletin');
+foreach ($kpdbtables as $name) define('TBL_'.strtoupper($name), $cfg['dbprepend'].$name);
+
+if ($cfg['enablegetid3']) 
 {
-	$_GET = @$HTTP_GET_VARS;
-	$_POST = @$HTTP_POST_VARS;
-	$_COOKIE = @$HTTP_COOKIE_VARS;
-	$_SESSION = @$HTTP_SESSION_VARS;
-	$_ENV = @$HTTP_ENV_VARS;
-	$_SERVER = @$HTTP_SERVER_VARS;
+	include('getid3/getid3.php');
+	if (defined('GETID3VERSION')) define('GETID3_V', 16); 
+		else
+	if (defined('GETID3_VERSION')) define('GETID3_V', 17); 		
 }
-
-if (function_exists('mysql_unbuffered_query')) define('MYSQLFAST', true); else define('MYSQLFAST', false); 
 
 function db_gconnect()
 {
 	global $db;
-	if (mysql_connect($db['host'], $db['user'], $db['pass'])) if (mysql_select_db ($db['name'])) return true;
+	if (mysql_connect($db['host'], $db['user'], $db['pass']) && mysql_select_db ($db['name'])) return true;
 	return false;
 }
 
 function db_execquery($query, $fast=false)
 {
-	if ($fast && MYSQLFAST) return mysql_unbuffered_query($query);
+	if ($fast && function_exists('mysql_unbuffered_query')) return mysql_unbuffered_query($query);
 	return mysql_query($query);
 }
 
@@ -223,9 +245,6 @@ function db_execcheck($query)
 {
 	if (db_gconnect()) return mysql_query($query); else return 0;	
 }
-
-$app_ver  = '1.4'; 
-$app_build = '363';
 
 class settings
 {
@@ -277,7 +296,14 @@ class settings
 
 	function publish($key)
 	{
-		if (isset($this->keys[$key])) define(strtoupper($key), $this->keys[$key]); else define(strtoupper($key), 0);
+		if (isset($this->keys[$key])) define(strtoupper($key), $this->keys[$key]); 
+		else 
+		{
+			$this->loaddefaults();
+			if (isset($this->defaults[$key])) 
+				define(strtoupper($key), $this->defaults[$key][0]); 
+			else define(strtoupper($key), 0);
+		}
 	}
 
 	function recast($value, $vtype)
@@ -366,7 +392,17 @@ class settings
 				'smtpport'					=> array('25', 0),
 				'enableupload'				=> array(0, 1),
 				'uploadpath'				=> array('', 0),
-				'mailmp3'					=> array(0, 1)
+				'mailmp3'					=> array(0, 1),
+				'lamecmd'					=> array('/usr/local/bin/lame --silent --nores --mp3input -h -m s -b %bitrate% "%file%" -', 0),
+				'albumcover'				=> array(1, 1),
+				'albumfiles'				=> array('*album*.jpg,*album*.gif,*cover*.jpg,*cover*.gif,*front*.jpg,*front*.gif', 0),
+				'albumresize'				=> array(1, 1),
+				'albumheight'				=> array(320, 2),
+				'albumwidth'				=> array(400, 2),
+				'mailmethod'				=> array(2,2),
+				'albumurl'					=> array('http://www.last.fm/music/%artist/%album', 0),
+				'fetchalbum'				=> array(0, 1),
+				'bulletin'					=> array(1, 1)
 			);
 			$this->defaultsloaded = true;
 		}		
@@ -401,7 +437,12 @@ if (db_gconnect())
 	define('DBCONNECTION', true);
 	$enable_install = 0;
 	$setctl->load();
-	if ($resetconfiguration) $setctl->defaults();	
+	if ($resetconfiguration) 
+	{
+		$setctl->defaults();
+		echo 'Configuration has been reset. Set $resetconfiguration = false; and reload.';
+		die();
+	}
 } else
 {
 	define('DBCONNECTION', false);
@@ -418,33 +459,35 @@ $setctl->publish('optimisticfile');
 $setctl->publish('mailmp3');
 $setctl->publish('enableupload');
 $setctl->publish('unauthorizedstreams');
+$setctl->publish('albumcover');
+$setctl->publish('mailmethod');
+$setctl->publish('fetchalbum');
+$setctl->publish('disksync');
+$setctl->publish('bulletin');
 
 $base_dir = explode(';', $setctl->get('base_dir'));
-$homepage = str_replace('KBUILD', $app_build, str_replace('KVER', $app_ver, $setctl->get('homepage')));
 $deflanguage = $setctl->get('default_language');
 $win32 = $setctl->get('windows');
 if (!$win32) $dlrate = $setctl->get('dlrate'); else $dlrate = 0;
-$disksync = $setctl->get('disksync'); 
 
-// Audio and other file types to look / search / play / and open. 
-// Syntax: .filename, mime header, file in M3U, get id function, search index
+// General stuff used as globals
 
-
-// general stuff used as globals
-$u_searchstr  = '';
-$userauth = 0;
-$cookie_name = 'kplaylist';
+$userauth = $gCnt = 0;
 $u_playlist = $u_playlistid = $dir_list = $gData = $mark = $validated_user = array();
-$u_cookieid = -1;
-$u_id = -1;
-$pdir64='';
-$gCnt = 0;
+$marksid = $u_cookieid = $u_id = -1;
+$pdir64 = '';
 
 if (isset($_GET['d'])) $curdrive = $_GET['d']; else if (isset($_POST['drive'])) $curdrive = $_POST['drive']; else $curdrive = 0;
 
 $phpenv = array();
 
 if (!isset($PHP_SELF) || empty($PHP_SELF)) $PHP_SELF = $_SERVER['PHP_SELF'];
+
+if ($cfg['badblue'])
+{
+	$qpos = strrpos($PHP_SELF, '?');
+	if ($qpos !== false) $PHP_SELF = substr($PHP_SELF, 0, $qpos);
+}
 
 function phpfigure()
 {
@@ -480,17 +523,12 @@ function phpfigure()
 
 phpfigure();
 
-$streamtypes = array();
-
-function loadstreamtypes()
+if (DBCONNECTION)
 {
-	global $streamtypes_default, $streamtypes;
 	$streamtypes = $streamtypes_default;
-	$res = db_execquery('SELECT extension, mime, m3u, getid, search, id FROM '.TBL_FILETYPES.' WHERE enabled = 1', true);
+	$res = db_execquery('SELECT extension, mime, m3u, getid, search, logaccess FROM '.TBL_FILETYPES.' WHERE enabled = 1', true);
 	if ($res) while ($row = mysql_fetch_row($res)) $streamtypes[] = $row;
-}
-
-if (DBCONNECTION) loadstreamtypes();
+} else $streamtypes = array();
 
 
 function verchar($in)
@@ -528,6 +566,34 @@ function timeresults($name)
 	}
 }
 
+function refreshurl($url)
+{
+	?>
+	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+	<html>
+		<head>
+			<title></title>
+			<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+			<meta http-equiv="Refresh" content="0; url=<?php echo $url; ?>"/>
+		</head> 
+		<body></body>
+	</html>
+	<?php
+}
+
+function syslog_write($msg)
+{
+	global $phpenv, $win32;
+	$msg = "Client ".$phpenv['remote']." ".$phpenv['useragent']." $msg";
+	if (!$win32)
+	{
+		define_syslog_variables();
+		openlog("kplaylist", LOG_PID | LOG_PERROR, LOG_LOCAL0);
+		syslog(LOG_INFO,$msg);
+		closelog();
+	} else user_error($msg);
+}
+
 function selected($val, $ret = 'selected="selected"', $uret = '')
 {
 	if ($val) return $ret;
@@ -539,7 +605,6 @@ function checked($val, $ret = 'checked="checked"', $uret = '')
 	if ($val) return $ret;
 	return $uret;
 }
-
 
 function getrand($from = 1, $to = 0)
 {
@@ -558,8 +623,10 @@ function lzero($in, $len=2)
 
 function slashtranslate($in,$key='\\', $rep='/')
 {
-        $out = stripslashes($in);        
-		if (!empty($out)) { for ($i=0;$i<strlen($out);$i++) if ($out[$i] == $key ) $out[$i] = $rep; } return $out;
+	$out = $in;
+	if (strlen($in) > 0)
+		$out = str_replace($key, $rep, $in);
+	return stripslashes($out);
 }
 
 function getimagelink($image)
@@ -569,302 +636,67 @@ function getimagelink($image)
 }
 
 
-$klang[0]  = array("English", "iso-8859-1", "English", // 2
-"What's hot",	"What's new",	"Search",	"(only %1 shown)",	"sec",	"Search results: '%1'", // 8
-"found",	"None.",		"update search database options", "Delete unused records?", "Rebuild ID3?", // 13
-"Debug mode?", "Update", "Cancel", // 16
-"update search database", "Found %1 files.", "Could not determine this file: %1, skipped.", "Installed: %1 - Update: %2, scan: ", "Scan: ", // 21
-"Failed - query: %1", "Could not read this file: %1. Skipped.", "Removed: %1", // 24
-"Inserted %1, updated %2, deleted %3 where %4 failed and %5 skipped through %6 files - %7 sec - %8 marked for deletion.", // 25
-"Done", "Close", 'Could not find any files here: "%1"', "kPlaylist Logon", "Album list for artist: %1", "Hotselect %1", // 31
-"No tunes seleted. Playlist not updated.", "Playlist updated!", "Back", "Playlist added!", "Remember to reload page.", // 36
-"login:", "secret:", "Notice! This is a non public website. All actions are logged.", "Login", "SSL required for logon.", // 41
-"Play", "Delete", "Shared: ", "Save", 'Control playlist: "%1" - %2 titles', "Editor", "Viewer", "Select", "Seq", // 50
-"Status", "Info", "Del", "Name", "Totals:", "Error", "Action on selected: ", "Sequence:", "edit playlist", // 59
-"Delete this entry", "add playlist", "Name:", "Create", "Play: ", "File", "Album", "All", "Selected", "add", // 69
-"play", "edit", "new", "Select:", "Play Control: ", "Playlist: ", "Hotselect numeric", "Keyteq gives you:", // 77
-"(check for upgrade)", "Homesite", "only id3", "album", "title", "artist", "Hotselect album from artist", // 84
-"view", "Shared playlists", "Users", "Admin control", "What's new", "What's hot", "Logout", "Options", // 92
-"Check", "My", "edit user", "new user", "Full name", "Login", "Change password?", "Password", "Comment", // 101
-"Access level", "On", "Off", "Delete user", "Logout user", "Refresh", "New user", "del", "logout", // 110
-"Use EXTM3U feature?", "Show how many rows (hot/new)", "Max search rows", "Reset", "Open directory", // 115
-"Go to directory: %1", "Download", "Go one step up", "Go to root directory.", "Check for upgrade", "users", "Language", // 122
-"options", "Booted", "Shuffle:", "Settings", //126
-"Base directory", "Stream location", "Default language", "A Windows system", "Require HTTPS", // 131
-"Allow seek", "Allow download", "Session timeout", "Report failed login attempts", //135
-"Hold on - fetching file list", "Playlist could not be added!", "Admin", "Login with HTTPS to change!", // 139
-'Enable streaming engine', 'Title', 'Artist', 'Album', 'Comment', 'Year', 'Track', 'Genre', // 147
-'not set', 'Max download rate (kbps)','User', '%1 mins - %2 titles','%1 kbit %2 mins', 'Genre list: %1', // 153
-'Go', '%1d %2h %3m playtime %4 files %5 mb', 'No relevant resources here.', 'Password changed!', 'Signup', 'Please make a selection!', // 159
-'What is update?', 'Click here for help','Use external images?', 'External images path', 'Current password', 'Current password does not match!', // 165
-'Preferred archiver', 'Archive could not be made', 'Probable file duplicate found:  "%1" "%2"', 'Really delete playlist?', 'Alphabetical', 'Random', 'Sort', // 172
-'Original', 'Use javascript', 'Are you sure you want to delete this user?', 'View history', 'history', 'Rows', 'External CSS file', 'Remove duplicates', // 180
-'OK', 'ERR', 'Stream', '(show as)', 'files', 'albums','%1d %2h %3m %4s', 'General', 'Customize', 'Filehandling', 'Click on ? for help.', 'Automatic database sync', // 192
-'Send file extension', 'Allow unauthorized streams', 'Include headers', 'External javascript', 'Homepage', 'Show Keyteq gives you part', 'Show upgrade part', // 199
-'Show statistics', 'Write ID3v2 with stream', 'Enable user signup', 'Filetypes', 'Yes', 'No', 'Extension', 'MIME', 'Include in M3U', 'edit filetype', 'Sure?', // 210
-'Optimistic filecheck', 'Randomizer', 'Mode','Playlist', 'None, directly', 'My favourites', 'Did not find any hits', 'Alltime hits', 'Order', 'Enable LAME support?', // 220
-'Disabled','Allow LAME usage?', 'Email', 'Allow to mail files?', 'SMTP server', 'SMTP port','Mail to', 'Message', 'Send', 'Mail sent!', 'Activate upload', // 231
-'Upload directory','Activate mp3mail', 'Upload', 'File uploaded!', 'File could not be uploaded!', 'You must enable cookies to log in!','Period', 'ever',
-'this week','this month','last month', 'hits');
+$klang[0] = array('English', 'ISO-8859-1', 'English', 'What\'s hot', 'What\'s new', 'Search', '(only %1 shown)', 'sec', 'Search results: \'%1\'', 'found', 'None.', 'update search database options', 'Delete unused records?', 'Rebuild ID3?', 'Debug mode?', 'Update', 'Cancel', 'update search database', 'Found %1 files.', 'Could not determine this file: %1, skipped.', 'Installed: %1 - Update: %2, scan: ', 'Scan: ', 'Failed - query: %1', 'Could not read this file: %1. Skipped.', 'Removed: %1', 'Inserted %1, updated %2, deleted %3 where %4 failed and %5 skipped through %6 files - %7 sec - %8 marked for deletion.', 'Done', 'Close', 'Could not find any files here: "%1"', 'kPlaylist Logon', 'Album list for artist: %1', 'Hotselect %1', 'No tunes seleted. Playlist not updated.', 'Playlist updated!', 'Back', 'Playlist added!', 'Remember to reload page.', 'login:', 'secret:', 'Notice! This is a non public website. All actions are logged.', 'Login', 'SSL required for logon.', 'Play', 'Delete', 'Shared: ', 'Save', 'Control playlist: "%1" - %2 titles', 'Editor', 'Viewer', 'Select', 'Seq', 'Status', 'Info', 'Del', 'Name', 'Totals:', 'Error', 'Action on selected: ', 'Sequence:', 'edit playlist', 'Delete this entry', 'add playlist', 'Name:', 'Create', 'Play: ', 'File', 'Album', 'All', 'Selected', 'add', 'play', 'edit', 'new', 'Select:', 'Play Control: ', 'Playlist: ', 'Hotselect numeric', 'Keyteq gives you:', '(check for upgrade)', 'Homesite', 'only id3', 'album', 'title', 'artist', 'Hotselect album from artist', 'view', 'Shared playlists', 'Users', 'Admin control', 'What\'s new', 'What\'s hot', 'Logout', 'Options', 'Check', 'My', 'edit user', 'new user', 'Full name', 'Login', 'Change password?', 'Password', 'Comment', 'Access level', 'On', 'Off', 'Delete user', 'Logout user', 'Refresh', 'New user', 'del', 'logout', 'Use EXTM3U feature?', 'Show how many rows (hot/new)', 'Max search rows', 'Reset', 'Open directory', 'Go to directory: %1', 'Download', 'Go one step up', 'Go to root directory.', 'Check for upgrade', 'users', 'Language', 'options', 'Booted', 'Shuffle:', 'Settings', 'Base directory', 'Stream location', 'Default language', 'A Windows system', 'Require HTTPS', 'Allow seek', 'Allow download', 'Session timeout', 'Report failed login attempts', 'Hold on - fetching file list', 'Playlist could not be added!', 'Admin', 'Login with HTTPS to change!', 'Enable streaming engine', 'Title', 'Artist', 'Album', 'Comment', 'Year', 'Track', 'Genre', 'not set', 'Max download rate (kbps)', 'User', '%1 mins - %2 titles', '%1 kbit %2 mins', 'Genre list: %1', 'Go', '%1d %2h %3m playtime %4 files %5 mb', 'No relevant resources here.', 'Password changed!', 'Signup', 'Please make a selection!', 'What is update?', 'Click here for help', 'Use external images?', 'External images path', 'Current password', 'Current password does not match!', 'Preferred archiver', 'Archive could not be made', 'Probable file duplicate found:  "%1" "%2"', 'Really delete playlist?', 'Alphabetical', 'Random', 'Sort', 'Original', 'Use javascript', 'Are you sure you want to delete this user?', 'View history', 'history', 'Rows', 'External CSS file', 'Remove duplicates', 'OK', 'ERR', 'Stream', '(show as)', 'files', 'albums', '%1d %2h %3m %4s', 'General', 'Customize', 'Filehandling', 'Click on ? for help.', 'Automatic database sync', 'Send file extension', 'Allow unauthorized streams', 'Include headers', 'External javascript', 'Homepage', 'Show Keyteq gives you part', 'Show upgrade part', 'Show statistics', 'Write ID3v2 with stream', 'Enable user signup', 'Filetypes', 'Yes', 'No', 'Extension', 'MIME', 'Include in M3U', 'edit filetype', 'Sure?', 'Optimistic filecheck', 'Randomizer', 'Mode', 'Playlist', 'None, directly', 'My favourites', 'Did not find any hits', 'Alltime hits', 'Order', 'Enable LAME support?', 'Disabled', 'Allow LAME usage?', 'Email', 'Allow to mail files?', 'SMTP server', 'SMTP port', 'Mail to', 'Message', 'Send', 'Mail sent!', 'Activate upload', 'Upload directory', 'Activate mp3mail', 'Upload', 'File uploaded!', 'File could not be uploaded!', 'You must enable cookies to log in!', 'Period', 'ever', 'this week', 'this month', 'last month', 'hits', 'LAME command', 'Show album cover', 'Album files', 'Resize album images', 'Album height', 'Album width', 'Mail method', 'Direct', 'Pear', 'Wait!', 'Please enter a valid e-mail in options!', 'Playlists inline?', 'Show album from URL?', 'Album URL', 'Could not send!', 'User added!', 'Archive creator', 'Archive is deleted.', 'User updated!','Music match', '%1 entries filtered','Log access','Viewable', 'Archived','Bulletin','Entered %1 by %2','more', 'Publish','%1 mb', '%1 kb', '%1 bytes');
 
-$klang[1]  = array("Norwegian", "ISO-8859-1", "Norsk", "Hva er mest spilt", "Hva er nytt", "S&oslash;k", "(bare %1 vist)", "sek", "S&oslash;ke resultater: '%1'", "fant", "Ingen.", "oppdater s&oslash;ke database valg", "Slett ubrukte rader?", "Ombygg ID3?", 
-"Debug modus?", "Oppdater", "Avbryt", "oppdaterer s&oslash;ke database", "Fant %1 filer.", "Kunne ikke lese fil: %1, hoppet over.", "Installert: %1 - Oppdaterer: %2, skanner: ", "Skanner: ", "Feilet - query: %1", "Kunne ikke lese denne filen: %1. Hoppet over.", "Fjernet: %1", 
-"La inn %1, oppdaterte %2, slettet %3 hvor %4 feilet og %5 ble hoppet over igjennom %6 filer - %7 sek - %8 markert for sletting.", "Ferdig", "Lukk", "Kunne ikke finne noen filer her: &quot;%1&quot;", "kPlaylist Innlogging", "Album liste fra artist: %1", "Hurtigvelg %1", "Ingen l&aring;ter valgt. L&aring;tliste ikke oppdatert.", "L&aring;tliste oppdatert!", "Tilbake", "L&aring;tliste lagt til!", "Husk &aring; oppdatere side.", "logg inn:", "hemmelighet:", "Advarsel! Dette er en privat webside. Alle handlinger blir logget.", "Logg inn", "SSL kreves for p&aring;logging.", "Spill", "Slett", "Delte: ", "Lagre", "Kontroller l&aring;tliste: &quot;%1&quot; - %2 titler", 
-"Editor", "Viser", "Velg", "Sek", "Status", "Info", "Slett", "Navn", "Totalt:", "Feil", "Handling p&aring; valgte: ", 
-"Sekvens:", "editer l&aring;tliste", "Slett denne raden", "ny l&aring;tliste", "Navn:", "Lag", "Spill: ", "Fil", "Album", "Alle", "Valgte", 
-"legg til", "spill", "editer", "ny", "Velg:", "Spille kontroll: ", "L&aring;tliste: ", "Hurtigvelg numerisk", "Keyteq gir deg:", "(sjekk for ny versjon)", "Hjemmeside", 
-"bare id3", "album", "tittel", "artist", "Hurtigvelg album fra artist", "vis", "Delte l&aring;tlister", "Brukere", "Admin kontroll", "Hva er nytt", "Mest spilt",
-"Logg ut", "Valg", "Sjekk", "Min", "editer bruker", "ny bruker", "Fullt navn", "Brukernavn", "Endre passord?", "Passord", "Kommentar", 
-"Aksess niv&aring;", "P&aring;", "Av", "Slett bruker", "Logg ut bruker", "Oppdater", "Ny bruker", "slett", "logg ut", "Bruke EXTM3U egenskap?", "Vise hvor mange rader (mest spilt/nytt)", 
-"Maks s&oslash;ke rader", "Omsetting", "&Aring;pne katalog", "G&aring; til katalog: %1", "Last ned", "G&aring; ett steg opp", "G&aring; til kjerne katalog.", "Sjekk for ny versjon", "brukere", "Spr&aring;k", "valg", "Avsperret", "Omskuff:", "Innstillinger", "Arkiv katalog", "Nedlastningslokalisasjon", "Standard spr&aring;k", "Et Windows system", "Krev HTTPS", "Tillat spoling", "Tillat nedlastninger", "Innloggingstidsavbrudd", "Rapportere mislykkete p&aring;loggingsfors&oslash;k", "Vent - skaper filliste", "Spilleliste kunne ikke bli lagt til!", "Admin", "Logg inn med HTTPS for &aring; endre!", "Aktiver innebygd kanalvirkning", "Tittel", "Artist", "Album", "Kommentar", "&Aring;r", 
-"L&aring;tnummer", "Stil", "ikke satt", "Maksimal nedlastningshastighet", "Bruker", '%1 minutter - %2 titler','%1 kbit %2 minutter','Stil liste: %1', 
-'Gå', '%1d %2t %3m spilletid %4 filer %5 mb', 'Ingen relevante ressurser her.', 'Passord endret!', 'Ny bruker', 'Vennligst foreta et valg!', 'Hva er oppdatering?', 'Klikk her for hjelp',
-'Bruk eksterne bilder?', 'Eksterne bilder lokalisasjon', 'Eksisterende passord', 'Det eksisterende passordet stemmer ikke!', 'Ønsket arkiverer',' Arkiv kunne ikke bli laget',
-'Sannsynlig duplikat ble funnet: %1 - %2', 'Virkelig slette spilleliste?', 'Alfabetisk', 'Tilfeldig', 'Sorter','Original','Bruke javascript','Sikker på at du vil slette denne brukeren?', 'Vis historie', 'historie', 'Rader', 'Ekstern CSS fil', 'Fjern duplikater', 'OK', 'FEIL', 'Stream', '(vis som)','filer','album', '%1d %2t %3m %4s', 'Generelt', 'Skreddersy', 'Filhåndtering', 'Klikk på ? for hjelp.', 'Automatisk database synkronisering', 'Send filendelse', 'Tillat uautorisert streams', 'Inkluder headers', 'Ekstern javascript', 'Hjemmeside', 'Vis Keyteq gir deg del', 'Vis oppgraderingsdel', 'Vis statistikk', 'Skriv ID3v2 i stream', 'Ny bruker funksjonalitet', 'Filtyper', 'Ja', 'Nei', 'Filendelse', 'MIME', 'Inkluder i M3U', 'editer filtype' ,'Sikker?', 'Optimistisk filsjekk', 'Randomiserer', 'Modus', 'Spilleliste', 'Ingen, direkte', 'Mine favoritter', 'Fant ingen rader', 'Hits på systemet', 'Rekkefølge','Slå på LAME støtte','Avslått','Tillatt LAME bruk?', 'E-post','Tillatt å e-post filer',' SMTP tjener', 'SMTP port','E-post til','Beskjed','Send','E-post sendt!','Aktiver opplastning','Opplastningskatalog'); 
+$klang[1]  = array('Norwegian', 'ISO-8859-1', 'Norsk', 'Hva er mest spilt', 'Hva er nytt', 'Søk', '(bare %1 vist)', 'sek', 'Søke resultater: \'%1\'', 'fant', 'Ingen.', 'oppdater søke database valg', 'Slett ubrukte rader?', 'Ombygg ID3?', 'Debug modus?', 'Oppdater', 'Avbryt', 'oppdaterer søke database', 'Fant %1 filer.', 'Kunne ikke lese fil: %1, hoppet over.', 'Installert: %1 - Oppdaterer: %2, skanner: ', 'Skanner: ', 'Feilet - query: %1', 'Kunne ikke lese denne filen: %1. Hoppet over.', 'Fjernet: %1', 'La inn %1, oppdaterte %2, slettet %3 hvor %4 feilet og %5 ble hoppet over igjennom %6 filer - %7 sek - %8 markert for sletting.', 'Ferdig', 'Lukk', 'Kunne ikke finne noen filer her: "%1"', 'kPlaylist Innlogging', 'Album liste fra artist: %1', 'Hurtigvelg %1', 'Ingen låter valgt. Låtliste ikke oppdatert.', 'Låtliste oppdatert!', 'Tilbake', 'Låtliste lagt til!', 'Husk å oppdatere side.', 'logg inn:', 'hemmelighet:', 'Advarsel! Dette er en privat webside. Alle handlinger blir logget.', 'Logg inn', 'SSL kreves for pålogging.', 'Spill', 'Slett', 'Delte: ', 'Lagre', 'Kontroller låtliste: "%1" - %2 titler', 'Editor', 'Viser', 'Velg', 'Sek', 'Status', 'Info', 'Slett', 'Navn', 'Totalt:', 'Feil', 'Handling på valgte: ', 'Sekvens:', 'editer låtliste', 'Slett denne raden', 'ny låtliste', 'Navn:', 'Lag', 'Spill: ', 'Fil', 'Album', 'Alle', 'Valgte', 'legg til', 'spill', 'editer', 'ny', 'Velg:', 'Spille kontroll: ', 'Låtliste: ', 'Hurtigvelg numerisk', 'Keyteq gir deg:', '(sjekk for ny versjon)', 'Hjemmeside', 'bare id3', 'album', 'tittel', 'artist', 'Hurtigvelg album fra artist', 'vis', 'Delte låtlister', 'Brukere', 'Admin kontroll', 'Hva er nytt', 'Mest spilt', 'Logg ut', 'Valg', 'Sjekk', 'Min', 'editer bruker', 'ny bruker', 'Fullt navn', 'Brukernavn', 'Endre passord?', 'Passord', 'Kommentar', 'Aksess nivå', 'På', 'Av', 'Slett bruker', 'Logg ut bruker', 'Oppdater', 'Ny bruker', 'slett', 'logg ut', 'Bruke EXTM3U egenskap?', 'Vise hvor mange rader (mest spilt/nytt)', 'Maks søke rader', 'Omsetting', 'Åpne katalog', 'Gå til katalog: %1', 'Last ned', 'Gå ett steg opp', 'Gå til kjerne katalog.', 'Sjekk for ny versjon', 'brukere', 'Språk', 'valg', 'Avsperret', 'Omskuff:', 'Innstillinger', 'Arkiv katalog', 'Nedlastningslokalisasjon', 'Standard språk', 'Et Windows system', 'Krev HTTPS', 'Tillat spoling', 'Tillat nedlastninger', 'Innloggingstidsavbrudd', 'Rapportere mislykkete påloggingsforsøk', 'Vent - skaper filliste', 'Spilleliste kunne ikke bli lagt til!', 'Admin', 'Logg inn med HTTPS for å endre!', 'Aktiver innebygd kanalvirkning', 'Tittel', 'Artist', 'Album', 'Kommentar', 'År', 'Låtnummer', 'Stil', 'ikke satt', 'Maksimal nedlastningshastighet', 'Bruker', '%1 minutter - %2 titler', '%1 kbit %2 minutter', 'Stil liste: %1', 'Gå', '%1d %2t %3m spilletid %4 filer %5 mb', 'Ingen relevante ressurser her.', 'Passord endret!', 'Ny bruker', 'Vennligst foreta et valg!', 'Hva er oppdatering?', 'Klikk her for hjelp', 'Bruk eksterne bilder?', 'Eksterne bilder lokalisasjon', 'Eksisterende passord', 'Det eksisterende passordet stemmer ikke!', 'Ønsket arkiverer', ' Arkiv kunne ikke bli laget', 'Sannsynlig duplikat ble funnet: %1 - %2', 'Virkelig slette spilleliste?', 'Alfabetisk', 'Tilfeldig', 'Sorter', 'Original', 'Bruke javascript', 'Sikker på at du vil slette denne brukeren?', 'Vis historie', 'historie', 'Rader', 'Ekstern CSS fil', 'Fjern duplikater', 'OK', 'FEIL', 'Stream', '(vis som)', 'filer', 'album', '%1d %2t %3m %4s', 'Generelt', 'Skreddersy', 'Filhåndtering', 'Klikk på ? for hjelp.', 'Automatisk database synkronisering', 'Send filendelse', 'Tillat uautorisert streams', 'Inkluder headers', 'Ekstern javascript', 'Hjemmeside', 'Vis Keyteq gir deg del', 'Vis oppgraderingsdel', 'Vis statistikk', 'Skriv ID3v2 i stream', 'Ny bruker funksjonalitet', 'Filtyper', 'Ja', 'Nei', 'Filendelse', 'MIME', 'Inkluder i M3U', 'editer filtype', 'Sikker?', 'Optimistisk filsjekk', 'Randomiserer', 'Modus', 'Spilleliste', 'Ingen, direkte', 'Mine favoritter', 'Fant ingen rader', 'Hits på systemet', 'Rekkefølge', 'Slå på LAME støtte', 'Avslått', 'Tillatt LAME bruk?', 'E-post', 'Tillatt å e-post filer', ' SMTP tjener', 'SMTP port', 'E-post til', 'Beskjed', 'Send', 'E-post sendt!', 'Aktiver opplastning', 'Opplastningskatalog', 'Aktiver mp3e-post', 'Opplast', 'Fil opplastet!', 'Fil kunne ikke bli opplastet!', 'Du er nødt til å skru på cookies for å logge inn!', 'Periode', 'siden alltid', 'denne uken', 'denne måneden', 'siste måned', 'hits', 'LAME kommando', 'Vis albumcover', 'Albumfiler', 'Omskaler albumbilder', 'Album høyde', 'Album bredde', 'E-postmetode', 'Direkte', 'Pear', 'Vent', 'Vennligst skriv inn en gyldig e-post i alternativer!', 'Spillelister direkte?', 'Vis album fra URL?', 'Album URL', 'Kunne ikke sende!', 'Bruker lagt til!', 'Lager arkiv', 'Arkiv er slettet.', 'Bruker oppdatert!', 'Musikk tilpasning', '%1 rader filtrert', 'Logg aksess', 'Vis', 'Arkivert', 'Meldingsbord', 'Skrevet %1 av %2', 'mer', 'Publiser', '%1 mb', '%1 kb', '%1 bytes');
 
-$klang[2]  = array("German", "ISO-8859-15", "Deutsch", "Was ist begehrt", "Was ist neu", "Suchen", "(nur %1 angezeigt)", "sek", "Such Ergebnisse: '%1'", "gefunden", "keine.", "aktuelle Datenbank-Such-Optionen", "unbenutze Datensätze löschen ?", "ID3 erneuern?", "Debug Modus?", "Update", "Abbrechen", "Such Datenbank erneuern", "%1 Dateien gefunden", "Konnte Datei nicht ermitteln: %1, übersprungen.", "Installiert: %1 - Bearbeitet: %2, untersuche:", "Scan: ", "Fehler - Abfrage: %1", "Konnte File nicht lesen: %1. Übersprungen.", "Entfernt: %1", "eingefügt %1, geändert %2, gelöscht %3 dabei %4 fehlgeschlagen und %5 übersprungen; %6 Dateien gesamt - %7 sek - %8 markiert zum löschen", "Erledigt", "Schliessen", "Konnte hier keine Dateien finden: \"%1\"", "kPlaylist Login", "Album Liste für Interpret: %1", "Kurzwahl %1", "Keine Lieder ausgewählt. Playliste nicht aktualisiert.", "Playliste aktualisiert", "Zurück", "Playliste hinzugefügt!", "Die Seite erneut laden !", "Login:", "Passwort:", "Achtung ! Dies ist eine Private Webseite ! Alle Aktionen werden protokolliert !", "Login", "SSL wird zum einloggen benötigt", "Abspielen", "Löschen", "Gemeinsame: ", "Sichern", "Playliste bearbeiten: \"%1\" - %2 Titel", "Editor", "Viewer", "Auswählen", "Seq", "Status", "Info", "Löschen", "Name", "Summe", "Fehler", "Aktion auf ausgewählte ", "Reihenfolge:", "bearbeite Playlist", "Diesen Eintrag löschen", "Playliste hinzufügen", "Name:", "Erstellen", "Spielen: ", "Datei", "Album", "Alle", "Ausgewählte", "Hinzufügen", "Spielen", "ändern", "neu", "Auswählen:", "Spielen: ", "Playlist: ", "Kurzwahl Numerisch", "Keyteq präsentiert:", "(Suche nach Update)", "Webseite", "Nur id3 Tags", "Album", "Titel", "Interpret", "Kurzwahl Album nach Interpret", "zeige", "Gemeinsame Playliste", "Benutzer", "Admin Kontrolle", "Was ist neu", "Was ist Hip", "Logout", "Optionen", "Überprüfen", "Meine", "Benutzer ändern", "Neuer Benutzer", "Vollständiger Name", "Login", "Passwort ändern ?", "Passwort", "Anmerkung", "Zugangs Level", "An", "Aus", "Benutzer löschen", "Benutzer ausloggen", "Erneuern", "Neuer Benutzer", "Löschen", "Logout", "EXTM3U Feature benutzen?", "Wieviele Zeilen zeigen (hip/neu)", "max. Zeilen bei Suchergebnissen", "Reset", "Verzeichnis öffnen", "Gehe zum Verzeichnis: %1", "Download", "Eine Ebene höher", "In das Basisverzeichnis", "Nach einem Upgrade suchen", "Benutzer", "Sprache", "Optionen", "Gestoppt", "Zufall:", "Einstellungen", "Hauptverzeichnis", "Stream location", "Voreingestellte Sprache", "Ein Windows-System", "benötigt HTTPS", "Suche erlaubt", "Download erlaubt", "Session abgelaufen", "Berichte fehlgeschlagene Login-Versuche", "Bitte warten - hole Dateiliste", "Playliste konnte nicht erstellt werden!", "Administrator", "LOGON mit HTTPS zum zu ändern", "Streaming Engine aktivieren", "Titel", "Artist", "Album", "Kommentar", "Jahr", "Track", "Genre", "nicht gesetzt", "Max download rate (kbps)", "Benutzer", "%1 min - %2 Titel", "%1 kbit %2 min", "Genre liste: %1", "Los", "%1d %2h %3m Spielzeit %4 Dateien %5 MB", "Keine relevanten Resourcen hier:", "Passwort geändert!", "Anmelden", "Bitte mache eine Auswahl!", "Was ist das update?", "Klicke hier für Hilfe", "Benutze externe Bilder?", "Externe Bilder Pfad", "Aktuelles Passwort", "Aktuelles Passwort nicht korrekt!", "Bevorzugter Archivierer", "Archiv konnte nicht erstellt werden", "Mögliche doppelte Datei gefunden: %1 - %2", "Playliste wirklich löschen?", "Alphabetisch", "Zufall", "Sortiert", "Original", "Benutze Javascript", "Den Benutzer wirklich löschen?", "Zeige History", "History", "Zeilen", "Externes CSS File", "Auslösche Doppel", "O.K", "ERR", "Strom", "(erscheinen wie)", "akten", "album", "%1d %2h %3m %4s ", "Allgemein", "Anpassen", "Akte Behandlung", "Klick das ? für Hilfe", "Automatische Datenbanksynchronisierung", "Senden Sie Dateiextension", "Erlauben Sie nicht autorisierte Ströme", "Überschriften mit", "Extern javascript", "Webseite");
+$klang[2]  = array('German', 'ISO-8859-15', 'Deutsch', 'Was ist hip', 'Was ist neu', 'Suchen', '(nur %1 angezeigt)', 'Sek', 'Such Ergebnisse: \'%1\'', 'gefunden', 'Keine.', 'Such-Datenbank Optionen aktualisieren', 'Unbenutze Datensätze löschen?', 'ID3 erneuern?', 'Debug Modus?', 'Update', 'Abbrechen', 'Such-Datenbank aktualisieren', '%1 Dateien gefunden', 'Konnte Datei nicht ermitteln: %1, übersprungen.', 'Installiert: %1 - Aktualisiert: %2, untersuche:', 'Scan: ', 'Fehler - Abfrage: %1', 'Konnte Datei nicht lesen: %1, übersprungen.', 'Entfernt: %1', 'Eingefügt %1, aktualisiert %2, gelöscht %3 dabei %4 fehlgeschlagen und %5 übersprungen; %6 Dateien gesamt - %7 Sek - %8 markiert zum löschen.', 'Erledigt', 'Schliessen', 'Konnte hier keine Dateien finden: "%1"', 'kPlaylist Login', 'Album Liste für Interpret: %1', 'Kurzwahl %1', 'Keine Lieder ausgewählt. Playliste nicht aktualisiert.', 'Playliste aktualisiert', 'Zurück', 'Playliste hinzugefügt!', 'Die Seite erneut laden!', 'Login:', 'Passwort:', 'Achtung! Dies ist eine private Webseite! Alle Aktionen werden protokolliert!', 'Login', 'SSL wird zum einloggen benötigt.', 'Abspielen', 'Löschen', 'Öffentlich: ', 'Sichern', 'Playliste bearbeiten: "%1" - %2 Titel', 'Editor', 'Betrachter', 'Auswählen', 'Seq', 'Status', 'Info', 'Löschen', 'Name', 'Summe:', 'Fehler', 'Aktion auf Auswahl:', 'Reihenfolge:', 'bearbeite Playliste', 'Diesen Eintrag löschen', 'Playliste hinzufügen', 'Name:', 'Erstellen', 'Abspielen: ', 'Datei', 'Album', 'Alle', 'Auswahl', 'Hinzufügen', 'Abspielen', 'Bearbeiten', 'Neu', 'Auswählen:', 'Spielen: ', 'Playliste: ', 'Kurzwahl numerisch', 'Keyteq präsentiert:', '(Suche nach Update)', 'Webseite', 'Nur ID3 Tags', 'Album', 'Titel', 'Interpret', 'Kurzwahl Album nach Interpret', 'Zeige', 'Gemeinsame Playlisten', 'Benutzer', 'Administration', 'Was ist neu', 'Was ist hip', 'Logout', 'Optionen', 'Überprüfen', 'Mein KPlaylist', 'Benutzer ändern', 'Neuer Benutzer', 'Vollständiger Name', 'Login', 'Passwort ändern?', 'Passwort', 'Anmerkung', 'Zugangslevel', 'An', 'Aus', 'Benutzer löschen', 'Benutzer ausloggen', 'Erneuern', 'Neuer Benutzer', 'Löschen', 'Logout', 'EXTM3U Feature benutzen?', 'Wieviele Zeilen zeigen (hip/neu)', 'Max. Zeilen bei Suchergebnissen', 'Reset', 'Verzeichnis öffnen', 'Gehe zum Verzeichnis: %1', 'Download', 'Eine Ebene höher', 'In das Basisverzeichnis', 'Nach einem Upgrade suchen', 'Benutzer', 'Sprache', 'Optionen', 'Gebootet', 'Zufall:', 'Einstellungen', 'Hauptverzeichnis', 'Stream Location', 'Voreingestellte Sprache', 'Ein Windows-System', 'Benötigt HTTPS', 'Suche erlaubt', 'Download erlaubt', 'Session Timeout', 'Berichte fehlgeschlagene Login-Versuche', 'Bitte warten - hole Dateiliste', 'Playliste konnte nicht erstellt werden!', 'Administrator', 'Einloggen mit HTTPS für Änderungen', 'Streaming Engine aktivieren', 'Titel', 'Artist', 'Album', 'Kommentar', 'Jahr', 'Lied', 'Genre', 'nicht gesetzt', 'Max. Download Rate (kb/s)', 'Benutzer', '%1 Min - %2 Titel', '%1 kbit %2 Min', 'Genre Liste: %1', 'Los', '%1T %2Std %3Min Spielzeit %4 Dateien %5 MB', 'Hier gibt es keine passenden Einträge.', 'Passwort geändert!', 'Anmelden', 'Bitte treffe eine Auswahl!', 'Was ist ein Update?', 'Klicke hier für Hilfe', 'Benutze externe Bilder?', 'Pfad zu externen Bildern', 'Aktuelles Passwort', 'Aktuelles Passwort nicht korrekt!', 'Bevorzugter Archivierer', 'Archiv konnte nicht erstellt werden', 'Mögliche doppelte Datei gefunden: "%1" - "%2"', 'Playliste wirklich löschen?', 'Alphabetisch', 'Zufall', 'Sortiert', 'Original', 'Benutze Javascript', 'Benutzer wirklich löschen?', 'Zeige History', 'History', 'Zeilen', 'Externe CSS Datei', 'Lösche doppelte Einträge', 'OK', 'FEHLER', 'Stream', '(erscheinen wie)', 'Dateien', 'Album', '%1T %2Std %3Min %4Sek ', 'Allgemein', 'Anpassen', 'Datei Kontrolle', 'Klick das "?" für Hilfe', 'Automatische Datenbanksynchronisierung', 'Dateiendungen senden', 'Nichtautorisierte Streams erlauben', 'Header einbeziehen', 'Externes Javascript', 'Homepage', 'Zeige "Keyteq hat" Teil', 'Zeige Upgrade-Teil', 'Zeige Statistik', 'Schreibe ID3v2 Tags beim Streaming', 'Aktiviere Benutzer Anmeldung', 'Datei Typen', 'Ja', 'Nein', 'Dateiendung', 'MIME', 'M3U einbeziehen', 'Datei Typ bearbeiten', 'Sicher?', 'Optimistischer Dateiprüfung', 'Zufallsgenerator', 'Modus', 'Playliste', 'Nein, direkt', 'Meine Favoriten', 'Keine Treffer gefunden', 'Absolute Hits', 'Reihenfolge', 'Aktiviere LAME Unterstützung', 'Deaktiviert', 'LAME Verwendung erlauben?', 'Email', 'Datein per Email versenden erlauben?', 'SMTP Server', 'SMTP Port', 'Email an', 'Nachricht', 'Senden', 'Email gesendet!', 'Aktiviere Upload', 'Upload Verzeichnis', 'Aktiviere mp3mail', 'Upload', 'Datei hochgeladen!', 'Datei konnte nicht hochgeladen werden!', 'Um einzuloggen müssen Cookies erlaubt sein!', 'Periode', 'Immer', 'Diese Woche', 'Diesen Monat', 'Letzten Monat', 'Hits', 'LAME Befehl', 'Zeige Album Cover', 'Album Dateien', 'Grösse der Album Bilder anpassen', 'Album Höhe', 'Album Breite', 'Email Methode', 'Direkt', 'Pear', 'Warten', 'Bitte eine gültige Emailadresse angeben!', 'Playlisten inline?', 'Zeige Album von URL?', 'Album URL', 'Konnte nicht senden!', 'Benutzer hinzugefügt!', 'Archiv Ersteller', 'Archiv wurde gelöscht');
 
-$klang[3]  = array("Swedish", "iso-8859-10", "Svenska", "Vad är mest spelat", "Vad är nytt", "Sök", "(endast %1 visad)", "Sek", "Sökresultat: '%1'", "hittade", "Ingen.", "uppdatera sök databas inställningar", "Ta bort oanvända album", "Återuppbygg ID3?", 
-"Kör debug?", "Uppdatera", "Avbryt", "uppdatera sökdatabas", "Hittade %1 filer.", "Kunde inte läsa fil: %1, hoppade över.", "Installerer %1 - Uppdaterar: %2, läser:", "Läser:", "Misslyckades - fråga: %1", "Kunde inte läsa filen: %1, hoppade över", "Tog bort: %1", 
-"Infogade %1, uppdaterade %2, tog bort %3, varav %4 misslyckades och hoppade över %5 av %6 filer - %7 sek - %8 markerade för borttaganing", "Färdig", "Stäng", "Kunde inte hitta några filer här: '%1'", "kPlaylist Inloggning", "Albumlista för artist: %1", "Snabbval %1", "Inga låtar valda. Låtlistan är ej updaterad.", "Låtlista uppdaterad!", "Tillbaka", "Spellista inlagd!", 
-"Kom ihåg att uppdatera sidan.", "Användarnamn:", "Lösenord:", "Observera! Detta är inte en publik websida. All aktivitet är loggad.", "Inloggning", 
-"SSL behövs för inloggning", "Spela", "Ta Bort", "Delad:", "Spara", "Kontrollera låtlista: \"%1\" - %2 titlar", 
-"Redigerare ", "Visare ", "Välj ", "Sek ", "Status ", "Info ", "Ta Bort", "Namn ", "Totalt:", "Fel", "Handling vid val", 
-"Sekvens:", "redigera spellista", "Ta bort den här raden", "Lägg till spellista", "Namn:", "Skapa", "Spela:", "Fil", "Album", "Alla", "Markerad", 
-"lägg till", "spela", "redigera", "ny", "Välj:", "Spelkontroll:", "Spellista:", "Snabbvälj numeriskt", "Keyteq ger dig:", "(Uppgraderings kontroll)", "Hemsida", 
-"endast id3", "album", "titel", "artist", "Snabbvälj album från artist", "visa", "Delade spellistor", "Användare", "Adminkontroll", "Vad är nytt", "Mest spelat", 
-"Logga ut", "Inställningar", "Kontrollera ", "Min ", "redigera användare", "ny användare", "Fullständigt namn", "Användarnamn ", "Ändra lösenord?", "Lösenord", "Kommentar ", 
-"Behörighet ", "På ", "Av ", "Ta bort användare", "Logga ut användare", "Uppdatera ", "Ny användare", "ta bort", "logga ut", "Använd EXTM3U funktion?", "Visa hur många rader (mest spelat/nytt)", 
-"Högst antal sökrader", "Nollställ", "Öppna katalog", "Gå till katalog: %1", "Ladda ner", "Gå ett steg upp", "Gå till rotkatalogen", "Kolla efter uppgradering", "användare ", "Språk ", "inställningar ", 
-"Kickad", "Blanda", "Inställningar", "Rotnivå ", "Stream lokalisering", "Standard språk", "Ett Windowssystem", "Kräv HTTPS", "Tillåt filsök", "Tillåt nerladdning", "Sessionen avbruten.", 
-"Rapportera misslyckat loginförsök", "Vänta - hämtar fillista", "Spellista kunde inte läggas till!", "Admin", "Lagga in med HTTPS för att ändra!", "Aktivera streaming", "Titel", "Artist", "Album", "Kommentar", "År",
-"Spår", "Genre", "Inte satt", "Max nerladdningshastighet (kbps)", "Användare", "%1 min - %2 titlar", "%1 kbit %2 min", "Genre lista: %1", "Gå", "%1d %2t %3m speltid %4 filer %5 MB", "Inga relevanta resurser här.", 
-"Lösenordet ändrat!", "Skapa konto", "Var vänlig och gör ett val!", "Vad är uppdatering?", "Klicka här för hjälp.", "Använda externa bilder?", "Externa bildens sökväg.", "Nuvarande lösenord", "Nuvarande lösenord matchar inte!", "Önskad arkiverare", "Arkiv kunde inte skapas", 
-"Trolig fildubblett hittad", "Verkligen radera spellistan?", "Alfabetisk", "Mixat", "Sortera", "Original", "Använd javascript", "Är du säker att du vill radera denna användare?", "Visa historia", "historia", "Rader", 
-"Extern CSS fil", "Ta bort dubletter", "OK", "FEL", "Stream", "(visa som)", "filer", "album", "%1d %2t %3m %4s", "Generellt", "Anpassa", 
-"Filhanterning", "Klicka på ? för hjälp", "Automatisk databas synkronisering", "Skicka fil ändelse", "Tillåt", "Inkludera headers", "Externt javascript", "Hemsida", "Visa Keyteq ger dig del", "Visa uppgraderingsdel", "Visa statistik", 
-"Skriv ID3v2 med stream", "Aktivera användar registrering", "Filtyper", "Ja", "Nej", "Fil ändelse", "MIME", "Inkludera i M3U", "editera filtyp", "Säkert?", 
-"Optimistisk filkontroll");
+$klang[3]  = array('Swedish', 'ISO-8859-10', 'Svenska', 'Vad är mest spelat', 'Vad är nytt', 'Sök', '(endast %1 visad)', 'Sek', 'Sökresultat: \'%1\'', 'hittade', 'Ingen.', 'uppdatera sök databas inställningar', 'Ta bort oanvända album', 'Återuppbygg ID3?', 'Kör debug?', 'Uppdatera', 'Avbryt', 'uppdatera sökdatabas', 'Hittade %1 filer.', 'Kunde inte läsa fil: %1, hoppade över.', 'Installerer %1 - Uppdaterar: %2, läser:', 'Läser:', 'Misslyckades - fråga: %1', 'Kunde inte läsa filen: %1, hoppade över', 'Tog bort: %1', 'Infogade %1, uppdaterade %2, tog bort %3, varav %4 misslyckades och hoppade över %5 av %6 filer - %7 sek - %8 markerade för borttaganing', 'Färdig', 'Stäng', 'Kunde inte hitta några filer här: \'%1\'', 'kPlaylist Inloggning', 'Albumlista för artist: %1', 'Snabbval %1', 'Inga låtar valda. Låtlistan är ej updaterad.', 'Låtlista uppdaterad!', 'Tillbaka', 'Spellista inlagd!', 'Kom ihåg att uppdatera sidan.', 'Användarnamn:', 'Lösenord:', 'Observera! Detta är inte en publik websida. All aktivitet är loggad.', 'Inloggning', 'SSL behövs för inloggning', 'Spela', 'Ta Bort', 'Delad:', 'Spara', 'Kontrollera låtlista: "%1" - %2 titlar', 'Redigerare ', 'Visare ', 'Välj ', 'Sek ', 'Status ', 'Info ', 'Ta Bort', 'Namn ', 'Totalt:', 'Fel', 'Handling vid val', 'Sekvens:', 'redigera spellista', 'Ta bort den här raden', 'Lägg till spellista', 'Namn:', 'Skapa', 'Spela:', 'Fil', 'Album', 'Alla', 'Markerad', 'lägg till', 'spela', 'redigera', 'ny', 'Välj:', 'Spelkontroll:', 'Spellista:', 'Snabbvälj numeriskt', 'Keyteq ger dig:', '(Uppgraderings kontroll)', 'Hemsida', 'endast id3', 'album', 'titel', 'artist', 'Snabbvälj album från artist', 'visa', 'Delade spellistor', 'Användare', 'Adminkontroll', 'Vad är nytt', 'Mest spelat', 'Logga ut', 'Inställningar', 'Kontrollera ', 'Min ', 'redigera användare', 'ny användare', 'Fullständigt namn', 'Användarnamn ', 'Ändra lösenord?', 'Lösenord', 'Kommentar ', 'Behörighet ', 'På ', 'Av ', 'Ta bort användare', 'Logga ut användare', 'Uppdatera ', 'Ny användare', 'ta bort', 'logga ut', 'Använd EXTM3U funktion?', 'Visa hur många rader (mest spelat/nytt)', 'Högst antal sökrader', 'Nollställ', 'Öppna katalog', 'Gå till katalog: %1', 'Ladda ner', 'Gå ett steg upp', 'Gå till rotkatalogen', 'Kolla efter uppgradering', 'användare ', 'Språk ', 'inställningar ', 'Kickad', 'Blanda', 'Inställningar', 'Rotnivå ', 'Stream lokalisering', 'Standard språk', 'Ett Windowssystem', 'Kräv HTTPS', 'Tillåt filsök', 'Tillåt nerladdning', 'Sessionen avbruten.', 'Rapportera misslyckat loginförsök', 'Vänta - hämtar fillista', 'Spellista kunde inte läggas till!', 'Admin', 'Lagga in med HTTPS för att ändra!', 'Aktivera streaming', 'Titel', 'Artist', 'Album', 'Kommentar', 'År', 'Spår', 'Genre', 'Inte satt', 'Max nerladdningshastighet (kbps)', 'Användare', '%1 min - %2 titlar', '%1 kbit %2 min', 'Genre lista: %1', 'Gå', '%1d %2t %3m speltid %4 filer %5 MB', 'Inga relevanta resurser här.', 'Lösenordet ändrat!', 'Skapa konto', 'Var vänlig och gör ett val!', 'Vad är uppdatering?', 'Klicka här för hjälp.', 'Använda externa bilder?', 'Externa bildens sökväg.', 'Nuvarande lösenord', 'Nuvarande lösenord matchar inte!', 'Önskad arkiverare', 'Arkiv kunde inte skapas', 'Trolig fildubblett hittad: "%1"  "%2"', 'Verkligen radera spellistan?', 'Alfabetisk', 'Mixat', 'Sortera', 'Original', 'Använd javascript', 'Är du säker att du vill radera denna användare?', 'Visa historia', 'historia', 'Rader', 'Extern CSS fil', 'Ta bort dubletter', 'OK', 'FEL', 'Stream', '(visa som)', 'filer', 'album', '%1d %2t %3m %4s', 'Generellt', 'Anpassa', 'Filhanterning', 'Klicka på ? för hjälp', 'Automatisk databas synkronisering', 'Skicka fil ändelse', 'Tillåt', 'Inkludera headers', 'Externt javascript', 'Hemsida', 'Visa Keyteq ger dig del', 'Visa uppgraderingsdel', 'Visa statistik', 'Skriv ID3v2 med stream', 'Aktivera användar registrering', 'Filtyper', 'Ja', 'Nej', 'Fil ändelse', 'MIME', 'Inkludera i M3U', 'editera filtyp', 'Säkert?', 'Optimistisk filkontroll', 'Randomisera', 'Läge', 'Spellista', 'Ingen, direkt', 'Mina favoriter', 'Kunde inte hitta några träffar', 'Alla tiders hitlåtar', 'Ordning', 'Aktivera LAME-stöd?', 'Avstängd', 'Tillåt LAME-användning?', 'Epost', 'Tillåt epost av filer?', 'SMTP-server', 'SMTP-port', 'Till', 'Meddelande', 'Sänd', 'Meddelande sänt!', 'Aktivera uppladdning', 'Uppladdningsbibliotek', 'Aktivera mp3mail', 'Uppladdning ', 'Fil uppladdad', 'Filen kunde ej laddas upp', 'Du måste aktivera cookies för att kunna logga in!', 'Period', 'Någonsin', 'Denna vecka ', 'Denna månad', 'Senaste månaden', 'träffar', 'LAME kommando', 'Visa omslag', 'Albumfiler', 'Anpassa bildens storlek', 'Höjd', 'Bredd', 'Brevmetod', 'Direkt', 'Pear', 'Vänta', 'Skriv in en giltig epostadress i inställningar!', 'Playlist inline', 'Visa album från URL?', 'Album URL');
 
-$klang[4]  = array("Dutch", "ISO-8859-15", "Nederlands", "Meest gespeeld", "Wat is nieuw", "Zoeken", "slechts %1 zichtbaar", "sec", "Zoek resultaten: '%1'", "gevonden", "Geen.", "???", "Verwijderen ongebruikte bestanden? ", "ID3 vernieuwen?", "Fout opsporings mode?", "Vernieuwen", "Annuleren", "Vernieuwen database", "%1 bestanden gevonden.", "Bestand kan niet benaderd worden: %1, overgeslagen.", "Geïnstalleerd: %1 Aangepast: %2 Scan:", "Scannen:", "Fout - selectie: %1", "Kan het bestand niet lezen: %1. Overgeslagen.", "Verwijderd: %1", "Toegevoegd %1, bijgewerkt %2, verwijderd %3 waar %4 is mislukt en %5 overgelagen op %6 bestanden - %7 sec - %8 gemarkeerd voor verwijdering.", "Klaar", "Sluiten", "Kan geen bestanden vinden in: \"%1\"", "kPlaylist inloggen", "Albumlijst van artiest: %1", "Snelkeuze %1", "Geen muziek geselecteerd. Afspeellijst niet bijgewerkt.", "Afspeellijst bijgewerkt!", "Terug", "Afspeellijst toegevoegd!", "Niet vergeten om de pagina te verversen.", "Gebruikersnaam:", "Wachtwoord:", "NB! Dit is een niet publieke website. Alle acties worden opgeslagen in een log bestand.", "Ga verder...", "SSL benodigd om in te loggen.", "Afspelen", "Verwijderen", "Lijst delen?:", "Bewaren", "Instellingen afspeellijst \"%1\"- %2 nummer(s)", "Editor", "Viewer", "Selecteren", "Volgorde", "Status", "Informatie", "Verwijderen", "Naam", "Totalen:", "Fout", "Actie op selectie:", "Volgorde:", "afspeellijst bewerken", "Verwijder dit bestand", "afspeellijst toevoegen", "Naam:", "Creëren", "Afspelen:", "Bestand", "Album", "Alles", "Selectie", "selectie toevoegen", "afspelen", "bewerken", "nieuw", "Selectie:", "Afspeel opties", "Afspeellijst:", "Snelkeuze nummer", "Keyteq presenteerd:", "(Zoek update)", "Homepage", "alleen id3", "album", "titel", "artiest", "Snelkeuze albums van artiest", "bekijk", "Gedeelde afspeellijsten", "Gebruikers", "Administratie opties", "Wat is nieuw", "Wat is Populair", "Uitloggen", "Opties", "Controleer", "Gebruiker", "bewerk gebruikersaccount", "nieuw gebruikersaccount", "Volledige naam", "Inlog naam:", "Wachtwoord veranderen?", "Wachtwoord", "Commentaar", "Toegangs level", "Actief", "Uit", "Verwijder gebruiker", "Gebruiker afsluiten", "Ververs pagina", "Nieuwe gebruiker", "Wissen", "uitloggen", "Gebruik EXTM3U optie?", "Aantal rijen (Populair / Nieuw)", "Aantal rijen zoekresultaat", "Reset", "Open map", "Ga naar map: %1", "Download", "Een stap terug", "Bovenste map", "Update controle", "gebruikers", "Taal", "opties", "Booted", "Willekeurig", "Instellingen", "Start folder", "Stream lokatie", "Standaard taal", "Een Windows systeem", "HTTPS benodigd", "Seek toestaan", "Downloaden toestaan", "Sessie timeout", "Raporteer niet geslaagde inlog procedures", "Een ogenblik - lijst ophalen", "Afspeellijst kan niet toegevoegd worden!", "Beheer", "Verbinding via https gebruiken ", "Gebruik stream engine", "Titel", "Artiest", "Album", "Bijzonderheden", "Jaar", "Nummer", "Genre", "niet ingesteld", "Maximale downloadsnelheid (kbps)", "Gebruiker", "%1 minuten- %2 titels", "%1 kbit %2 minuten", "Genre lijst: %1", "Ok", "%1d %2h %3m afspeelduur %4 bestanden %5 mb", "Geen relevante bron aanwezig", "Wachtwoord veranderd!", "Aanmelden", "Maak een keuze a.u.b.!", "Wat is vernieuwen database?", "Klik hier voor help", "Gebruik externe plaatjes", "Path naar externe plaatjes", "Oude wachtwoord", "oude wachtwoord is niet correct!", "Archief bestands voorkeur", "Archief kon niet aangemaakt worden", "Mogelijk bestand dubbeling gevonden: %1 - %2", "Afspeellijst verwijderen?", "Alfabetisch", "Willekeurig", "Sorteer", "Origineel", "Gebruik Javascript", "Weet u zeker dat u deze gebruiker wilt verwijderen?", "Geef geschiedenis weer", "geschiedenis", "Regels", "Extern Css bestand", "Verwijder dubbelingen", "Ok", "FOUT", "", "(Show als)", "bestanden", "", "", "Algemeen", "Aangepast", "Bestands opties", "Klik op ? voor hulp.", "Automatische database synchronisatie", "Zend bestand extentie", "Accepteer niet geautoriseerde stream", "Sluit headers in", "Extern javascript", "", "Laat \"Keyteq presenteerd\" regel zien", "Laat \"Controleer update\" regel zien", "Show tekst met statistieken", "Stuur ID3v2 mee met stream", "Sta aanmelding van gebruikers toe", "Bestand typen", "Ja", "Nee", "Extentie", "", "M3U insluiten", "Pas bestandtype aan", "Zeker?", "Optimistische bestandscontrole", "Willekeurig afspelen", "", "Afspeel lijst", "Geen, direct", "Mijn favorieten", "Niets gevonden", "Meest gespeeld", "Volgorde", "Ondersteuning voor LAME aanzetten?", "Uitgezet", "Gebruik van LAME toestaan?");
+$klang[4]  = array('Dutch', 'ISO-8859-15', 'Nederlands', 'Meest gespeeld', 'Wat is nieuw', 'Zoeken', '(waarvan %1 in deze lijst)', 'sec', 'Gezocht op: \'%1\'', 'gevonden', 'Geen.', 'update zoek database opties', 'Verwijderen ongebruikte bestanden? ', 'ID3 vernieuwen?', 'Fout opsporings mode?', 'Vernieuwen', 'Annuleren', 'Vernieuwen database', '%1 bestanden gevonden.', 'Problemen met : %1, overgeslagen.', 'Toegevoegd: %1 Aangepast: %2 Scan:', 'Scan:', 'Fout - gezocht: %1', 'Kan het bestand niet lezen: %1. Overgeslagen.', 'Verwijderd: %1', 'Toegevoegd %1, bijgewerkt %2, verwijderd %3 waar van %4 mislukt en %5 overgelagen van %6 bestanden - %7 sec - %8 gemarkeerd voor verwijdering.', 'Klaar', 'Sluiten', 'Kan geen bestanden vinden in: "%1"', 'kPlaylist inloggen', 'Albumlijst van artiest: %1', 'Snelkeuze %1', 'Geen muziek geselecteerd. Afspeellijst niet bijgewerkt.', 'Afspeellijst bijgewerkt!', 'Terug', 'Afspeellijst toegevoegd!', 'Niet vergeten om de pagina te verversen.', 'Gebruikersnaam:', 'Wachtwoord:', 'NB! Dit is een niet publieke website. Alle acties worden opgeslagen in een log bestand.', 'Ga verder...', 'SSL benodigd om in te loggen.', 'Afspelen', 'Verwijderen', 'Gedeeld', 'Opslaan', 'Instellingen afspeellijst "%1"- %2 nummer(s)', 'Bewerken', 'Viewer', 'Selecteren', 'Volgorde', 'Status', 'Informatie', 'Wis', 'Naam', 'Totalen:', 'Fout', 'Actie op selectie:', 'Volgorde:', 'afspeellijst bewerken', 'Verwijder deze regel!', 'afspeellijst toevoegen', 'Naam:', 'Aanmaken', 'Afspelen:', 'Bestand', 'Album', 'Alles', 'Geselecteerd', 'toevoegen', 'afspelen', 'bewerken', 'nieuw', 'Selectie:', 'Afspeel opties', 'Afspeellijst:', 'Snelkeuze nummer', 'Keyteq presenteert:', '(Update controle)', 'Homepage', 'alleen id3', 'album', 'titel', 'artiest', 'Snelkeuze selectie (Uitvoerende)', 'bekijk', 'Gedeelde afspeellijsten', 'Gebruikers', 'Administrator opties', 'Wat is nieuw', 'Wat is Populair', 'Uitloggen', 'Instellingen', 'Controleer', 'Mijn opties', 'Bewerk gebruikersaccount', 'Nieuw gebruikersaccount', 'Volledige naam', 'Inlog naam:', 'Wachtwoord veranderen?', 'Wachtwoord', 'Commentaar', 'Toegangs level', 'Actief', '----', 'Verwijder gebruiker', 'Gebruiker afsluiten', 'Ververs pagina', 'Nieuwe gebruiker', 'Wis', 'uitloggen', 'Gebruik EXTM3U optie?', 'Hoeveel rijen tonen (Populair / Nieuw)', 'Maximaal aantal rijen zoekresultaat', 'Reset', 'Open map', 'Ga naar map: %1', 'Download', 'Een stap terug', 'Bovenste map', 'Update controle', 'gebruikers', 'Taal', 'opties', 'Booted', 'Willekeurig:', 'Instellingen', 'Start directory', 'Stream lokatie', 'Standaard taal', 'Een Windows systeem', 'HTTPS benodigd', 'Seek toestaan', 'Downloaden toestaan', 'Sessie timeout', 'Raporteer niet geslaagde inlog pogingen', 'Een ogenblik - bestands lijst ophalen', 'Afspeellijst kan niet toegevoegd worden!', 'Beheer', 'Om te wijzigen inloggen met https verbinding!', 'Gebruik stream engine', 'Titel', 'Artiest', 'Album', 'Bijzonderheden', 'Jaar', 'Nummer', 'Genre', 'niet ingesteld', 'Maximale downloadsnelheid (kbps)', 'Gebruiker', '%1 minuten- %2 titels', '%1 kbit %2 minuten', 'Genre lijst: %1', 'Ok', '%1d %2h %3m afspeelduur %4 bestanden %5 mb', 'Geen relevante bron aanwezig', 'Wachtwoord veranderd!', 'Aanmelden', 'Maak een keuze a.u.b.!', 'Toelichting bij het vernieuwen van de database?', 'Klik hier voor help', 'Gebruik externe plaatjes', 'Path naar externe plaatjes', 'Oude wachtwoord', 'oude wachtwoord is niet correct!', 'Compressie programma voorkeur', 'Bestand kon niet aangemaakt worden', 'Bestand mogelijk dubbel: %1 - %2', 'Afspeellijst echt verwijderen?', 'Alfabetisch', 'Willekeurig', 'Sorteer', 'Origineel', 'Gebruik Javascript', 'Weet u zeker dat u deze gebruiker wilt verwijderen?', 'Geef geschiedenis weer', 'geschiedenis', 'Regels', 'Extern Css bestand', 'Verwijder dubbelingen', 'Ok', 'FOUT', 'Stream', '(laat zien als)', 'bestanden', 'albums', '%1d %2u %3m %4s', 'Algemeen', 'Aanpassen', 'Bestands afhandeling', 'Klik op ? voor hulp.', 'Database automatisch synchroniseren', 'Zend bestands extentie', 'Sta niet geautoriseerde streams toe', 'Sluit headers in', 'Extern javascript', 'Home pagina', 'Laat "Keyteq presenteert" regel zien', 'Laat "Update controle" regel zien', 'Laat tekst met statistieken zien', 'Stuur ID3v2 mee met stream', 'Sta aanmelding van gebruikers toe', 'Bestand typen', 'Ja', 'Nee', 'Extentie', 'MIME', 'M3U insluiten', 'Pas bestandtype aan', 'Weet je het zeker?', 'Optimistische bestandscontrole', 'Willekeurig afspelen', 'Modus', 'Afspeel lijst', 'Geen, direct', 'Mijn favorieten', 'Niets gevonden', 'Meest gespeeld', 'Volgorde', 'Ondersteuning voor LAME aanzetten?', 'Uitgezet', 'Gebruik van LAME toestaan?', 'Email adres', 'Sta het sturen van bestanden via de mail toe?', 'SMTP server', 'SMTP poort', 'Bericht aan', 'Bericht', 'Verstuur', 'Bericht verzonden!', 'Activeer upload', 'Upload map', 'Activeer MP3Mail', 'Upload', 'Bestand geupload!', 'Bestand kon niet geupload worden!', '"Cookies" moeten aan staan om in te loggen!', 'Periode', 'ooit', 'deze week', 'deze maand', 'laatste maand', 'gevonden', 'LAME parameters', 'Albumhoes tonen', 'Albumhoes bestanden', 'Albumhoes formaat aanpassen', 'Albumhoes hoogte', 'Albumhoes breedte', 'Wijze van mail versturen', 'Direct', 'Pear', 'Wacht', 'Gelieve geldig email adres in te vullen! Zie "Opties"!', 'Afspeellijst insluiten?  ', 'Albumhoes ophalen vanaf URL?', 'Albumhoes URL', 'Het verzenden is mislukt!', 'Gebruiker toegevoegd!', 'Compressie bestand aangemaakt door', 'Compressie bestand gewist.', 'Gebruikersaccount aangepast!', 'Muziek overeenkomst', '%1 gefilterd', 'Log toegang', 'Zichtbaar');
 
+$klang[5]  = array("Spanish", "ISO-8859-1", "Español", "Lo Padre", "Lo Nuevo", "B&uacute;squeda", "s&oacute;lo 1% visible", "seg", "Resulados de B&uacute;squeda: '%1'", "encontrado", "Ninguno.", "actualizar opciones de base de datos de b&uacute;squeda", "&iquest;Suprimir entradas sin uso? ", "&iquest;ReconstruirID3? ", "&iquest;Modo de Debug? ", "Actualizar", "Cancelar", "actualizar base de datos de b&uacute;squeda", "Se Encontraron %1 archivos", "No se pod&iacute;a determinar este archivo: %1, saltado", "%1 - Actualizar: %2, scanear:  ", "Scanear", "B&uacute;squeda Fallada: %1", "No se pod&iacute;a enconrar archivo: %1. Saltado. ", "Quitado: %1", "Insertado %1, actualizado %2, quitado %3 d&oacute;nde %4 fall&oacute; y %5 saltado por %6 archivos - %7 seg - %8 marcado para borrar.", "Finalizado", "Cerrar", "No se pod&iacute;a encontrar archivos utilzando %1", "kPlaylist Nombre de Usuario", "Lista de disco de artista: %1 ", "Hotselect %1 ", "Ninguna canci&oacute;n seleccionada. Lista no actualizada. ", "&iexcl;Lista actualizada con &eacute;xito!", "Regresar", "&iexcl;Lista actualizada!", "Actualice la p&aacute;gina", "nombre de usuario:", "contrase&ntilde;a", "Aviso! Este es un sitio restringido. Todos movimientos se guardan.", "Nombre de usuario", "SSL requirido para entrar.", "Tocar", "Suprimir", "Compartido:", "Guardar", "Lista de Control: &quot;%1&quot; - %2 t&iacute;tulos", "Editor", "Visor", "Seleccionar", "Seq", "Estatus", "Info", "Sup", "Nombre", "Totales:", "Error", "Acci&oacute;n sobre seleccionado", "Sequencia:", "editar lista", "Suprimir esta entrada", "agregar lista", "Nombre:", "Crear", "Tocar:", "Archivo", "Disco", "Todo", "Seleccionados", "agregar", "tocar",  "editar", "nuevo", "Seleccionar:", "Tocar Control:", "Lista:", "Seleccionador N&uacute;merico ", "Keyteq le proporciona:", "(checar por actualizaciones)", "P&aacute;gina Principal", "s&oacute;lo id3", "disco", "t&iacute;tulo", "artista", "Seleccionador disco de artista", "vista", "Listas compartidas", "Usuarios", "Control de administrador", "Lo nuevo", "Lo popular", "Salir", "Opciones", "Checar", "Mi", "editar usuario", "nuevo usuario", "Nombre completo", "Nombre de usuario", "&iquest;cambiar contrase&ntilde;a?", "Contrase&ntilde;a", "Comentario", "Nivel de aceso", "Encendido", "Apagado", "Suprimir usuario", "Salir usuario", "Actualizar", "Nuevo usuario", "sup", "salir", "Utilizar la opci&oacute;n de EXTM3U?", "Mostrar cuantas filas (popular/nuevo)", "M&aacute;x filas de b&uacute;squeda", "Restaurar", "Directorio abierto", "Abriri directorio: %1", "Descargar", "Subir un nivel", "Ir directo al directorio de ra&iacute;z", "Buscar actualizaciones", "usuarios", "Idioma", "opciones", "Cerrado", "Barajadura:", "Ajustes", "Directorio bajo", "Localizaci&oacute;n de la corriente", "Lengua del defecto", "Un sistema de Windows", "Requiera HTTPS", "Permita seek", "Permita download", "Sesi&oacute;n descanso", "Informe fallado conexi&oacute;n tentativas", "Sostenga encendido - traer la lista del archivo", "Playlist no pod&iacute;a ser agregado!", "Admin", "Conexi&oacute;n con HTTPS a cambiar", "", "Titulo", "Artista", "Albúm", "Comentario", "Año", "Corte", "Genero", "", "Máximo rátio de descarga (kbps)", "Usuario", "", "", "", "", "", "", "Contraseña cambiada!", "", "");
 
-$klang[5]  = array("Spanish", "ISO-8859-1", "Español", "Lo Padre", "Lo Nuevo", "B&uacute;squeda", "s&oacute;lo 1% visible", "seg", "Resulados de B&uacute;squeda: '%1'", "encontrado", "Ninguno.", "actualizar opciones de base de datos de b&uacute;squeda", "&iquest;Suprimir entradas sin uso? ", "&iquest;ReconstruirID3? ", 
-"&iquest;Modo de Debug? ", "Actualizar", "Cancelar", "actualizar base de datos de b&uacute;squeda", "Se Encontraron %1 archivos", "No se pod&iacute;a determinar este archivo: %1, saltado", "%1 - Actualizar: %2, scanear:  ", "Scanear", "B&uacute;squeda Fallada: %1", "No se pod&iacute;a enconrar archivo: %1. Saltado. ", "Quitado: %1", 
-"Insertado %1, actualizado %2, quitado %3 d&oacute;nde %4 fall&oacute; y %5 saltado por %6 archivos - %7 seg - %8 marcado para borrar.", "Finalizado", "Cerrar", "No se pod&iacute;a encontrar archivos utilzando %1", "kPlaylist Nombre de Usuario", "Lista de disco de artista: %1 ", "Hotselect %1 ", "Ninguna canci&oacute;n seleccionada. Lista no actualizada. ", "&iexcl;Lista actualizada con &eacute;xito!", "Regresar", "&iexcl;Lista actualizada!", 
-"Actualice la p&aacute;gina", "nombre de usuario:", "contrase&ntilde;a", "Aviso! Este es un sitio restringido. Todos movimientos se guardan.", "Nombre de usuario", "SSL requirido para entrar.", "Tocar", "Suprimir", "Compartido:", "Guardar", "Lista de Control: &quot;%1&quot; - %2 t&iacute;tulos", 
-"Editor", "Visor", "Seleccionar", "Seq", "Estatus", "Info", "Sup", "Nombre", "Totales:", "Error", "Acci&oacute;n sobre seleccionado", 
-"Sequencia:", "editar lista", "Suprimir esta entrada", "agregar lista", "Nombre:", "Crear", "Tocar:", "Archivo", "Disco", "Todo", "Seleccionados", 
-"agregar", "tocar", "editar", "nuevo", "Seleccionar:", "Tocar Control:", "Lista:", "Seleccionador N&uacute;merico ", "Keyteq le proporciona:", "(checar por actualizaciones)", "P&aacute;gina Principal", "s&oacute;lo id3", "disco", "t&iacute;tulo", "artista", "Seleccionador disco de artista", "vista", "Listas compartidas", "Usuarios", "Control de administrador", "Lo nuevo", "Lo popular", "Salir", "Opciones", "Checar", "Mi", "editar usuario", "nuevo usuario", "Nombre completo", "Nombre de usuario", "&iquest;cambiar contrase&ntilde;a?", "Contrase&ntilde;a", "Comentario", 
-"Nivel de aceso", "Encendido", "Apagado", "Suprimir usuario", "Salir usuario", "Actualizar", "Nuevo usuario", "sup", "salir", "Utilizar la opci&oacute;n de EXTM3U?", "Mostrar cuantas filas (popular/nuevo)", 
-"M&aacute;x filas de b&uacute;squeda", "Restaurar", "Directorio abierto", "Abriri directorio: %1", "Descargar", "Subir un nivel", "Ir directo al directorio de ra&iacute;z", "Buscar actualizaciones", "usuarios", "Idioma", "opciones", 
-"Cerrado", "Barajadura:", "Ajustes", "Directorio bajo", "Localizaci&oacute;n de la corriente", "Lengua del defecto", "Un sistema de Windows", "Requiera HTTPS", "Permita seek", "Permita download", "Sesi&oacute;n descanso", 
-"Informe fallado conexi&oacute;n tentativas", "Sostenga encendido - traer la lista del archivo", "Playlist no pod&iacute;a ser agregado!", "Admin", "Conexi&oacute;n con HTTPS a cambiar", "", "Titulo", "Artista", "Albúm", "Comentario", "Año", 
-"Corte", "Genero", "", "Máximo rátio de descarga (kbps)", "Usuario", "", "", "", "", "", "", "Contraseña cambiada!", "", "");
+$klang[6]  = array("Portuguese", "ISO-8859-1", "Português", "este é popular", "Este é novo", "Busca", "(apenas %1 encontrado)", "seg", "Resultados da busca: '%1'", "encontrado", "Nenhum", "atualizar opções da busca na base de dados ", "Apagar entradas sem uso? ", "Reconstruir ID3?",  "Modo Debug?", "Atualizar", "Cancelar", "Atualizar busca no banco de dados", "Encontrados %1 arquivos.", "Não foi possível determinar este arquivo: %1, descartado", "Install %1 - Atualizar: %2, escanear:", "Escanear:", "Falha na busca: %1", "Não foi possível ler este arquivo: %1. Descartado.", "Removido: %1",  "Inserido %1, atualizado %2, apagado %2, onde %4, falhou em %5, descartado por %6, arquivos - %7 seg - %8 marcado para ser deletado", "Finalizado", "Fechar", "Não foi possível encontrar arquivos aqui: \"%1\"", "Logon kPlaylist", "Lista de álbum por artista: %1", "Populares %1", "Nenhuma música selecionada. Lista não atualizada.", "Lista atualizada!", "Voltar", "Lista atualizada",  "Lembre-se de atualizar a página.", "login:", "senha:", "Atenção! Este não é um site restrito. Todas as ações são monitoradas.", "Login", "SSL necessário para entrar.", "Tocar", "Apagar", "Compartilhado", "Salvar", "Lista de controlhe: \"%1\" - %2 títulos",  "Editor", "Visualizador", "Selecionar", "Seq", "Status", "Info", "Del", "Nome", "Totais", "Erro", "Ação selecionada:", "Sequência", "editar lista", "Apagar esta entrada", "adicionar lista", "Nome:", "Criar", "Tocar:", "Arquivo", "Álbum", "Todos", "Selecionado",  "adicionar", "tocar", "editar", "novo", "Selecionar", "Controle", "Lista:", "Selecionar número", "Keyteq oferece:", "(verificar atualização)", "Página incial", "apenas id3", "álbum", "título", "artista", "Selecionar álbum por artista", "ver", "Listas compartilhadas", "Usuários", "Controle de administrador", "Este é novo", "Este é popular", "Logout", "Opções", "Verificar", "Meu", "editar usuário", "novo usuário", "Nome completo", "Login", "Mudar senha?", "Senha", "Comentário", "Nível de acesso", "Ligado", "Desligado", "Apagar usuário", "Desconectar usuário", "Atualizar", "Novo usuário", "apagar", "desconectar", "Utilizar opção EXTM3U?", "Mostrar quantos arquivos (popular/novo)",  "Máximo de arquivos encontrados", "Restaurar", "Abrir diretório", "Para o diretório: %1", "Download", "Subir um nível", "Para o diretório principal", "Verificar atualizações", "usuários", "Linguagem", "opções", "Carregado", "Aleatório", "Configurações", "Diretório base", "Local de stream", "Linguagem padrão", "Sistema Windows", "Requer HTTPS", "Permitir busca", "Permitir download", "Sessão expirou",  "Falha na tentativa de login", "Aguarde - buscando a lista de arquivos", "Lista não pode ser adicionada!", "Admin", "Início de uma sessão com o HTTPS a mudar");
 
-$klang[6]  = array("Portuguese", "ISO-8859-1", "Português", "este é popular", "Este é novo", "Busca", "(apenas %1 encontrado)", "seg", "Resultados da busca: '%1'", "encontrado", "Nenhum", "atualizar opções da busca na base de dados ", "Apagar entradas sem uso? ", "Reconstruir ID3?", 
- "Modo Debug?", "Atualizar", "Cancelar", "Atualizar busca no banco de dados", "Encontrados %1 arquivos.", "Não foi possível determinar este arquivo: %1, descartado", "Install %1 - Atualizar: %2, escanear:", "Escanear:", "Falha na busca: %1", "Não foi possível ler este arquivo: %1. Descartado.", "Removido: %1", 
- "Inserido %1, atualizado %2, apagado %2, onde %4, falhou em %5, descartado por %6, arquivos - %7 seg - %8 marcado para ser deletado", "Finalizado", "Fechar", "Não foi possível encontrar arquivos aqui: \"%1\"", "Logon kPlaylist", "Lista de álbum por artista: %1", "Populares %1", "Nenhuma música selecionada. Lista não atualizada.", "Lista atualizada!", "Voltar", "Lista atualizada",  "Lembre-se de atualizar a página.", "login:", "senha:", "Atenção! Este não é um site restrito. Todas as ações são monitoradas.", "Login", "SSL necessário para entrar.", "Tocar", "Apagar", "Compartilhado", "Salvar", "Lista de controlhe: \"%1\" - %2 títulos", 
- "Editor", "Visualizador", "Selecionar", "Seq", "Status", "Info", "Del", "Nome", "Totais", "Erro", "Ação selecionada:", 
- "Sequência", "editar lista", "Apagar esta entrada", "adicionar lista", "Nome:", "Criar", "Tocar:", "Arquivo", "Álbum", "Todos", "Selecionado", 
- "adicionar", "tocar", "editar", "novo", "Selecionar", "Controle", "Lista:", "Selecionar número", "Keyteq oferece:", "(verificar atualização)", "Página incial", 
- "apenas id3", "álbum", "título", "artista", "Selecionar álbum por artista", "ver", "Listas compartilhadas", "Usuários", "Controle de administrador", "Este é novo", "Este é popular", 
- "Logout", "Opções", "Verificar", "Meu", "editar usuário", "novo usuário", "Nome completo", "Login", "Mudar senha?", "Senha", "Comentário", 
- "Nível de acesso", "Ligado", "Desligado", "Apagar usuário", "Desconectar usuário", "Atualizar", "Novo usuário", "apagar", "desconectar", "Utilizar opção EXTM3U?", "Mostrar quantos arquivos (popular/novo)",  "Máximo de arquivos encontrados", "Restaurar", "Abrir diretório", "Para o diretório: %1", "Download", "Subir um nível", "Para o diretório principal", "Verificar atualizações", "usuários", "Linguagem", "opções", 
- "Carregado", "Aleatório", "Configurações", "Diretório base", "Local de stream", "Linguagem padrão", "Sistema Windows", "Requer HTTPS", "Permitir busca", "Permitir download", "Sessão expirou",  "Falha na tentativa de login", "Aguarde - buscando a lista de arquivos", "Lista não pode ser adicionada!", "Admin",
- "Início de uma sessão com o HTTPS a mudar");
+$klang[7]  = array('Finnish', 'ISO-8859-1', 'Suomi', 'Suosituimmat', 'Uusimmat', 'Etsi', '(pelkästään %1 näytetään)', 'sek', 'Haku-tulokset: \'%1\'', 'löytyi', 'Tyhjä.', 'päivitä hakutietokannan asetukset', 'Poista käyttämättömät tiedot?', 'Uudelleenrakenna ID3?', 'Debug-moodi?', 'Päivitä', 'Peruuta', 'päivitä hakutietokanta', 'Löytyi %1 tiedostoa', 'Ei voinut määrittää: %1, skipattu.', 'Install %1 - Päivitä: %1,  tarkistus:', 'Tarkistus:', 'Epäonnistui - haku: %1', 'Ei voinut lukea tätä tiedostoa: %1. Skipattu.', 'Poistettu: %1', 'Syötetty %1, päivitetty %2, poistettu %3, missä %4 epäonnistui ja %5 skipattiin %6 tiedostosta - %7 sekuntia - %8 merkitty poistettavaksi', 'Valmis', 'Sulje', 'Mikään ei vastannut: %1', 'kPlaylist Kirjautuminen', 'Albumilista artistille: %1', 'Pikavalinta: %1', 'Ei valittuina mitään. Soittolistaa ei päivitetty', 'Soittolista päivitetty!', 'Takaisin', 'Soittolista lisätty!', 'Muista päivittää sivu.', 'tunnus', 'salasana:', 'Huomautus! Tämä ei ole julkinen sivu. Kaikki teot kirjataan ylös', 'Kirjaudu', 'SSL vaaditaan kirjautumiseen.', 'Soita', 'Poista', 'Jaettu:', 'Tallenna', 'Hallitse soittolistaa: \'%1\' - %2 nimet', 'Muokkain', 'Selain', 'Valitse', 'Järj.', 'Tila', 'Info', 'Poista', 'Nimi', 'Yhteensä:', 'Virhe', 'Toiminto valitussa:', 'Järjestys:', 'muokkaa soittolistaa', 'Poista tämä tulos', 'lisää soittolista', 'Nimi:', 'Luo', 'Soita', 'Tiedosto', 'Albumi', 'Kaikki', 'Valitut', 'lisää', 'soita', 'muokkaa', 'uusi', 'Valitse:', 'Hallinta:', 'Soittolista', 'Pikavalinta numero', 'Keyteqin tuote:', '(tarkista päivityksien varalta)', 'Kotisivu', 'ainoastaan id3', 'albumi', 'biisi', 'artisti', 'Albumit artistin mukaan', 'katso', 'Jaetut soittolistat', 'Käyttäjät', 'Ylläpito', 'Mitä uutta', 'Suosituimmat', 'Kirjaudu ulos', 'Asetukset', 'Tarkasta', 'Oma', 'muokkaa käyttäjää', 'uusi käyttäjä', 'Kokonimi', 'Kirjaudu', 'Vaihda salasana?', 'Salasana', 'Kommentti', 'Taso', 'On', 'Off', 'Poista käyttäjä', 'Kirjaa ulos käyttäjä', 'Päivitä', 'Uusi käyttäjä', 'poista', 'kirjaa ulos', 'Käytä EXT3MU-toimintoa?', 'Näytä kuinka monta tulosta (suosittu/uusi)', 'Maksimi haku tulokset', 'Resetoi', 'Avaa hakemisto', 'Mene hakemistoon: %1', 'Imuroi', 'Avaa yläkansio', 'Mene päähakemistoon', 'Tarkista päivityksien varalta', 'käyttäjät', 'Kieli', 'asetukset', 'Bannattu', 'Shuffle', 'Asetukset', 'Perushakemisto', 'Streamin lähde', 'Oletuskieli', 'Windows systeemi', 'Vaadi HTTPS (Salattu yhteys)', 'Salli etsiminen', 'Salli imurointi', 'Istunto päättynyt', 'Ilmoita epäonnistuneet kirjautumisyritykset', 'Hetki. Haen tiedostolistaa', 'Soittolistaa ei voitu lisätä', 'Ylläpitäjä', 'Kirjaudu HTTPS:llä vaihtaaksesi', 'Streaming moottori päälle', 'Nimi', 'Artisti', 'Albumi', 'Kommentti', 'Vuosi', 'Raidan numero', 'Tyyppi', 'ei asetettu', 'Maksimi imurointinopeus (kbps)', 'Käyttäjä', '%1 minuuttia - %2 biisiä', '%1 kilobittiä %2 minuuttia', 'Tyyppilista: %1', 'Mene', ' %1d %2h %3m soittoaika %4 tiedostoa %5 mt', 'Ei soitettavia fileitä', 'Salasana vaihdettu!', 'Rekisteröi', 'Tee valintasi', 'Mikä on päivitys?', 'Ohje painamalla tästä', 'Käytä ulkoisia kuvia?', 'Ulkoisten kuvien polku', 'Nykyinen salasana', 'Nykyinen salasana ei natsaa!', 'Valitse pakkaaja', 'Pakkausta ei pystytty tekemään', 'Todennäköinen kopio: %1 - %2', 'Haluatko varmasti poistaa soittolistan?', 'Aakkosellinen', 'Shuffle', 'Järjestä', 'Alkuperäinen', 'Käytä javascriptiä', 'Haluatko varmasti posistaa tämän käyttäjän?', 'Näytä historia', 'historia', 'Riviä', 'Ulkopuolinen CSS tiedosto', 'Poista tuplat', 'OK', 'VIRHE', 'Stream', '(näytä tyyppinä)', 'tiedostot', 'albumit', '%1d %2h %3m %4s ', 'Yleistä', 'Muokkaa', 'Tiedostonkäsittely', 'Klikkaa ? ohjeen näyttämiseksi.', 'Automaattinen tietokanta-synkronisaation', 'Lähetä tiedostopääte', 'Salli kirjautumattomat streamit', 'Sisällytä otsikot', 'Ulkopuolinen javascript', 'Kotisivu', 'Näytä \'Keyteq toi sinulle\'-kohdan', 'Näytä päivitä kohta', 'Näytä statistiikka', 'Kirjoita ID3v2 streamiin', 'Salli käyttäjien rekisteröinti', 'Tiedostotyypit', 'Kyllä', 'Ei', 'Pääte', 'MIME', 'Sisällytä M3U-tiedostoon', 'muokkaa tyyppiä', 'Varmasti?', 'Optimistinen tiedoston tarkastus', 'Arpoja', 'Toimintatila', 'Soittolista', 'Ei mitään, suoraan', 'Omat suosikit', 'Osumia ei löytynyt', 'Kaikkien aikojen parhaat', 'Järjestys', 'LAME tuki päälle', 'Pois', 'Salli LAMEn käyttö?', 'Sähköposti', 'Salli tiedoston sähköpostitus?', 'SMTP palvelin', 'SMTP portti', 'Lähetä sähköposti', 'Viesti', 'Lähetä', 'Viesti lähetetty!', 'Aktivoi tiedoston lisäys', 'Tiedoston lisäys kansio', 'Aktivoi mp3mail', 'Lisää tiedosto', 'Tiedosto lisätty', 'Tiedoston lisäys ei onnistunut!', 'Evästeiden on oltava päällä, jotta sisäänkirjautuminen onnistuisi!', 'Ajanjakso', 'koskaan', 'tällä viikolla', 'tässä kuussa', 'edellisessä kuussa', 'osumia', 'LAME komento', 'Näytä albumin kansi', 'Albumin tiedostot', 'Sovita albumin kuvien koko', 'Albumin korkeus', 'Albumin leveys', 'Postitusmuoto', 'Suora', 'PEAR', 'Odota', 'Anna oikea sähköpostiosoite asetuksissa!', 'Soittolistat sisennettyinä?', 'Näytä albumi URLista?', 'Albumin URL', 'Lähetys ei onnistunut!', 'Käyttäjä lisätty!', 'Arkiston luonti', 'Arkisto on poistettu.', 'Käyttäjän tiedot päivitetty!', 'Musiikin vertailu');
 
-$klang[7]  = array("Finnish", "ISO-8859-1", "Suomi", "Suosituimmat", "Uusimmat", "Etsi", "(pelkästään %1 näytetään)", "sek", "Haku-tulokset: '%1'", "löytyi", "Tyhjä.", "päivitä hakutietokannan asetukset", "Poista käyttämättömät tiedot?", "Uudelleenrakenna ID3?", 
-"Debug-moodi?", "Päivitä", "Peruuta", "päivitä hakutietokanta", "Löytyi %1 tiedostoa", "Ei voinut määrittää: %1, skipattu.", "Install %1 - Päivitä: %1,  tarkistus:", "Tarkistus:", "Epäonnistui - haku: %1", "Ei voinut lukea tätä tiedostoa: %1. Skipattu.", "Poistettu: %1", 
-"Syötetty %1, päivitetty %2, poistettu %3, missä %4 epäonnistui ja %5 skipattiin %6 tiedostosta - %7 sekuntia - %8 merkitty poistettavaksi", "Valmis", "Sulje", "Mikään ei vastannut: %1", "kPlaylist Kirjautuminen", "Albumilista artistille: %1", "Pikavalinta: %1", "Ei valittuina mitään. Soittolistaa ei päivitetty", "Soittolista päivitetty!", "Takaisin", "Soittolista lisätty!", 
-"Muista päivittää sivu.", "tunnus", "salasana:", "Huomautus! Tämä ei ole julkinen sivu. Kaikki teot kirjataan ylös", "Kirjaudu", "SSL vaaditaan kirjautumiseen.", "Soita", "Poista", "Jaettu:", "Tallenna", "Hallitse soittolistaa: '%1' - %2 nimet", 
-"Muokkain", "Selain", "Valitse", "Järj.", "Tila", "Info", "Poista", "Nimi", "Yhteensä:", "Virhe", "Toiminto valitussa:", 
-"Järjestys:", "muokkaa soittolistaa", "Poista tämä tulos", "lisää soittolista", "Nimi:", "Luo", "Soita", "Tiedosto", "Albumi", "Kaikki", "Valitut", 
-"lisää", "soita", "muokkaa", "uusi", "Valitse:", "Hallinta:", "Soittolista", "Pikavalinta numero", "Keyteqin tuote:", "(tarkista päivityksien varalta)", "Kotisivu", 
-"ainoastaan id3", "albumi", "biisi", "artisti", "Albumit artistin mukaan", "katso", "Jaetut soittolistat", "Käyttäjät", "Ylläpito", "Mitä uutta", "Suosituimmat", 
-"Kirjaudu ulos", "Asetukset", "Tarkasta", "Oma", "muokkaa käyttäjää", "uusi käyttäjä", "Kokonimi", "Kirjaudu", "Vaihda salasana?", "Salasana", "Kommentti", 
-"Taso", "On", "Off", "Poista käyttäjä", "Kirjaa ulos käyttäjä", "Päivitä", "Uusi käyttäjä", "poista", "kirjaa ulos", "Käytä EXT3MU-toimintoa?", "Näytä kuinka monta tulosta (suosittu/uusi)", 
-"Maksimi haku tulokset", "Resetoi", "Avaa hakemisto", "Mene hakemistoon: %1", "Imuroi", "Avaa yläkansio", "Mene päähakemistoon", "Tarkista päivityksien varalta", "käyttäjät", "Kieli", "asetukset", 
-"Bannattu", "Shuffle", "Asetukset", "Perushakemisto", "Streamin lähde", "Oletuskieli", "Windows systeemi", "Vaadi HTTPS (Salattu yhteys)", "Salli etsiminen", "Salli imurointi", "Istunto päättynyt", 
-"Ilmoita epäonnistuneet kirjautumisyritykset", "Hetki. Haen tiedostolistaa", "Soittolistaa ei voitu lisätä", "Ylläpitäjä", "Kirjaudu HTTPS:llä vaihtaaksesi", "Streaming moottori päälle", "Nimi", "Artisti", "Albumi", "Kommentti", "Vuosi", 
-"Raidan numero", "Tyyppi", "ei asetettu", "Maksimi imurointinopeus (kbps)", "Käyttäjä", "%1 minuuttia - %2 biisiä", "%1 kilobittiä %2 minuuttia", "Tyyppilista: %1", "Mene", " %1d %2h %3m soittoaika %4 tiedostoa %5 mt", "Ei soitettavia fileitä", 
-"Salasana vaihdettu!", "Rekisteröi", "Tee valintasi", "Mikä on päivitys?", "Ohje painamalla tästä", "Käytä ulkoisia kuvia?", "Ulkoisten kuvien polku", "Nykyinen salasana", "Nykyinen salasana ei natsaa!", "Valitse pakkaaja", "Pakkausta ei pystytty tekemään", 
-"Todennäköinen kopio: %1 - %2", "Haluatko varmasti poistaa soittolistan?", "Aakkosellinen", "Shuffle", "Järjestä", "Alkuperäinen", "Käytä javascriptiä", "Haluatko varmasti posistaa tämän käyttäjän?", "Näytä historia", "historia", "Riviä", 
-"Ulkopuolinen CSS tiedosto", "Poista tuplat", "OK", "VIRHE", "Stream", "(näytä tyyppinä)", "tiedostot", "albumit", "%1d %2h %3m %4s ", "Yleistä", "Muokkaa", 
-"Tiedostonkäsittely", "Klikkaa ? ohjeen näyttämiseksi.", "Automaattinen tietokanta-synkronisaation", "Lähetä tiedostopääte", "Salli kirjautumattomat streamit", "Sisällytä otsikot", "Ulkopuolinen javascript", "Kotisivu", "Näytä \'Keyteq toi sinulle\'-kohdan", "Näytä päivitä kohta", "Näytä statistiikka", 
-"Kirjoita ID3v2 streamiin", "Salli käyttäjien rekisteröinti", "Tiedostotyypit", "Kyllä", "Ei", "Pääte", "MIME", "Sisällytä M3U-tiedostoon", "muokkaa tyyppiä", "Varmasti?");
+$klang[8]  = array("Danish", "ISO-8859-1", "Dansk", "Hvad er hot?", "Hvad er nyt?", "Søg", "(kun %1 vist)", "sec", "Søgeresultater: %1", "fundet", "Ingen.", "opdater søgedatabase-indstillinger", "Slet ubrugelige albums?", "Genopbyg ID3?", "Fejlsøgning", "Opdater", "Annuller", "opdater søgedatabase", "Fundet % fil(er).", "Kunne ikke bestemme filtypen på: %1", "Installeret: %1 - Opdateret: %2, scannet: ", "Scan:", "Fejlede - forespørgsel: %1", "Kunne ikke læse: %1", "Fjernet: %1", "Der er indsat %1, opdateret %2, slettet %3, hvor %4 fejlede og %5 blev sprunget over, gennem %6 filer - %7 sec - %8 markeret for sletning.", "Færdig", "Luk", "Kunne ikke finde filer her: %1", "kPlaylist login", "Albumliste for kunstner: %1", "Hurtigvælg %1", "Ingen numre valgt. Playlist ikke opdateret.", "Playlist opdateret!", "Tilbage", "Playlist tilføjet!", "Husk at genindlæse siden.", "brugernavn:", "adgangskode:", "Bemærk! Dette er en privat webside. Alt logges.", "Log på", "SSL er krævet for at logge på.", "Afspil", "Slet", "Delt:", "Gem", "Kontroller playlist: %1 - %2 titler", "Redigeringsvindue", "Fremviser", "Vælg", "Sek", "Status", "Info", "Slet", "Navn", "Total:", "Fejl", "Handling på valgte:", "Sekvens:", "rediger playlist", "Slet nummer", "tilføj playlist", "Navn:", "Opret", "Afspil:", "Fil", "Album", "Alle", "Valgte", "tilføj", "afspil", "rediger", "ny", "Vælg:", "Afspilningskontrol:", "Playlist:", "Numerisk hurtigvalg", "Keyteq giver dig:", "(tjek for update)", "Webside", "Kun ID3", "album", "titel", "kunstner", "Hurtigvælg album fra kunstner", "vis", "Delte playlists", "Brugere", "Administrator", "Hvad er nyt", "Hvad er hot", "Log ud", "Indstillinger", "Tjek", "Min konto", "rediger bruger", "ny bruger", "Fulde navn", "Brugernavn", "Ændre adgangskode?", "Adgangskode", "Kommentar", "Adgang", "På / On", "Af / Off", "Slet bruger", "Log bruger ud", "Opdater", "Ny bruger", "slet", "logud", "Brug EXTM3U?", "Vis rækker (hotte/nye)", "Max. antal søgerækker", "Reset", "Åbn mappe", "Gå til mappe: %1", "Download", "Et trin op", "Til rodmappe", "Tjek efter updates", "brugere", "Sprog", "indstillinger", "Afspærret", "Shuffle / Random", "Indstillinger", "Basemappe", "Stream-lokation", "Standardsprog", "Windows-system?", "Kræver HTTPS", "Tillad søgning", "Tillad download", "Sessionstimeout", "Rapporter fejlede logins", "Vent - henter filliste", "Playlist kunne ikke tilføjes", "Admin", "Log ind via HTTPS for at ændre!", "Aktiver streaming", "Titel", "Kunstner", "Album", "Kommentar", "År", "Nummer", "Genre", "ikke sat", "Max. download rate (kbps)", "Bruger", "%1 minutter - %2 titler", "%1 kbit %2 minutter", "Genreliste: %1", "Gå", "Spilletid: %1d %2h %3m - %4 filer %5 mb", "Intet relevant her.", "Kodeordet er ændret", "", "Foretag venligst en markering", "Hvad er en opdatering?", "Klik her for hjælp", "Brug eksterne billeder", "Sti til eksterne billeder", "Nuværende kodeord", "", "", "", "To ens filer er muligvis fundet: %1 - %2", "Vil du virkelig slette playlisten?", "Alfabetisk", "Tilfældig", "Sorter", "Original", "Brug javascript", "Er du sikker på, du vil slette denne bruger?", "Vis historie", "Historie", "Rækker", "Ekstern CSS-fil");
 
-$klang[8]  = array("Danish", "ISO-8859-1", "Dansk", "Hvad er hot?", "Hvad er nyt?", "Søg", "(kun %1 vist)", "sec", "Søgeresultater: %1", "fundet", "Ingen.", 
-"opdater søgedatabase-indstillinger", "Slet ubrugelige albums?", "Genopbyg ID3?", 
-"Fejlsøgning", "Opdater", "Annuller", "opdater søgedatabase", "Fundet % fil(er).", "Kunne ikke bestemme filtypen på: %1", "Installeret: %1 - Opdateret: %2, scannet: ", "Scan:", 
-"Fejlede - forespørgsel: %1", "Kunne ikke læse: %1", "Fjernet: %1", 
-"Der er indsat %1, opdateret %2, slettet %3, hvor %4 fejlede og %5 blev sprunget over, gennem %6 filer - %7 sec - %8 markeret for sletning.", "Færdig", "Luk", 
-"Kunne ikke finde filer her: %1", "kPlaylist login", "Albumliste for kunstner: %1", "Hurtigvælg %1", "Ingen numre valgt. Playlist ikke opdateret.", "Playlist opdateret!", "Tilbage", "Playlist tilføjet!", 
-"Husk at genindlæse siden.", "brugernavn:", "adgangskode:", "Bemærk! Dette er en privat webside. Alt logges.", "Log på", "SSL er krævet for at logge på.", "Afspil", "Slet", "Delt:", "Gem", "Kontroller playlist: %1 - %2 titler", 
-"Redigeringsvindue", "Fremviser", "Vælg", "Sek", "Status", "Info", "Slet", "Navn", "Total:", "Fejl", "Handling på valgte:", 
-"Sekvens:", "rediger playlist", "Slet nummer", "tilføj playlist", "Navn:", "Opret", "Afspil:", "Fil", "Album", "Alle", "Valgte", 
-"tilføj", "afspil", "rediger", "ny", "Vælg:", "Afspilningskontrol:", "Playlist:", "Numerisk hurtigvalg", "Keyteq giver dig:", "(tjek for update)", "Webside", 
-"Kun ID3", "album", "titel", "kunstner", "Hurtigvælg album fra kunstner", "vis", "Delte playlists", "Brugere", "Administrator", "Hvad er nyt", "Hvad er hot", 
-"Log ud", "Indstillinger", "Tjek", "Min konto", "rediger bruger", "ny bruger", "Fulde navn", "Brugernavn", "Ændre adgangskode?", "Adgangskode", "Kommentar", 
-"Adgang", "På / On", "Af / Off", "Slet bruger", "Log bruger ud", "Opdater", "Ny bruger", "slet", "logud", "Brug EXTM3U?", "Vis rækker (hotte/nye)", 
-"Max. antal søgerækker", "Reset", "Åbn mappe", "Gå til mappe: %1", "Download", "Et trin op", "Til rodmappe", "Tjek efter updates", "brugere", "Sprog", "indstillinger", 
-"Afspærret", "Shuffle / Random", "Indstillinger", "Basemappe", "Stream-lokation", "Standardsprog", "Windows-system?", "Kræver HTTPS", "Tillad søgning", "Tillad download", "Sessionstimeout", 
-"Rapporter fejlede logins", "Vent - henter filliste", "Playlist kunne ikke tilføjes", "Admin", "Log ind via HTTPS for at ændre!", "Aktiver streaming", "Titel", "Kunstner", "Album", "Kommentar", "År", 
-"Nummer", "Genre", "ikke sat", "Max. download rate (kbps)", "Bruger", "%1 minutter - %2 titler", "%1 kbit %2 minutter", "Genreliste: %1", "Gå", "Spilletid: %1d %2h %3m - %4 filer %5 mb", "Intet relevant her.", 
-"Kodeordet er ændret", "", "Foretag venligst en markering", "Hvad er en opdatering?", "Klik her for hjælp", "Brug eksterne billeder", "Sti til eksterne billeder", "Nuværende kodeord", "", "", "", "To ens filer er muligvis fundet: %1 - %2", "Vil du virkelig slette playlisten?", "Alfabetisk", "Tilfældig", "Sorter", "Original", "Brug javascript", 
-"Er du sikker på, du vil slette denne bruger?", "Vis historie", "Historie", "Rækker", "Ekstern CSS-fil");
+$klang[9] = array('Russian', 'Windows-1251', 'Ğóññêèé', 'Ïîïóëÿğíûå', 'Íîâûå', 'Ïîèñê', '(òîëüêî %1 ïîêàçàí)', 'ñåê.', 'Ğåçóëüòàò ïîèñêà: "%1"', 'íàéäåíî', 'Íè îäèí.', 'îáíîâèòü íàñòğîéêè ïîèñêà áàçû äàííûõ', 'Óäàëèòü íåèñïîëüçóåìûå çàïèñè â áàçå?', 'Ïåğåñîçäàòü ID3?', 'Ğåæèì îòëàäêè?', 'Îáíîâèòü áàçó', 'Îòìåíà', 'Oáíîâèòü áàçó äàííûõ ïîèñêà', 'Íàéäåíî %1 ôàéë(îâ).', 'Íå ìîãó îïğåäåëèòü ıòîò ôàéë: %1, ïğîïóñêàş.', 'Äîáàâëåíî: %1 - Îáíîâëåíî: %2, ñêàíèğóåòñÿ: ', 'Ñêàíèğîâàòü: ', 'Îøèáêà - çàïğîñ: %1', 'Íå ìîãó ïğî÷èòàòü ıòîò ôàéë: %1. Ïğîïóøåíî.', 'Óäàëåíî: %1', 'Äîáàâëåíî %1, îáíîâëåíî %2, óäàëåíî %3, èç íèõ %4 îøèáêè è %5 ïğîïóùåíî. Âñåãî %6 ôàéëîâ - %7 ñåê. - %8 îòìå÷åííûõ äëÿ óäàëåíèÿ.', 'Ãîòîâ', 'Çàêğûòü', 'Íå íàéäåíî íè îäíîãî ôàéëà: "%1"', 'kPlaylist. Âõîä', 'Ñïèñîê àëüáîìîâ äëÿ èñïîëíèòåëÿ: %1', 'Áûñòğûé âûáîğ %1', 'Íå âûáğàíî íè îäíîé êîìïîçèöèè. Ïëåéëèñò íå îáíîâë¸í.', 'Ïëåéëèñò îáíîâë¸í!', 'Íàçàä', 'Ïëåéëèñò äîáàâëåí!', 'Íå çàáóäüòå ïåğåçàãğóçèòü ñòğàíèöó.', 'Ëîãèí:', 'Ïàğîëü:', 'Âñå äåéñòâèÿ ïîëüçîâàòåëåé çàïèñûâàşòñÿ.', 'Âîéòè', 'Äëÿ âõîäà íåîáõîäèì SSL', 'Ïğîèãğàòü', 'Óäàëèòü', 'Ñîâìåñòíî èñïîëüçóåìûé: ', 'Ñîõğàíèòü', 'Óïğàâëåíèå ïëåéëèñòîì: "%1" - %2 êîìïîçèöèè', 'Ğåäàêòèğîâàòü', 'Ïğîñìîòğ', 'Âûáğàòü', 'Ïîñëåä.', 'Ñîñîòîÿíèå', 'Èíôîğìàöèÿ', 'Óäàë.', 'Èìÿ', 'Èòîãè:', 'Îøèáêà', 'Îïåğàöèè ñ âûáîğêîé: ', 'Ïîñëåäîâàòåëüíîñòü:', 'ğåäàêòèğîâàòü ïëåéëèñò', 'Óäàëèòü ıòó ïîçèöèş', 'äîáàâèòü ïëåéëèñò', 'Èìÿ:', 'Ñîçäàòü', 'Ïğîèãğàòü: ', 'Ôàéë', 'Àëüáîì', 'Âñå', 'Âûáğàííûå', 'Äîáàâèòü', 'Ïğîèãğàòü', 'Ğåäàêòèğîâàòü', 'Íîâûé', 'Âûáğàòü:', 'Óïğàâëåíèå ïğîèãğûâàíèåì: ', 'Ïëåéëèñò: ', 'Áûñòğûé âûáîğ ïî ÷èñëó', 'Keyteq ïîìîãàåò âàì:', '(ïğîâåğèòü îáíîâëåíèÿ)', 'Äîìàøíÿÿ ñòğàíèöà', 'òîëüêî â  id3', 'àëüáîì', 'íàçâàíèå', 'èñïîëíèòåëü', 'Àëüáîìû ïî àëôàâèòó', 'ïğîñìîòğ', 'Îáùèå ïëåéëèñòû', 'Ïîëüçîâàòåëè', 'Àäìèíèñòğèğîâàíèå', 'Íîâûå', 'Ïîïóëÿğíûå', 'Âûõîä', 'Íàñòğîéêè', 'Ïîêàçàòü', 'Ìîè íàñòğîéêè', 'Ğåäàêòèğîâàòü ïîëüçîâàòåëåé', 'Íîâûé ïîëüçîâàòåëü', 'Ïîëíîå èìÿ', 'Ëîãèí', 'Èçìåíèòü ïàğîëü?', 'Ïàğîëü', 'Êîììåíòàğèé', 'Óğîâåíü äîñòóïà', 'Âêë', 'Âûêë', 'Óäàëèòü ïîëüçîâàòåëÿ', 'Îòêëş÷èòü ïîëüçîâàòåëÿ', 'Îáíîâèòü', 'Íîâûé ïîëüçîâàòåëü', 'Óäàë.', 'Âûõîä', 'Èñïîëüçîâàòü EXTM3U?', 'Êîëè÷åñòâî âûâîäèìûõ ñòğîê (ïîïóëÿğíûå/íîâûå)', 'Êîëè÷åñòâî âûâîäèìûõ ñòğîê ïğè ïîèñêå', 'Ñáğîñ', 'Âîéòè â ïàïêó', 'Ïåğåéòè â ïàïêó: %1', 'Ñêà÷àòü', 'Ââåğõ íà îäèí óğîâåíü', 'Â íà÷àëî', 'Ïğîâåğèòü îáíîâëåíèÿ', 'ïîëüçîâàòåëåé', 'ßçûê', 'íàñòğîéêè', 'Çàãğóæåíî', 'Ñëó÷àéíûé ïîğÿäîê:', 'Íàñòğîéêè', 'Ïóòü ê ìóçûêàëüíîìó àğõèâó', 'Ïóòü äëÿ ïîòîêîâîãî âåùàíèÿ', 'ßçûê ïî óìîë÷àíèş', 'Ğàáîòà ïîä Windows', 'Íåîáõîäèì HTTPS', 'Ğàçğåøèòü ïğîìàòûâàòü', 'Ğàçğåøèòü ñêà÷èâàòü', 'Òàéìàóò äëÿ ñåññèè', 'Ñîîáùàòü î íåóäà÷íûõ ïîïûòêàõ âõîäà', 'Ïîäîæäèòå - ğàçáèğàşñü ñî ñïèñêîì ôàéëîâ', 'Ïëåéëèñò íå ìîæåò áûòü äîáàâëåí!', 'Àäìèíèñòğèğîâàíèå', 'Âõîä òîëüêî ÷åğåç HTTPS', 'Âêëş÷èòü âñòğîåííóş ñèñòåìó ïîòîêîâîãî âåùàíèÿ', 'Íàçâàíèå', 'Èñïîëíèòåëü', 'Àëüáîì', 'Êîììåíòàğèé', 'Ãîä', 'Òğåê', 'Ñòèëü', 'íå óñòàíîâëåí', 'Ìàêñèìàëüíàÿ ñêîğîñòü ñêà÷èâàíèÿ (kbps)', 'Ïîëüçîâàòåëü', '%1 ìèí. - %2 òğåêîâ', '%1 kbit %2 ìèí.', 'Ñïèñîê ñòèëåé: %1', 'Âûïîëíèòü', 'Â áàçå %4 ôàéëîâ îáùèì îáúåìîì %5 Ìá.<br> Îáùåå âğåìÿ ïğîñëóøèâàíèÿ: %1 äíåé %2 ÷àñîâ %3 ìèíóò.', 'Ìóçûêàëüíûå ôàéëû îòñóòñòâóşò.', 'Ïàğîëü èçìåíåí', 'Ğåãèñòğàöèÿ', 'Âûáåğèòå õîòÿ áû îäèí ôàéë', '×òî òàêîå îáíîâëåíèå?', 'Ù¸ëêíèòå çäåñü äëÿ ïîäñêàçêè', 'Èñïîëüçîâàòü âíåøíèå êàğòèíêè?', 'Ïóòü ê êàğòèíêàì', 'Òåêóùèé ïàğîëü', 'Ââåä¸ííûé ïàğîëü íå ñîâïàäàåò ñ òåêóùèì!', 'Èñïîëüçîâàòü àğõèâàòîğ', 'Íåâîçìîæíî ñîçäàòü àğõèâ', 'Íàéäåíû âîçìîæíûå äóáëèêàòû ôàéëîâ:  "%1" "%2"', 'Âû äåéñòâèòåëüíî õîòèòå óäàëèòü ïëåéëèñò?', 'Ïî àëôàâèòó', 'Ñëó÷àéíî', 'Ñîğòèğîâàòü', 'Êàê â îğèãèíàëå', 'Èñïîëüçîâàòü JavaScript', 'Âû äåéñòâèòåëüíî õîòèòå óäàëèòü ıòîãî ïîëüçîâàòåëÿ?', 'Ïğîñìîòğ èñòîğèè', 'Èñòîğèÿ', 'Ñòğîêè', ' Ôàéë CSS', 'Óäàëèòü äóáëèêàòû', 'OK', 'ERR', 'Ïîòîê', '(ïîêàçàòü êàê)', 'ôàéëû', 'àëüáîìû', '%1 äíåé %2 ÷àñîâ %3 ìèíóò %4 ñåêóíä', 'Îáùèå', 'Èíòåğôåéñ', 'Ğàáîòà ñ ôàéëàìè', 'Ù¸ëêíèòå íà ? äëÿ ïîäñêàçêè.', 'Àâòîìàòè÷åñêîå îáíîâëåíèå áàçû äàííûõ', 'Îòñûëàòü ğàñøèğåíèå ôàéëà ïğè ïåğåäà÷å', 'Ğàçğåøèòü ïåğåäà÷ó ïîòîêîâîãî çâóêà áåç àâòîğèçàöèè', 'Âêëş÷èòü çàãîëîâêè', 'Âíåøíèé JavaScript', 'Àäğåñ âàøåãî ñàéòà', 'Ïîêàçûâàòü ôğàçó "Keyteq ïîìîãàåò âàì"', 'Ïîêàçûâàòü ôğàçó "Ïğîâåğèòü îáíîâëåíèÿ"', 'Ïîêàçûâàòü ñòàòèñòèêó', 'Äîáàâëÿòü òıã ID3v2 â ïîòîê', 'Ğàçğåøèòü ğåãèñòğàöèş ïîëüçîâàòåëåé', 'Òèïû ôàéëîâ', 'Äà', 'Íåò', 'Ğàñøèğåíèå', 'MIME', 'Âêëş÷èòü â M3U', 'Ğåäàêòèğîâàòü òèï ôàéëà', 'Óâåğåíû?', 'Òî÷íàÿ ïğîâåğêà ôàéëîâ', 'Ñëó÷àéíàÿ âûáîğêà', 'Ğåæèì âûáîğêè', 'Äîáàâèòü â ïëåéëèñò', 'Íå äîáàâëÿòü', 'Èç ìîåãî èçáğàííîãî', 'Ïîïóëÿğíûå êîìïîçèöèè íå íàéäåíû', 'Ñàìûå ïîïóëÿğíûå', 'Ñîğòèğîâêà', 'Ğàçğåøèòü ïîääåğæêó LAME?', 'Âûêëş÷åíî', 'Ğàçğåøèòü èñïîëüçîâàíèå LAME?', 'Email', 'Ğàçğåøèòü îòïğàâêó ôàéëîâ ïî Email\'ó?', 'SMTP ñåğâåğ', 'SMTP ïîğò', 'Ïîëó÷àòåëü', 'Ñîîáùåíèå', 'Îòîñëàòü', 'Ïèñüìî îòîñëàíî!', 'Àêòèâèğîâàò çàãğóçêó íà ñâåğâåğ', 'Äèğåêòîğèÿ äëÿ çàãğóçêè', 'Àêòèâèğîâàòü mp3ïî÷òó', 'Çàãğóçèòü', 'Ôàéë çàãğóæåí!', 'Ôàéë íå çàãğóæåí!', 'Êóêè äîëæíû áûòü âêëó÷åíû', 'Ïğîìåæóòîê', 'âñåãî', 'íà ıòîé íåäåëè', 'â ıòîì ìåñÿöå', 'â ïğîøëîì ìåñÿöå', 'hits', 'LAME êîìàíäà', 'Ïîêàçûâàòü îáëîæêè àëüáîìîâ', 'Îáëîæêè àëüáîìîâ', 'Èçìåíÿòü ğàçìåğû îáëîæåê', 'Âûñîòà îáëîæêè', 'Øèğèíà îáëîæêè', 'Ñïîñîá îòñûëêè ïî÷òû', 'Ïğÿìîé', 'Pear', 'Æäàòü', 'Ïîæàëóéñòà ââåäèòå â îïöèÿõ ïğàâèëüíûé àäğåññ ïî÷òîâîãî ÿùèêà!', 'Ïëåéëèñò "inline"', 'Ïîêàçûâàòü îáëîæêè ñ èíòåğíåò-àäğåññà?', 'Àäğåññ äëÿ îáëîæåê', 'Íå îòîñëàí!', 'Ïîëüçîâàòåëü äîáàâëåí!', 'Ñîçäàíèå àğõèâà', 'Àğõèâ óäàëåí.', 'Ïîëüçîâàòåëü çàğåãèñòğèğîâàí', 'Ìóçûêà', '%1 îòôèëüòğîâàí', 'Ëîã äîñòóïà', 'Îáîçğåíèå', 'Â àğõèâå', 'Îáçîğ', 'Âõîä %1 äî %2', 'Áîëüøå', 'Ïóáëèêàöèÿ');
 
-$klang[9] = array("Russian","windows-1251","&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;","&#1055;&#1086;&#1087;&#1091;&#1083;&#1103;&#1088;&#1085;&#1099;&#1077;","&#1053;&#1086;&#1074;&#1099;&#1077;","&#1055;&#1086;&#1080;&#1089;&#1082;","(&#1090;&#1086;&#1083;&#1100;&#1082;&#1086; %1 &#1087;&#1086;&#1082;&#1072;&#1079;&#1072;&#1085;)","&#1089;&#1077;&#1082;.","&#1056;&#1077;&#1079;&#1091;&#1083;&#1100;&#1090;&#1072;&#1090; &#1087;&#1086;&#1080;&#1089;&#1082;&#1072;: \"%1\"","&#1085;&#1072;&#1081;&#1076;&#1077;&#1085;&#1086;","&#1053;&#1080; &#1086;&#1076;&#1080;&#1085;.","&#1086;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100; &#1085;&#1072;&#1089;&#1090;&#1088;&#1086;&#1081;&#1082;&#1080; &#1087;&#1086;&#1080;&#1089;&#1082;&#1072; &#1073;&#1072;&#1079;&#1099; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093;","&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1085;&#1077;&#1080;&#1089;&#1087;&#1086;&#1083;&#1100;&#1079;&#1091;&#1077;&#1084;&#1099;&#1077; &#1079;&#1072;&#1087;&#1080;&#1089;&#1080; &#1074; &#1073;&#1072;&#1079;&#1077;?","&#1055;&#1077;&#1088;&#1077;&#1089;&#1086;&#1079;&#1076;&#1072;&#1090;&#1100; ID3?","&#1056;&#1077;&#1078;&#1080;&#1084; &#1086;&#1090;&#1083;&#1072;&#1076;&#1082;&#1080;?","&#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100; &#1073;&#1072;&#1079;&#1091;","&#1054;&#1090;&#1084;&#1077;&#1085;&#1072;","O&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100; &#1073;&#1072;&#1079;&#1091; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093; &#1087;&#1086;&#1080;&#1089;&#1082;&#1072;","&#1053;&#1072;&#1081;&#1076;&#1077;&#1085;&#1086; %1 &#1092;&#1072;&#1081;&#1083;(&#1086;&#1074;).","&#1053;&#1077; &#1084;&#1086;&#1075;&#1091; &#1086;&#1087;&#1088;&#1077;&#1076;&#1077;&#1083;&#1080;&#1090;&#1100; &#1101;&#1090;&#1086;&#1090; &#1092;&#1072;&#1081;&#1083;: %1, &#1087;&#1088;&#1086;&#1087;&#1091;&#1089;&#1082;&#1072;&#1102;.","&#1044;&#1086;&#1073;&#1072;&#1074;&#1083;&#1077;&#1085;&#1086;: %1 - &#1054;&#1073;&#1085;&#1086;&#1074;&#1083;&#1077;&#1085;&#1086;: %2, &#1089;&#1082;&#1072;&#1085;&#1080;&#1088;&#1091;&#1077;&#1090;&#1089;&#1103;: ","&#1057;&#1082;&#1072;&#1085;&#1080;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100;: ","&#1054;&#1096;&#1080;&#1073;&#1082;&#1072; - &#1079;&#1072;&#1087;&#1088;&#1086;&#1089;: %1","&#1053;&#1077; &#1084;&#1086;&#1075;&#1091; &#1087;&#1088;&#1086;&#1095;&#1080;&#1090;&#1072;&#1090;&#1100; &#1101;&#1090;&#1086;&#1090; &#1092;&#1072;&#1081;&#1083;: %1. &#1055;&#1088;&#1086;&#1087;&#1091;&#1096;&#1077;&#1085;&#1086;.","&#1059;&#1076;&#1072;&#1083;&#1077;&#1085;&#1086;: %1","&#1044;&#1086;&#1073;&#1072;&#1074;&#1083;&#1077;&#1085;&#1086; %1, &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1077;&#1085;&#1086; %2, &#1091;&#1076;&#1072;&#1083;&#1077;&#1085;&#1086; %3, &#1080;&#1079; &#1085;&#1080;&#1093; %4 &#1086;&#1096;&#1080;&#1073;&#1082;&#1080; &#1080; %5 &#1087;&#1088;&#1086;&#1087;&#1091;&#1097;&#1077;&#1085;&#1086;. &#1042;&#1089;&#1077;&#1075;&#1086; %6 &#1092;&#1072;&#1081;&#1083;&#1086;&#1074; - %7 &#1089;&#1077;&#1082;. - %8 &#1086;&#1090;&#1084;&#1077;&#1095;&#1077;&#1085;&#1085;&#1099;&#1093; &#1076;&#1083;&#1103; &#1091;&#1076;&#1072;&#1083;&#1077;&#1085;&#1080;&#1103;.","&#1043;&#1086;&#1090;&#1086;&#1074;","&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;","&#1053;&#1077; &#1085;&#1072;&#1081;&#1076;&#1077;&#1085;&#1086; &#1085;&#1080; &#1086;&#1076;&#1085;&#1086;&#1075;&#1086; &#1092;&#1072;&#1081;&#1083;&#1072;: \"%1\"","kPlaylist. &#1042;&#1093;&#1086;&#1076;","&#1057;&#1087;&#1080;&#1089;&#1086;&#1082; &#1072;&#1083;&#1100;&#1073;&#1086;&#1084;&#1086;&#1074; &#1076;&#1083;&#1103; &#1080;&#1089;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1077;&#1083;&#1103;: %1","&#1041;&#1099;&#1089;&#1090;&#1088;&#1099;&#1081; &#1074;&#1099;&#1073;&#1086;&#1088; %1","&#1053;&#1077; &#1074;&#1099;&#1073;&#1088;&#1072;&#1085;&#1086; &#1085;&#1080; &#1086;&#1076;&#1085;&#1086;&#1081; &#1082;&#1086;&#1084;&#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1080;. &#1055;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090; &#1085;&#1077; &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1105;&#1085;.","&#1055;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090; &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1105;&#1085;!","&#1053;&#1072;&#1079;&#1072;&#1076;","&#1055;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090; &#1076;&#1086;&#1073;&#1072;&#1074;&#1083;&#1077;&#1085;!","&#1053;&#1077; &#1079;&#1072;&#1073;&#1091;&#1076;&#1100;&#1090;&#1077; &#1087;&#1077;&#1088;&#1077;&#1079;&#1072;&#1075;&#1088;&#1091;&#1079;&#1080;&#1090;&#1100; &#1089;&#1090;&#1088;&#1072;&#1085;&#1080;&#1094;&#1091;.","&#1051;&#1086;&#1075;&#1080;&#1085;:","&#1055;&#1072;&#1088;&#1086;&#1083;&#1100;:","&#1042;&#1089;&#1077; &#1076;&#1077;&#1081;&#1089;&#1090;&#1074;&#1080;&#1103; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1077;&#1081; &#1079;&#1072;&#1087;&#1080;&#1089;&#1099;&#1074;&#1072;&#1102;&#1090;&#1089;&#1103;.","&#1042;&#1086;&#1081;&#1090;&#1080;","&#1044;&#1083;&#1103; &#1074;&#1093;&#1086;&#1076;&#1072; &#1085;&#1077;&#1086;&#1073;&#1093;&#1086;&#1076;&#1080;&#1084; SSL","&#1055;&#1088;&#1086;&#1080;&#1075;&#1088;&#1072;&#1090;&#1100;","&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;","&#1057;&#1086;&#1074;&#1084;&#1077;&#1089;&#1090;&#1085;&#1086; &#1080;&#1089;&#1087;&#1086;&#1083;&#1100;&#1079;&#1091;&#1077;&#1084;&#1099;&#1081;: ","&#1057;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100;","&#1059;&#1087;&#1088;&#1072;&#1074;&#1083;&#1077;&#1085;&#1080;&#1077; &#1087;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090;&#1086;&#1084;: \"%1\" - %2 &#1082;&#1086;&#1084;&#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1080;","&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100;","&#1055;&#1088;&#1086;&#1089;&#1084;&#1086;&#1090;&#1088;","&#1042;&#1099;&#1073;&#1088;&#1072;&#1090;&#1100;","&#1055;&#1086;&#1089;&#1083;&#1077;&#1076;.","&#1057;&#1086;&#1089;&#1086;&#1090;&#1086;&#1103;&#1085;&#1080;&#1077;","&#1048;&#1085;&#1092;&#1086;&#1088;&#1084;&#1072;&#1094;&#1080;&#1103;","&#1059;&#1076;&#1072;&#1083;.","&#1048;&#1084;&#1103;","&#1048;&#1090;&#1086;&#1075;&#1080;:","&#1054;&#1096;&#1080;&#1073;&#1082;&#1072;","&#1054;&#1087;&#1077;&#1088;&#1072;&#1094;&#1080;&#1080; &#1089; &#1074;&#1099;&#1073;&#1086;&#1088;&#1082;&#1086;&#1081;: ","&#1055;&#1086;&#1089;&#1083;&#1077;&#1076;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;&#1085;&#1086;&#1089;&#1090;&#1100;:","&#1088;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100; &#1087;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090;","&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1101;&#1090;&#1091; &#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1102;","&#1076;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1087;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090;","&#1048;&#1084;&#1103;:","&#1057;&#1086;&#1079;&#1076;&#1072;&#1090;&#1100;","&#1055;&#1088;&#1086;&#1080;&#1075;&#1088;&#1072;&#1090;&#1100;: ","&#1060;&#1072;&#1081;&#1083;","&#1040;&#1083;&#1100;&#1073;&#1086;&#1084;","&#1042;&#1089;&#1077;","&#1042;&#1099;&#1073;&#1088;&#1072;&#1085;&#1085;&#1099;&#1077;","&#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100;","&#1055;&#1088;&#1086;&#1080;&#1075;&#1088;&#1072;&#1090;&#1100;","&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100;","&#1053;&#1086;&#1074;&#1099;&#1081;","&#1042;&#1099;&#1073;&#1088;&#1072;&#1090;&#1100;:","&#1059;&#1087;&#1088;&#1072;&#1074;&#1083;&#1077;&#1085;&#1080;&#1077; &#1087;&#1088;&#1086;&#1080;&#1075;&#1088;&#1099;&#1074;&#1072;&#1085;&#1080;&#1077;&#1084;: ","&#1055;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090;: ","&#1041;&#1099;&#1089;&#1090;&#1088;&#1099;&#1081; &#1074;&#1099;&#1073;&#1086;&#1088; &#1087;&#1086; &#1095;&#1080;&#1089;&#1083;&#1091;","Keyteq &#1087;&#1086;&#1084;&#1086;&#1075;&#1072;&#1077;&#1090; &#1074;&#1072;&#1084;:","(&#1087;&#1088;&#1086;&#1074;&#1077;&#1088;&#1080;&#1090;&#1100; &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1077;&#1085;&#1080;&#1103;)","&#1044;&#1086;&#1084;&#1072;&#1096;&#1085;&#1103;&#1103; &#1089;&#1090;&#1088;&#1072;&#1085;&#1080;&#1094;&#1072;","&#1090;&#1086;&#1083;&#1100;&#1082;&#1086; &#1074;  id3","&#1072;&#1083;&#1100;&#1073;&#1086;&#1084;","&#1085;&#1072;&#1079;&#1074;&#1072;&#1085;&#1080;&#1077;","&#1080;&#1089;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1077;&#1083;&#1100;","&#1040;&#1083;&#1100;&#1073;&#1086;&#1084;&#1099; &#1087;&#1086; &#1072;&#1083;&#1092;&#1072;&#1074;&#1080;&#1090;&#1091;","&#1087;&#1088;&#1086;&#1089;&#1084;&#1086;&#1090;&#1088;","&#1054;&#1073;&#1097;&#1080;&#1077; &#1087;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090;&#1099;","&#1055;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1080;","&#1040;&#1076;&#1084;&#1080;&#1085;&#1080;&#1089;&#1090;&#1088;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;","&#1053;&#1086;&#1074;&#1099;&#1077;","&#1055;&#1086;&#1087;&#1091;&#1083;&#1103;&#1088;&#1085;&#1099;&#1077;","&#1042;&#1099;&#1093;&#1086;&#1076;","&#1053;&#1072;&#1089;&#1090;&#1088;&#1086;&#1081;&#1082;&#1080;","&#1055;&#1086;&#1082;&#1072;&#1079;&#1072;&#1090;&#1100;","&#1052;&#1086;&#1080; &#1085;&#1072;&#1089;&#1090;&#1088;&#1086;&#1081;&#1082;&#1080;","&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1077;&#1081;","&#1053;&#1086;&#1074;&#1099;&#1081; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;","&#1055;&#1086;&#1083;&#1085;&#1086;&#1077; &#1080;&#1084;&#1103;","&#1051;&#1086;&#1075;&#1080;&#1085;","&#1048;&#1079;&#1084;&#1077;&#1085;&#1080;&#1090;&#1100; &#1087;&#1072;&#1088;&#1086;&#1083;&#1100;?","&#1055;&#1072;&#1088;&#1086;&#1083;&#1100;","&#1050;&#1086;&#1084;&#1084;&#1077;&#1085;&#1090;&#1072;&#1088;&#1080;&#1081;","&#1059;&#1088;&#1086;&#1074;&#1077;&#1085;&#1100; &#1076;&#1086;&#1089;&#1090;&#1091;&#1087;&#1072;","&#1042;&#1082;&#1083;","&#1042;&#1099;&#1082;&#1083;","&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1103;","&#1054;&#1090;&#1082;&#1083;&#1102;&#1095;&#1080;&#1090;&#1100; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1103;","&#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;","&#1053;&#1086;&#1074;&#1099;&#1081; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;","&#1059;&#1076;&#1072;&#1083;.","&#1042;&#1099;&#1093;&#1086;&#1076;","&#1048;&#1089;&#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1100; EXTM3U?","&#1050;&#1086;&#1083;&#1080;&#1095;&#1077;&#1089;&#1090;&#1074;&#1086; &#1074;&#1099;&#1074;&#1086;&#1076;&#1080;&#1084;&#1099;&#1093; &#1089;&#1090;&#1088;&#1086;&#1082; (&#1087;&#1086;&#1087;&#1091;&#1083;&#1103;&#1088;&#1085;&#1099;&#1077;/&#1085;&#1086;&#1074;&#1099;&#1077;)","&#1050;&#1086;&#1083;&#1080;&#1095;&#1077;&#1089;&#1090;&#1074;&#1086; &#1074;&#1099;&#1074;&#1086;&#1076;&#1080;&#1084;&#1099;&#1093; &#1089;&#1090;&#1088;&#1086;&#1082; &#1087;&#1088;&#1080; &#1087;&#1086;&#1080;&#1089;&#1082;&#1077;","&#1057;&#1073;&#1088;&#1086;&#1089;","&#1042;&#1086;&#1081;&#1090;&#1080; &#1074; &#1087;&#1072;&#1087;&#1082;&#1091;","&#1055;&#1077;&#1088;&#1077;&#1081;&#1090;&#1080; &#1074; &#1087;&#1072;&#1087;&#1082;&#1091;: %1","&#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100;","&#1042;&#1074;&#1077;&#1088;&#1093; &#1085;&#1072; &#1086;&#1076;&#1080;&#1085; &#1091;&#1088;&#1086;&#1074;&#1077;&#1085;&#1100;","&#1042; &#1085;&#1072;&#1095;&#1072;&#1083;&#1086;","&#1055;&#1088;&#1086;&#1074;&#1077;&#1088;&#1080;&#1090;&#1100; &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1077;&#1085;&#1080;&#1103;","&#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1077;&#1081;","&#1071;&#1079;&#1099;&#1082;","&#1085;&#1072;&#1089;&#1090;&#1088;&#1086;&#1081;&#1082;&#1080;","&#1047;&#1072;&#1075;&#1088;&#1091;&#1078;&#1077;&#1085;&#1086;","&#1057;&#1083;&#1091;&#1095;&#1072;&#1081;&#1085;&#1099;&#1081; &#1087;&#1086;&#1088;&#1103;&#1076;&#1086;&#1082;:","&#1053;&#1072;&#1089;&#1090;&#1088;&#1086;&#1081;&#1082;&#1080;","&#1055;&#1091;&#1090;&#1100; &#1082; &#1084;&#1091;&#1079;&#1099;&#1082;&#1072;&#1083;&#1100;&#1085;&#1086;&#1084;&#1091; &#1072;&#1088;&#1093;&#1080;&#1074;&#1091;","&#1055;&#1091;&#1090;&#1100; &#1076;&#1083;&#1103; &#1087;&#1086;&#1090;&#1086;&#1082;&#1086;&#1074;&#1086;&#1075;&#1086; &#1074;&#1077;&#1097;&#1072;&#1085;&#1080;&#1103;","&#1071;&#1079;&#1099;&#1082; &#1087;&#1086; &#1091;&#1084;&#1086;&#1083;&#1095;&#1072;&#1085;&#1080;&#1102;","&#1056;&#1072;&#1073;&#1086;&#1090;&#1072; &#1087;&#1086;&#1076; Windows","&#1053;&#1077;&#1086;&#1073;&#1093;&#1086;&#1076;&#1080;&#1084; HTTPS","&#1056;&#1072;&#1079;&#1088;&#1077;&#1096;&#1080;&#1090;&#1100; &#1087;&#1088;&#1086;&#1084;&#1072;&#1090;&#1099;&#1074;&#1072;&#1090;&#1100;","&#1056;&#1072;&#1079;&#1088;&#1077;&#1096;&#1080;&#1090;&#1100; &#1089;&#1082;&#1072;&#1095;&#1080;&#1074;&#1072;&#1090;&#1100;","&#1058;&#1072;&#1081;&#1084;&#1072;&#1091;&#1090; &#1076;&#1083;&#1103; &#1089;&#1077;&#1089;&#1089;&#1080;&#1080;","&#1057;&#1086;&#1086;&#1073;&#1097;&#1072;&#1090;&#1100; &#1086; &#1085;&#1077;&#1091;&#1076;&#1072;&#1095;&#1085;&#1099;&#1093; &#1087;&#1086;&#1087;&#1099;&#1090;&#1082;&#1072;&#1093; &#1074;&#1093;&#1086;&#1076;&#1072;","&#1055;&#1086;&#1076;&#1086;&#1078;&#1076;&#1080;&#1090;&#1077; - &#1088;&#1072;&#1079;&#1073;&#1080;&#1088;&#1072;&#1102;&#1089;&#1100; &#1089;&#1086; &#1089;&#1087;&#1080;&#1089;&#1082;&#1086;&#1084; &#1092;&#1072;&#1081;&#1083;&#1086;&#1074;","&#1055;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090; &#1085;&#1077; &#1084;&#1086;&#1078;&#1077;&#1090; &#1073;&#1099;&#1090;&#1100; &#1076;&#1086;&#1073;&#1072;&#1074;&#1083;&#1077;&#1085;!","&#1040;&#1076;&#1084;&#1080;&#1085;&#1080;&#1089;&#1090;&#1088;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077;","&#1042;&#1093;&#1086;&#1076; &#1090;&#1086;&#1083;&#1100;&#1082;&#1086; &#1095;&#1077;&#1088;&#1077;&#1079; HTTPS","&#1042;&#1082;&#1083;&#1102;&#1095;&#1080;&#1090;&#1100; &#1074;&#1089;&#1090;&#1088;&#1086;&#1077;&#1085;&#1085;&#1091;&#1102; &#1089;&#1080;&#1089;&#1090;&#1077;&#1084;&#1091; &#1087;&#1086;&#1090;&#1086;&#1082;&#1086;&#1074;&#1086;&#1075;&#1086; &#1074;&#1077;&#1097;&#1072;&#1085;&#1080;&#1103;","&#1053;&#1072;&#1079;&#1074;&#1072;&#1085;&#1080;&#1077;","&#1048;&#1089;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1077;&#1083;&#1100;","&#1040;&#1083;&#1100;&#1073;&#1086;&#1084;","&#1050;&#1086;&#1084;&#1084;&#1077;&#1085;&#1090;&#1072;&#1088;&#1080;&#1081;","&#1043;&#1086;&#1076;","&#1058;&#1088;&#1077;&#1082;","&#1057;&#1090;&#1080;&#1083;&#1100;","&#1085;&#1077; &#1091;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1083;&#1077;&#1085;","&#1052;&#1072;&#1082;&#1089;&#1080;&#1084;&#1072;&#1083;&#1100;&#1085;&#1072;&#1103; &#1089;&#1082;&#1086;&#1088;&#1086;&#1089;&#1090;&#1100; &#1089;&#1082;&#1072;&#1095;&#1080;&#1074;&#1072;&#1085;&#1080;&#1103; (kbps)","&#1055;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1100;","%1 &#1084;&#1080;&#1085;. - %2 &#1090;&#1088;&#1077;&#1082;&#1086;&#1074;","%1 kbit %2 &#1084;&#1080;&#1085;.","&#1057;&#1087;&#1080;&#1089;&#1086;&#1082; &#1089;&#1090;&#1080;&#1083;&#1077;&#1081;: %1","&#1042;&#1099;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1100;","&#1042; &#1073;&#1072;&#1079;&#1077; %4 &#1092;&#1072;&#1081;&#1083;&#1086;&#1074; &#1086;&#1073;&#1097;&#1080;&#1084; &#1086;&#1073;&#1098;&#1077;&#1084;&#1086;&#1084; %5 &#1052;&#1073;.<br>&nbsp;&#1054;&#1073;&#1097;&#1077;&#1077; &#1074;&#1088;&#1077;&#1084;&#1103; &#1087;&#1088;&#1086;&#1089;&#1083;&#1091;&#1096;&#1080;&#1074;&#1072;&#1085;&#1080;&#1103;: %1 &#1076;&#1085;&#1077;&#1081; %2 &#1095;&#1072;&#1089;&#1086;&#1074; %3 &#1084;&#1080;&#1085;&#1091;&#1090;.","&#1052;&#1091;&#1079;&#1099;&#1082;&#1072;&#1083;&#1100;&#1085;&#1099;&#1077; &#1092;&#1072;&#1081;&#1083;&#1099; &#1086;&#1090;&#1089;&#1091;&#1090;&#1089;&#1090;&#1074;&#1091;&#1102;&#1090;.","&#1055;&#1072;&#1088;&#1086;&#1083;&#1100; &#1080;&#1079;&#1084;&#1077;&#1085;&#1077;&#1085;","&#1056;&#1077;&#1075;&#1080;&#1089;&#1090;&#1088;&#1072;&#1094;&#1080;&#1103;","&#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1093;&#1086;&#1090;&#1103; &#1073;&#1099; &#1086;&#1076;&#1080;&#1085; &#1092;&#1072;&#1081;&#1083;","&#1063;&#1090;&#1086; &#1090;&#1072;&#1082;&#1086;&#1077; &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1077;&#1085;&#1080;&#1077;?","&#1065;&#1105;&#1083;&#1082;&#1085;&#1080;&#1090;&#1077; &#1079;&#1076;&#1077;&#1089;&#1100; &#1076;&#1083;&#1103; &#1087;&#1086;&#1076;&#1089;&#1082;&#1072;&#1079;&#1082;&#1080;","&#1048;&#1089;&#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1100; &#1074;&#1085;&#1077;&#1096;&#1085;&#1080;&#1077; &#1082;&#1072;&#1088;&#1090;&#1080;&#1085;&#1082;&#1080;?","&#1055;&#1091;&#1090;&#1100; &#1082; &#1082;&#1072;&#1088;&#1090;&#1080;&#1085;&#1082;&#1072;&#1084;","&#1058;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1087;&#1072;&#1088;&#1086;&#1083;&#1100;","&#1042;&#1074;&#1077;&#1076;&#1105;&#1085;&#1085;&#1099;&#1081; &#1087;&#1072;&#1088;&#1086;&#1083;&#1100; &#1085;&#1077; &#1089;&#1086;&#1074;&#1087;&#1072;&#1076;&#1072;&#1077;&#1090; &#1089; &#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1084;!","&#1048;&#1089;&#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1100; &#1072;&#1088;&#1093;&#1080;&#1074;&#1072;&#1090;&#1086;&#1088;","&#1053;&#1077;&#1074;&#1086;&#1079;&#1084;&#1086;&#1078;&#1085;&#1086; &#1089;&#1086;&#1079;&#1076;&#1072;&#1090;&#1100; &#1072;&#1088;&#1093;&#1080;&#1074;","&#1053;&#1072;&#1081;&#1076;&#1077;&#1085;&#1099; &#1074;&#1086;&#1079;&#1084;&#1086;&#1078;&#1085;&#1099;&#1077; &#1076;&#1091;&#1073;&#1083;&#1080;&#1082;&#1072;&#1090;&#1099; &#1092;&#1072;&#1081;&#1083;&#1086;&#1074;:  \"%1\" \"%2\"","&#1042;&#1099; &#1076;&#1077;&#1081;&#1089;&#1090;&#1074;&#1080;&#1090;&#1077;&#1083;&#1100;&#1085;&#1086; &#1093;&#1086;&#1090;&#1080;&#1090;&#1077; &#1091;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1087;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090;?","&#1055;&#1086; &#1072;&#1083;&#1092;&#1072;&#1074;&#1080;&#1090;&#1091;","&#1057;&#1083;&#1091;&#1095;&#1072;&#1081;&#1085;&#1086;","&#1057;&#1086;&#1088;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100;","&#1050;&#1072;&#1082; &#1074; &#1086;&#1088;&#1080;&#1075;&#1080;&#1085;&#1072;&#1083;&#1077;","&#1048;&#1089;&#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1100; JavaScript","&#1042;&#1099; &#1076;&#1077;&#1081;&#1089;&#1090;&#1074;&#1080;&#1090;&#1077;&#1083;&#1100;&#1085;&#1086; &#1093;&#1086;&#1090;&#1080;&#1090;&#1077; &#1091;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1101;&#1090;&#1086;&#1075;&#1086; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1103;?","&#1055;&#1088;&#1086;&#1089;&#1084;&#1086;&#1090;&#1088; &#1080;&#1089;&#1090;&#1086;&#1088;&#1080;&#1080;","&#1048;&#1089;&#1090;&#1086;&#1088;&#1080;&#1103;","&#1057;&#1090;&#1088;&#1086;&#1082;&#1080;"," &#1060;&#1072;&#1081;&#1083; CSS","&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1076;&#1091;&#1073;&#1083;&#1080;&#1082;&#1072;&#1090;&#1099;","OK","ERR","&#1055;&#1086;&#1090;&#1086;&#1082;","(&#1087;&#1086;&#1082;&#1072;&#1079;&#1072;&#1090;&#1100; &#1082;&#1072;&#1082;)","&#1092;&#1072;&#1081;&#1083;&#1099;","&#1072;&#1083;&#1100;&#1073;&#1086;&#1084;&#1099;","%1 &#1076;&#1085;&#1077;&#1081; %2 &#1095;&#1072;&#1089;&#1086;&#1074; %3 &#1084;&#1080;&#1085;&#1091;&#1090; %4 &#1089;&#1077;&#1082;&#1091;&#1085;&#1076;","&#1054;&#1073;&#1097;&#1080;&#1077;","&#1048;&#1085;&#1090;&#1077;&#1088;&#1092;&#1077;&#1081;&#1089;","&#1056;&#1072;&#1073;&#1086;&#1090;&#1072; &#1089; &#1092;&#1072;&#1081;&#1083;&#1072;&#1084;&#1080;","&#1065;&#1105;&#1083;&#1082;&#1085;&#1080;&#1090;&#1077; &#1085;&#1072; ? &#1076;&#1083;&#1103; &#1087;&#1086;&#1076;&#1089;&#1082;&#1072;&#1079;&#1082;&#1080;.","&#1040;&#1074;&#1090;&#1086;&#1084;&#1072;&#1090;&#1080;&#1095;&#1077;&#1089;&#1082;&#1086;&#1077; &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1077;&#1085;&#1080;&#1077; &#1073;&#1072;&#1079;&#1099; &#1076;&#1072;&#1085;&#1085;&#1099;&#1093;","&#1054;&#1090;&#1089;&#1099;&#1083;&#1072;&#1090;&#1100; &#1088;&#1072;&#1089;&#1096;&#1080;&#1088;&#1077;&#1085;&#1080;&#1077; &#1092;&#1072;&#1081;&#1083;&#1072; &#1087;&#1088;&#1080; &#1087;&#1077;&#1088;&#1077;&#1076;&#1072;&#1095;&#1077;","&#1056;&#1072;&#1079;&#1088;&#1077;&#1096;&#1080;&#1090;&#1100; &#1087;&#1077;&#1088;&#1077;&#1076;&#1072;&#1095;&#1091; &#1087;&#1086;&#1090;&#1086;&#1082;&#1086;&#1074;&#1086;&#1075;&#1086; &#1079;&#1074;&#1091;&#1082;&#1072; &#1073;&#1077;&#1079; &#1072;&#1074;&#1090;&#1086;&#1088;&#1080;&#1079;&#1072;&#1094;&#1080;&#1080;","&#1042;&#1082;&#1083;&#1102;&#1095;&#1080;&#1090;&#1100; &#1079;&#1072;&#1075;&#1086;&#1083;&#1086;&#1074;&#1082;&#1080;","&#1042;&#1085;&#1077;&#1096;&#1085;&#1080;&#1081; JavaScript","&#1040;&#1076;&#1088;&#1077;&#1089; &#1074;&#1072;&#1096;&#1077;&#1075;&#1086; &#1089;&#1072;&#1081;&#1090;&#1072;","&#1055;&#1086;&#1082;&#1072;&#1079;&#1099;&#1074;&#1072;&#1090;&#1100; &#1092;&#1088;&#1072;&#1079;&#1091; \"Keyteq &#1087;&#1086;&#1084;&#1086;&#1075;&#1072;&#1077;&#1090; &#1074;&#1072;&#1084;\"","&#1055;&#1086;&#1082;&#1072;&#1079;&#1099;&#1074;&#1072;&#1090;&#1100; &#1092;&#1088;&#1072;&#1079;&#1091; \"&#1055;&#1088;&#1086;&#1074;&#1077;&#1088;&#1080;&#1090;&#1100; &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1077;&#1085;&#1080;&#1103;\"","&#1055;&#1086;&#1082;&#1072;&#1079;&#1099;&#1074;&#1072;&#1090;&#1100; &#1089;&#1090;&#1072;&#1090;&#1080;&#1089;&#1090;&#1080;&#1082;&#1091;","&#1044;&#1086;&#1073;&#1072;&#1074;&#1083;&#1103;&#1090;&#1100; &#1090;&#1101;&#1075; ID3v2 &#1074; &#1087;&#1086;&#1090;&#1086;&#1082;","&#1056;&#1072;&#1079;&#1088;&#1077;&#1096;&#1080;&#1090;&#1100; &#1088;&#1077;&#1075;&#1080;&#1089;&#1090;&#1088;&#1072;&#1094;&#1080;&#1102; &#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1090;&#1077;&#1083;&#1077;&#1081;","&#1058;&#1080;&#1087;&#1099; &#1092;&#1072;&#1081;&#1083;&#1086;&#1074;","&#1044;&#1072;","&#1053;&#1077;&#1090;","&#1056;&#1072;&#1089;&#1096;&#1080;&#1088;&#1077;&#1085;&#1080;&#1077;","MIME","&#1042;&#1082;&#1083;&#1102;&#1095;&#1080;&#1090;&#1100; &#1074; M3U","&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1090;&#1100; &#1090;&#1080;&#1087; &#1092;&#1072;&#1081;&#1083;&#1072;","&#1059;&#1074;&#1077;&#1088;&#1077;&#1085;&#1099;?","&#1058;&#1086;&#1095;&#1085;&#1072;&#1103; &#1087;&#1088;&#1086;&#1074;&#1077;&#1088;&#1082;&#1072; &#1092;&#1072;&#1081;&#1083;&#1086;&#1074;","&#1057;&#1083;&#1091;&#1095;&#1072;&#1081;&#1085;&#1072;&#1103; &#1074;&#1099;&#1073;&#1086;&#1088;&#1082;&#1072;","&#1056;&#1077;&#1078;&#1080;&#1084; &#1074;&#1099;&#1073;&#1086;&#1088;&#1082;&#1080;","&#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1074; &#1087;&#1083;&#1077;&#1081;&#1083;&#1080;&#1089;&#1090;","&#1053;&#1077; &#1076;&#1086;&#1073;&#1072;&#1074;&#1083;&#1103;&#1090;&#1100;","&#1048;&#1079; &#1084;&#1086;&#1077;&#1075;&#1086; &#1080;&#1079;&#1073;&#1088;&#1072;&#1085;&#1085;&#1086;&#1075;&#1086;","&#1055;&#1086;&#1087;&#1091;&#1083;&#1103;&#1088;&#1085;&#1099;&#1077; &#1082;&#1086;&#1084;&#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1080; &#1085;&#1077; &#1085;&#1072;&#1081;&#1076;&#1077;&#1085;&#1099;","&#1057;&#1072;&#1084;&#1099;&#1077; &#1087;&#1086;&#1087;&#1091;&#1083;&#1103;&#1088;&#1085;&#1099;&#1077;","&#1057;&#1086;&#1088;&#1090;&#1080;&#1088;&#1086;&#1074;&#1082;&#1072;","&#1056;&#1072;&#1079;&#1088;&#1077;&#1096;&#1080;&#1090;&#1100; &#1087;&#1086;&#1076;&#1076;&#1077;&#1088;&#1078;&#1082;&#1091; LAME?","&#1042;&#1099;&#1082;&#1083;&#1102;&#1095;&#1077;&#1085;&#1086;","&#1056;&#1072;&#1079;&#1088;&#1077;&#1096;&#1080;&#1090;&#1100; &#1080;&#1089;&#1087;&#1086;&#1083;&#1100;&#1079;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; LAME?");
+$klang[10]  = array("Swiss German", "ISO-8859-15", "Schwiizerdütsch", "Wasch geil", "Wasch neu", "Wo isch das Züüg", "Gseesch nur äs Prozänt", "sek", "Suechergebnis: '%1'", "gfundä", "keini", "pass das datebank-suech-züüg aa", "nöd benutzte seich i de db kickä ?", "ID3 erneuerä?",  "Dibög-Modus?", "Update", "Abbräche", "Suech-DB update", "%1 Files gfundä", "Bin bi dem File nöd druus cho: %1. Has usglaa.", "Inschtalliert:%1 - Draa umebaschtlet: %2, abchecke:", "scän:", "Problem bi de Abfrag: %1", "Han glaub es File verhüeneret: %1. Ussglaa..", "Weggnoo: %1",  "inetaa: %1, umebaschtlet: %2, weggnoo: %3, %4 händ nöd gfunzt und %5 hani ussglaa; %6 dateie insgesamt - %7 sekunde - %8 hani markiert zum abtschüsse.", "Schnornig.", "Zuemachä.", "Da hätts kei Dateie: \"%1\"", "KPlaylist Login", "Albumlischte für Interpret: %1", "Churzwahl %1", "Kein Song usgwählt. Playlischte nöd aktualisiert.", "Playlischte aktualisiert.", "Zrugg", "Playlischte zuegfüegt!", "Nomal lade das züüg.", "Login:", "Passwort:", "Achtung! Dasch privat da züüg. Jede seich gitt eis uf de Deckel!", "Login", "Bruchsch SSL zum inechoo", "Abschpile", "Lösche", "Die wommer zäme händ:", "Seivä", "A de Playlischte umebaschtle: \"%1\" - %2 Titel",  "Editor", "Aazeiger", "Uswähle", "Nummerä", "Schtatus", "Info", "Abtschüsse", "Namä", "Zämezellt", "Schöne seich", "Das machemer mit dene wo uusgwählt sind",  "Reiefolg", "a de Playlischte umebaschtle", "De Iitrag useschmeisse", "Playlischte dezuetue", "Namä:", "Mache", "Abschpile:", "Datei", "Album", "Ali", "die Uusgwählte",  "Dezue tue", "Abschpile", "draa umebaschtle", "neu", "Uswähle:", "Abschpile:", "Playlischte:", "Churzwahl numerisch", "Keyteq präsentiert eu:", "(Suche nacheme neue versiönli)", "Houmpeitsch", "Nume id3 TägZ", "Album", "Titel", "Interpret", "Churzwahl Album nach Interpret", "Aasicht", "Playlischtene, wommer zäme händ", "Benutzer", "Admin kontrollä", "Wasch neu", "Wasch geil", "Und tschüss", "Iischtellige", "Abtschägge", "Mini", "Benutzer abändere", "Neue Benutzer", "De ganz Name", "Login", "Passwort abändere?", "Passwort", "Sänf dezue gee",  "Wie mächtig isch de Typ", "Aagschtellt", "Abgschtellt", "Benutzer abtschüsse", "Uuslogge", "Erneuerä", "Neue Benutzer", "Lösche", "Uuslogge", "Söli das EXTM3U züüg bruuche?", "Wivill ziile aazeige (geil/neu)", "Max. Ziile bi Suechergebnis", "Reset", "Ordner ufmache", "Gang zum Ordner: %1", "Abesuuge", "Ein Ordner ufe", "Is Grundverzeichnis", "Mal luege öbs es Update gitt", "Benutzer", "Spraach", "Opzione",  "Aaghalte", "Mischle:", "Iischtellige", "Hauptverzeichnis", "Stream location", "Standardspraach", "Es windoof-system", "bruucht HTTPS", "dörf me sueche", "dörf me suuge", "session isch abgloffe",  "säg mer, wenn eine sis PW verhängt", "momäntli, mues schnäll go d'files läse", "han die blööd playlist nöd chöne mache!", "Admin", "Login mit HTTPS zum ändere");
 
-$klang[10]  = array("Swiss German", "ISO-8859-15", "Schwiizerdütsch", "Wasch geil", "Wasch neu", "Wo isch das Züüg", "Gseesch nur äs Prozänt", "sek", "Suechergebnis: '%1'", "gfundä", "keini", "pass das datebank-suech-züüg aa", "nöd benutzte seich i de db kickä ?", "ID3 erneuerä?", 
- "Dibög-Modus?", "Update", "Abbräche", "Suech-DB update", "%1 Files gfundä", "Bin bi dem File nöd druus cho: %1. Has usglaa.", "Inschtalliert:%1 - Draa umebaschtlet: %2, abchecke:", "scän:", "Problem bi de Abfrag: %1", "Han glaub es File verhüeneret: %1. Ussglaa..", "Weggnoo: %1", 
- "inetaa: %1, umebaschtlet: %2, weggnoo: %3, %4 händ nöd gfunzt und %5 hani ussglaa; %6 dateie insgesamt - %7 sekunde - %8 hani markiert zum abtschüsse.", "Schnornig.", "Zuemachä.", "Da hätts kei Dateie: \"%1\"", "KPlaylist Login", "Albumlischte für Interpret: %1", "Churzwahl %1", "Kein Song usgwählt. Playlischte nöd aktualisiert.", "Playlischte aktualisiert.", "Zrugg", "Playlischte zuegfüegt!", "Nomal lade das züüg.", "Login:", "Passwort:", "Achtung! Dasch privat da züüg. Jede seich gitt eis uf de Deckel!", "Login", "Bruchsch SSL zum inechoo", "Abschpile", "Lösche", "Die wommer zäme händ:", "Seivä", "A de Playlischte umebaschtle: \"%1\" - %2 Titel", 
- "Editor", "Aazeiger", "Uswähle", "Nummerä", "Schtatus", "Info", "Abtschüsse", "Namä", "Zämezellt", "Schöne seich", "Das machemer mit dene wo uusgwählt sind", 
- "Reiefolg", "a de Playlischte umebaschtle", "De Iitrag useschmeisse", "Playlischte dezuetue", "Namä:", "Mache", "Abschpile:", "Datei", "Album", "Ali", "die Uusgwählte", 
- "Dezue tue", "Abschpile", "draa umebaschtle", "neu", "Uswähle:", "Abschpile:", "Playlischte:", "Churzwahl numerisch", "Keyteq präsentiert eu:", "(Suche nacheme neue versiönli)", "Houmpeitsch", "Nume id3 TägZ", "Album", "Titel", "Interpret", "Churzwahl Album nach Interpret", "Aasicht", "Playlischtene, wommer zäme händ", "Benutzer", "Admin kontrollä", "Wasch neu", "Wasch geil", "Und tschüss", "Iischtellige", "Abtschägge", "Mini", "Benutzer abändere", "Neue Benutzer", "De ganz Name", "Login", "Passwort abändere?", "Passwort", "Sänf dezue gee", 
- "Wie mächtig isch de Typ", "Aagschtellt", "Abgschtellt", "Benutzer abtschüsse", "Uuslogge", "Erneuerä", "Neue Benutzer", "Lösche", "Uuslogge", "Söli das EXTM3U züüg bruuche?", "Wivill ziile aazeige (geil/neu)", "Max. Ziile bi Suechergebnis", "Reset", "Ordner ufmache", "Gang zum Ordner: %1", "Abesuuge", "Ein Ordner ufe", "Is Grundverzeichnis", "Mal luege öbs es Update gitt", "Benutzer", "Spraach", "Opzione",  "Aaghalte", "Mischle:", "Iischtellige", "Hauptverzeichnis", "Stream location", "Standardspraach", "Es windoof-system", "bruucht HTTPS", "dörf me sueche", "dörf me suuge", "session isch abgloffe",  "säg mer, wenn eine sis PW verhängt", "momäntli, mues schnäll go d'files läse", "han die blööd playlist nöd chöne mache!", "Admin", "Login mit HTTPS zum ändere");
+$klang[11]  = array('French', 'ISO-8859-15', 'francais', 'liens HOT', 'Nouveau', 'rechercher', '(seulement %1 visibles)', 'sec', 'Résultats de la recherche : \'%1\'', 'trouvé', 'aucun', 'actualiser les options de la base de données de recherche', '<b>Supprimer</b> les entrées inutiles ?', 'Reconstruire<b>ID3</b> ?', 'Mode de débuggage ?', 'Actualiser', 'Annuler', 'Actualiser la base de données de recherche', '%1 fichiers trouvés', 'Ce fichier n\'a pas pu être déterminé : %1, ignoré.', 'Installés : %1 - Actualisés : %2, Scannés: ', 'Scanner', 'Echec - Requete : %1', 'Le fichier : %1 n\'a pas été trouvé. Abandon.', 'Eliminés : %1', 'Inséré(s) :%1, Actualisés %2, Supprimés : %3 dont %4 échoués et %5 ignorés parmi %6 fichiers - %7 sec. - %8 marqués pour effacement.', 'Terminé', 'Fermer', 'Impossible de trouver des fichiers dans : "%1"', 'Nom d\'utilisateur KPlaylist', 'Liste des albums de l\'artiste : %1', 'Hotselect %1', 'Aucune chanson sélectionnée. La liste n\'a pas été actualisée.', 'Liste actualisée avec succès !', 'Précédent', 'Liste ajoutée !', 'Pensez à actualiser la page.', 'nom d\'utilisateur :', 'mot de passe :', 'Attention ! Ce site est privé, toute action est enregistrée.', 'Nom d\'utilisateur', 'SSL nécessaire pour s\'identifier.', 'Lire', 'Effacer', 'Partagée :', 'Enregistrer', 'Actions sur la liste : "%1" contenant %2 titres', 'Editeur', 'Viseur', 'Sélectionner', 'N° piste', 'Status', 'Informations', 'Supprimer', 'Nom du fichier', 'Totaux :', 'Erreur', 'Action à effectuer sur la selection', 'Liste :', 'éditer la liste', 'Supprimer cette entrée', 'ajouter une liste', 'Titre :', 'Créer', 'Lire :', 'Fichier', 'Album', 'Tous', 'Sélectionnés', 'ajouter', 'lire', 'éditer', 'nouveau', 'Sélectionner :', 'Lire :', 'Liste :', 'Sélection numérique', 'Keyteq vous propose :', '(rechercher des mises à jour)', 'Accueil', 'seulement id3', 'album', 'titre', 'artiste', 'Accéder à un artiste', 'voir', 'Listes partagées', 'Utilisateurs', 'Console d\'administration', 'Nouveaux', 'Populaires', 'Déconnecter', 'Options', 'Consulter les fichiers', 'Mon compte', 'éditer un utilisateur', 'nouvel utilisateur', 'Nom complet', 'Nom d\'utilisateur', 'changer le mot de passe ?', 'Mot de passe', 'Commentaires', 'Niveau d\'accès', 'On', 'Off', 'Supprimer l\'utilisateur', 'Déconnecter l\'utilisateur', 'Actualiser', 'Nouvel utilisateur', 'supprimer', 'déconnecter', 'Utiliser l\'option de EXTM3U ?', 'Montrer combien de lignes (populaires/nouveaux)', 'Résultat maximum de réponses', 'Reset', 'Ouvrir le répertoire', 'Aller dans le répertoire : %1', 'Télécharger', 'Dossier parent', 'Aller au répertoire racine', 'Chercher les mises à jour', 'utilisateurs ', 'Langue', 'options', 'Désactiver le compte', 'Lecture aléatoire :', 'Configuration', 'Chemin racine de la librairie musicale', 'Forcer l\'url du flux', 'Langue pa défaut', 'Système de type Windows', 'HTTPS nécessaire', 'Permettre la recherche', 'Permettre les téléchargements', 'Délai d\'expiration de la session', 'Rapport des tentatives de connexion échouées', 'Patientez - Analyse de la librairie', 'La liste n\'a pas pu être ajoutée !', 'Admin', 'Connexion en HTTPS obligatoire', 'Activer le moteur de streaming', 'Titre', 'Artiste', 'Album', 'Commentaires', 'Année', 'N° piste', 'Genre', 'n/a', 'Taux de téléchargement Max (kbps)', 'Utilisateur', '%1 min - %2 titres', '%1 kbit %2 min', 'Liste des genres : %1', 'Go', 'Temps de lecture : %1 J %2 H %3 m, %4 fichiers %5 Mo', 'Aucune ressource correspondante', 'Mot de passe mis à jour !', 'Inscrivez vous', 'Faites une selection SVP !', 'Qu\'est ce que la mise à jour ?', 'Clickez ici pour l\'aide', 'Utiliser des images externes ?', 'Chemin vers les images externes', 'Mot de passe actuel', 'Mauvais mot de passe', 'Archiveur préféré', 'Impossible de créer l\'archive', 'Doublon probable : "%1" "%2"', 'Voulez-vous vraiment supprimer la liste ?', 'Alphabétique', 'Aléatoire', 'Classer', 'Original', 'Utiliser Javascript', 'Voulez vous vraiment supprimer cet utilisateur ?', 'Voir l\'historique', 'historique', 'Lignes', 'Fichier CSS externe', 'Supprimer les doublons', 'OK', 'ERREUR', 'Flux', '(afficher par)', 'fichiers', 'albums', '%1J %2H %3m %4s', 'Principal', 'Personnalisation', 'Gestion de la librairie', 'Cliquer sur "?" pour afficher l\'aide', 'Synchronisation automatique de la base de données ', 'Envoyer les extensions de fichiers', 'Accepter les flux interdits', 'Inclure les en-tetes', 'Javascript externe', 'Accueil', 'Afficher "Keyteq vous propose :"', 'Afficher "rechercher des mises à jour"', 'Afficher les statistiques', 'Inclure les ID3v2 dans le flux', 'Ouvrir les inscriptions d\'utilisateurs', 'Types de fichiers', 'Oui', 'Non', 'Extensions', 'MIME', 'Inclure dans le M3U', 'Editer les types de fichiers', 'Etes-vous sûr ?', 'Analyse optimale des fichiers', 'Auto DJ', 'Mode', 'Dans la liste', 'Aucune, lire directement', 'Mes Favoris', 'Aucun fichier trouvé', 'Les plus écoutés', 'Ordre', 'Activer le support de LAME ?', 'Désactivé', 'Autoriser l\'utilisation de LAME ?', 'E-mail', 'Autoriser l\'envoi de fichiers par e-mail ?', 'Adresse du serveur SMTP', 'Port du serveur SMTP', 'Destinataire', 'Message', 'Envoyer', 'E-mail envoyé !', 'Activer l\'envoi de fichiers upload', 'Répertoire pour les envois upload', 'Activer mp3mail', 'Envoyer un fichier', 'Fichier envoyé !', 'Impossible d\'envoyer le fichier !', 'Vous devez autoriser les cookies pour vous connecter !', 'Période', 'depuis le début', 'cette semaine', 'ce mois', 'le mois dernier', 'requetes', 'Commande LAME', 'Afficher la couverture de l\'album', 'Fichiers de l\'album', 'Redimensionner les images de l\'album', 'Hauteur', 'Largeur', 'Méthode d\'envoi d\'e-mail', 'Direct', 'Pear', 'Attendre', 'Veuillez saisir une adresse e-mail valide dans les options !', 'Listes inline ?', 'Afficher l\'album depuis l\'url ?', 'Url de l\'album', 'Impossible d\'envoyer !', 'Utilisateur ajouté !', 'Utilitaire d\'archive', 'L\'archive a été supprimée.', 'Mis à jour', 'Similitudes');
 
-$klang[11]  = array("French", "ISO-8859-15", "francais", "liens \"HOT\"", "Nouveau", "rechercher", "Seulement 1% visible", "sec", "R&eacute;sultats de la recherche :'%1'", "trouv&eacute;", "aucun", "actualiser les options de la base de donn&eacute;es de recherche", "&lt;b&gt;Supprimer&lt;/b&gt; les entr&eacute;es inutiles?", "Reconstruire&lt;b&gt;ID3&lt;/b&gt;?", "Mode de d&eacute;buggage?", "Actualiser", "Annuler", 
-"Actualiser la base de donn&eacute;es de recherche", "%1 fichier(s) trouv&eacute;(s)", "Ce fichier n'a pas pu &ecirc;tre d&eacute;termin&eacute;: 1% ignor&eacute;", 
-" %1 - Actualiser: %2, scanner: ", "Scanner", "Echec de la recherche", "Le fichier: %1 n'a pas &eacute;t&eacute; trouv&eacute;. Abandon", "Elimin&eacute;: %1", 
-"Ins&eacute;r&eacute;:%1. Actualis&eacute; %2. Elimin&eacute; %3 o&ugrave; %4 a &eacute;chou&eacute; et %5 omis dans %6 r&eacute;pertoires - %7seg - %8 marqu&eacute; pour effacement.", "Finalis&eacute;", "Fermer", "Pas de r&eacute;pertoires utilisant %1 trouv&eacute;s", "Nom d'utilisateur KPlaylist", "Liste de disque de l'artiste: %1", "Hotselect %1", "Aucune chanson s&eacute;lectionn&eacute;e. La liste n'a pas &eacute;t&eacute; actualis&eacute;e.", "Liste actualis&eacute;e avec succ&egrave;s!", "Retourner", "Liste actualis&eacute;e!", 
-"Actualiser la page", "nom d'utilisateur", "mot de passe", "Attention! Ce site est protégé, toute action est enregistrée", "Nom d'utilisateur", "SSL n&eacute;cessaire pour entrer.", "Jouer", "Supprimer", "Partag&eacute;:", "Sauvegarder", "Liste de Controle: &quot;%1&quot; - %2 titres", "Editeur", "Viseur", "S&eacute;lectionner", 
-"sec", "Status", "Info", "Sup", "Nom", "Totaux", "Erreur", "Action &agrave; effectuer sur la selection",
-"S&eacute;quence:", "&eacute;diter la liste", "Supprimer cette entr&eacute;e", "ajouter une liste", "Nom:", "Cr&eacute;er", "Jouer:", "R&eacute;pertoire", "Disque", "Tout", "S&eacute;lectionn&eacute;s", "ajouter", "jouer", "&eacute;diter", "nouveau", "S&eacute;lectionner", "Controle:", "Liste:", "Sélection numérique", "Keyteq vous offre:",
-"(rechercher des actualisations)", "Page principale", "seulement id3", "disque", "titre", "artiste", "S&eacute;lectionner un disque de l'artiste", "vue", "Listes partag&eacute;es", "Utilisateurs", 
-"Controle d'administration", "Nouveau", "Populaire", "Sortir", "Options", "Controler", "mes ...", "&eacute;diter un utilisateur", "nouvel utilisateur", "Nom complet", "Nom d'utilisateur", 
-"changer le mot de passe?", "Mot de passe", "Commentaires","Niveau d'acc&egrave;s", "En marche", "Eteint", "Supprimer l'utilisateur", "Sortie utilisateur", "Actualiser", "Nouvel utilisateur", "sup", "sortir", 
-"Utiliser l'option de EXTM3U?", "Montrer combien de lignes (populaire/nouveau)", 
-"Nombre maximum de lignes ", "Restaurer", "R&eacute;pertoire ouvert", "ouvrir le r&eacute;pertoire: %1", "D&eacute;charger", "Monter d'un niveau", "Aller au r&eacute;pertoire racine", "Chercher des actualisations", " utilisateurs ", "Langue", "options", 
-"Ferm&eacute;", "Al&eacute;atoire", "Contôles", "R&eacute;pertoire base", "Localisation du courant", "Langue pr&eacute;f&eacute;r&eacute;e", "Un syst&egrave;me de Windows", "HTTPS n&eacute;cessaire", "Permettre la recherche", "Permettre les d&eacute;chargements", "Arr&ecirc;t de la session", 
-"Information de tentatives de connexion &eacute;chou&eacute;es", "Garder allum&eacute; - ramener la liste des r&eacute;pertoires", "La playlist n'a pas pu &ecirc;tre ajout&eacute;e!", "Admin", "Connexion sur HTTPS &agrave; changer", "Activer le moteur de streaming", "Titre", "Artiste", "Album", "Commentaire", "Année", 
-"Piste", "Genre", "non spécifié", "Taux de téléchargement Max. (kbps)", "Utilisateur", "%1 min - %2 titres", "%1 kbit %2 min", "liste de genre : %1", "Go", "Temps de lecture : %1d %2h %3m , %4 fichiers %5 Mb", "Aucune ressource correspondante", 
-"Mot de passe mis à jour !", "Inscrivez vous", "Faites une selection SVP !", "Qu\'est ce que la mise à jour ?", "Clickez ici pour l\'aide", "Utiliser des images externes?", "Chemin vers les images externes", "Mot de passe actuel", "Mauvais mot de passe", "Archiveur préféré", "Larchive n\'a put être créer", 
-"Doublon probable : \"%1\" \"%2\"", "Voulez-vous vraiment supprimer la playlist ?", "Alphabétique", "Au hasard", "Ordonné", "Original", "Utiliser Javascript", "Voulez vous vraiment supprimer cet utilisateur?", "Voir l\'historique", "historique", "lignes", 
-"fichier CSS externe", "Supprimer les doublons", "OK", "ERREUR", "Flux", "(voir comme)", "fichiers", "albums", "%1d %2h %3m %4s", "Général", "Personaliser", 
-"", "clicker sur \"?\" pour afficher l\'aide", "Synchronisation Automatique de la base de données ", "Envoyer les extension de fichier", "Autorisez les flux inautorisés", "Inclure les en-tetes", "Javascript externe", "Accueil", "", "", "Afficher les statistiques", "Inclure les ID3v2 dans le stream", "Activer l\'inscritpion d\'utilisateur"
-, "Types de fichiers", "Oui", "Non", "Extensions", "Type-MIME", "Inclure dans le M3U", "Editer les types de fichiers", "En etes vous sûr?");
+$klang[12]  = array("Indonesian", "ISO-8859-1", "Indonesia", "Yang Ter-Hot", "Yang Terbaru", "Cari", "(hanya %1 tampilan)", "dtk", "Hasil Pencarian: '%1'", "ditemukan", "Kosong", "Opsi update pencarian database", "Hapus record tdk terpakai", "Bangun Ulang ID3?",  "Mode Debug ?", "Update", "Batal", "update pencarian database", "ada %1 file", "Tipe file tdk ada: %1, abaikan.", "Terinstall: %1 - Update %2, scan:", "Scan:", "Gagal - query: %1", "File %1 tdk terbaca, Abaikan", "Menghapus: %1",  "Tambah %1, Ubah %2, Hapus %3 dimana %4 gagal dan %5 abaikan bila %6 file - %7 detik - %8 dipilih utk dihapus.", "Selesai", "Tutup", "File yang dicari tdk ada: \"%1\"", "Login kPlaylist", "Daftar album dengan artis: %1", "Hotselect %1", "Tdk ada pilihan, Playlist tdk terupdate", "Playlist ter-update!", "Kembali", "Playlist ditambah!",  "Ingatlah utk me-reload hal. ini", "Login:", "Password:", "Peringatan! Ini bukan web umum. Semua Aktifitas terekam disini.", "Login", "Butuh SSL untuk Login", "Putar", "Hapus", "Sharing:", "Simpan", "Playlist kontrol: \"%1\" - %2 judul",  "Editor", "Viewer", "Pilih", "Seq", "Status", "Info", "Hapus", "Nama", "Total:", "Error", "Action pd terpilih:",  "Sekuen", "Ubah Playlist", "Hapus entri ini", "Tambah playlist", "Nama", "Buat", "Putar:", "File", "Album", "Semua", "terpilih",  "tambah", "putar", "ubah", "baru", "Pilih:", "Kontrol:", "Playlist:", "Nomor HotSelect", "KeyTeq Anda:", "(Cek Upgrade)", "Homesite",  "hanya id3", "album", "judul", "artis", "Hotselect Album dari Artis ", "lihat", "Playlist lainnya", "User", "Kontrol Admin", "Yang terbaru", "Yang Terhot", "Logout", "Opsi", "Cek", "Profil", "Ubah user", "User baru", "Nama Lengkap", "Login", "Ubah Password?", "Password", "Komentar",  "Level Akses", "On", "Off", "Hapus user", "Logout user", "Refresh", "User baru", "hapus", "logout", "Gunakan EXTM3U", "Tampilkan banyak baris (hot/baru)",  "Max. Baris pencarian", "Reset", "Buka direktori", "ke direktori: %1", "Download", "Naik keatas", "Ke direktori root", "Cek Upgrade", "User", "Bahasa", "Opsi",  "Bootd", "Acak:", "Seting", "Direktori base", "Lokasi stream", "Bahasa default", "System Windows", "Butuh HTTPS", "Boleh mencari", "Boleh dowload", "Batas session",  "Report gagal login diperlukan", "Hold on - fetching file list ", "Playlist tdk bisa ditambah!", "Admin", "Login dengan HTTPS untuh mengganti!");
 
+$klang[13]  = array("Italian", "ISO-8859-1", "Italiano", "Cosa c'è di Hot", "Cosa c'è di nuovo", "Ricerca", "(soltanto 1% visibile)", "sec", "risultato della ricerca: '%1'", "trovato", "nessuno.", "aggiona opzioni ricerca nel database", "Cancella records non utilizzati?", "Ricostruisci ID3?", "modalità di Debug?", "Aggiorna", "Annulla", "aggiorna ricerca nel database", "Trovati %1 files.", "Impossibile determinare questo file: %1, saltato.", "Installato: %1 - Aggiornato: %2, scansione:", "Scansione:", "Fallita - ricerca: %1", "Impossibile leggere questo file: %1. Saltato.", "Rimosso: %1", "Inserito %1, aggiornato %1, cancellato %3, quando %4 è fallito e %5 saltato su %6 files - %7 secondi - %8 segnati per la cancellazione.", "Fatto", "Chiuso", "Impossibile trovare files qui: \"%1\"", "KPlaylist Login", "Lista album per artista: %1", "Hotselect %1", "Nessuna canzone selezionata. Playlist non aggiornata.", "Playlist aggiornata!", "Indietro", "Playlist aggiunta!", "Ricorda di ricaricare la pagina.", "login:", "password:", "Attenzione! Questo non è un sito pubblico. Tutte le azioni vengono registrate.", "Login", "SSL richiesto per l'accesso.", "Play", "Cancella", "Condiviso:", "Salva", "Controllo playlist: \"%1\" - %2 titoli", "Editor", "Visualizzatore", "Selezione", "Seq", "Stato", "Informazioni", "Canc", "Nome", "Totale:", "Errore", "Azione da eseguire sulla selezione:", "Sequenza:", "Edita playlist", "Cancella questa riga", "aggiungi playlist", "Nome:", "Crea", "Esegui:", "File", "Album", "Tutto", "Selezionati", "aggiungi", "play", "modifica", "nuovo", "Selezione:", "Controllo:", "Playlist:", "Selezione numerica", "Keyteq vi propone:", "(controlla aggiornamenti)", "Homepage", "solo id3", "album", "titolo", "artista", "Seleziona album per artista", "visualizza", "Playlists condivise", "Utenti", "Controllo dell'amministratore", "Cosa c'è di nuovo", "Cosa c'è di Hot", "Esci", "Opzioni", "Controlla", "Mio", "modifica utente", "nuovo utente", "Nome completo", "Login", "Cambio Password?", "Password", "Commento", "Livello d'accesso", "On", "Off", "Cancella utente", "Uscita utente", "Refresh", "Nuovo utente", "canc", "Uscita", "Usa opzione EXTM3U", "Mostra quante righe (hot/nuove)", "Righe massime da cercare", "Reset", "Apri directory", "Vai alla directory: %1", "Download", "Sali di un livello", "Vai al livello principale", "Controlla per l'aggiornamento", "utenti", "lingua", "opzioni", "Booted", "Casuale:", "Impostazioni", "Directory iniziale", "locazione brano", "Lingua di default", "Un sistema Windows", "Richiede HTTPS", "Permetti ricerca", "Permetti download", "timeout sessione", "Riporta tentativi falliti di login", "Aspetta - estrazione lista file", "La playlist non può essere aggiunta!", "Amministratore", "Collegarsi tramite HTTPS per cambiare!", "Abilita morore di streaming", "Titolo", "Artista", "Album", "Commento", "Anno", "Traccia", "Genere", "non settato", "Limitazione download (kbps)", "Utente", "%1 minuti - %2 titoli", "%1 kilobit %2 minuti", "Lista generi: %1", "Vai", "%1d %2h %3m playtime %4 files %5 mb", "Nessuna risorsa.", "Password cambiata!", "Crea utente", "Fai la tua selezione!", "Cos'è l'update?", "Aiuto", "Usa immagini esterne?", "Path immagini esterne", "Password corrente", "La passord corrente è sbagliata!", "Archiver preferito", "L'archivio potrebbe non essere stato creato", "Probabile file duplicato: %1 - %2", "Eliminare la playlist?", "Alfabetico", "Random", "Ordina", "Originale", "Usa javascript", "Eliminare questo utente?", "Guarda la history", "history", "Righe",  "File CSS Esterno");
 
-$klang[12]  = array("Indonesian", "ISO-8859-1", "Indonesia", "Yang Ter-Hot", "Yang Terbaru", "Cari", "(hanya %1 tampilan)", "dtk", "Hasil Pencarian: '%1'", "ditemukan", "Kosong", "Opsi update pencarian database", "Hapus record tdk terpakai", "Bangun Ulang ID3?", 
- "Mode Debug ?", "Update", "Batal", "update pencarian database", "ada %1 file", "Tipe file tdk ada: %1, abaikan.", "Terinstall: %1 - Update %2, scan:", "Scan:", "Gagal - query: %1", "File %1 tdk terbaca, Abaikan", "Menghapus: %1", 
- "Tambah %1, Ubah %2, Hapus %3 dimana %4 gagal dan %5 abaikan bila %6 file - %7 detik - %8 dipilih utk dihapus.", "Selesai", "Tutup", "File yang dicari tdk ada: \"%1\"", "Login kPlaylist", "Daftar album dengan artis: %1", "Hotselect %1", "Tdk ada pilihan, Playlist tdk terupdate", "Playlist ter-update!", "Kembali", "Playlist ditambah!", 
- "Ingatlah utk me-reload hal. ini", "Login:", "Password:", "Peringatan! Ini bukan web umum. Semua Aktifitas terekam disini.", "Login", "Butuh SSL untuk Login", "Putar", "Hapus", "Sharing:", "Simpan", "Playlist kontrol: \"%1\" - %2 judul", 
- "Editor", "Viewer", "Pilih", "Seq", "Status", "Info", "Hapus", "Nama", "Total:", "Error", "Action pd terpilih:", 
- "Sekuen", "Ubah Playlist", "Hapus entri ini", "Tambah playlist", "Nama", "Buat", "Putar:", "File", "Album", "Semua", "terpilih", 
- "tambah", "putar", "ubah", "baru", "Pilih:", "Kontrol:", "Playlist:", "Nomor HotSelect", "KeyTeq Anda:", "(Cek Upgrade)", "Homesite", 
- "hanya id3", "album", "judul", "artis", "Hotselect Album dari Artis ", "lihat", "Playlist lainnya", "User", "Kontrol Admin", "Yang terbaru", "Yang Terhot", 
- "Logout", "Opsi", "Cek", "Profil", "Ubah user", "User baru", "Nama Lengkap", "Login", "Ubah Password?", "Password", "Komentar", 
- "Level Akses", "On", "Off", "Hapus user", "Logout user", "Refresh", "User baru", "hapus", "logout", "Gunakan EXTM3U", "Tampilkan banyak baris (hot/baru)", 
- "Max. Baris pencarian", "Reset", "Buka direktori", "ke direktori: %1", "Download", "Naik keatas", "Ke direktori root", "Cek Upgrade", "User", "Bahasa", "Opsi", 
- "Bootd", "Acak:", "Seting", "Direktori base", "Lokasi stream", "Bahasa default", "System Windows", "Butuh HTTPS", "Boleh mencari", "Boleh dowload", "Batas session", 
- "Report gagal login diperlukan", "Hold on - fetching file list ", "Playlist tdk bisa ditambah!", "Admin", "Login dengan HTTPS untuh mengganti!");
+$klang[14]  = array("Traditional Chinese [&amp;#12345]", "big5", "&#32321;&#39636;&#20013;&#25991;", "&#26368;&#29105;&#38272;", "&#26368;&#26032;", "&#25628;&#23563;", "(&#21482;&#26377; %1 &#31558;&#39023;&#31034;)", "&#31186;", "'%1' &#65306;&#25628;&#23563;&#32080;&#26524;", "&#25214;&#21040;", "&#27794;&#26377;", "&#26356;&#26032;&#25628;&#23563;&#36039;&#26009;&#24235;&#36984;&#38917;", "&#21034;&#38500; &#26410;&#29992;&#36942;&#30340;&#35352;&#37636;&#65311;", "&#37325;&#24314; ID3", "&#38500;&#34802;&#27169;&#24335;", "&#26356;&#26032;", "&#21462;&#28040;", "&#26356;&#26032;&#25628;&#23563;&#36039;&#26009;&#24235;", "&#25214;&#21040; %1 &#27284;&#26696;&#12290;", "&#30906;&#23450;&#19981;&#21040;&#27492; %1 &#27284;&#26696;&#65072; &#30053;&#36942;&#12290;", "&#24050;&#23433;&#35037;&#65072; %1 - &#26356;&#26032;&#65306; %2 &#65104; &#25475;&#30596;&#65306;", "&#25475;&#30596;&#65306;", "&#22833;&#25943; - &#21839;&#38988;&#65072; %1", "&#35712;&#19981;&#21040;&#27492; %1 &#27284;&#26696; &#65072;&#30053;&#36942;", "&#24050;&#31227;&#38500;&#65306; %1", "&#24050;&#25554;&#20837; %1 &#65292; &#24050;&#26356;&#26032; %2 &#65292; &#24050;&#21034;&#38500; %3&#65292; &#22320;&#40670; %4  &#22833;&#25943; &#21450; %6 &#27284;&#26696;&#20013;&#30053;&#36942;%5  - %7 &#31186; - &#24050;&#21034;&#38500; %8 &#26377;&#35352;&#34399;&#30340;&#27284;&#26696;", "&#24050;&#23436;&#25104;", "&#38359;&#38281;", "&#22312;&#27492;&#25214;&#19981;&#21040;&#20219;&#20309;&#27284;&#26696;&#65306; \"%1\"","kPlaylist &#30331;&#20837;", "&#27492;&#27468;&#25163;&#30340;&#23560;&#36655;&#28165;&#21934;&#65306; %1", "&#29105;&#36984; %1", "&#27794;&#26377;&#27468;&#26354;&#36984;&#25799;&#12290; &#25773;&#25918;&#28165;&#21934;&#27794;&#26377;&#26356;&#26032;&#12290;", "&#25773;&#25918;&#28165;&#21934;&#24050;&#26356;&#26032;&#65281;", "&#36820;&#22238;", "&#25773;&#25918;&#28165;&#21934;&#24050;&#21152;&#20837;&#65281;",  "&#35352;&#20303;&#37325;&#26032;&#25972;&#29702;&#27492;&#38913;&#12290;", "&#30331;&#20837;&#21517;&#31281;&#65306;","&#23494;&#30908;&#65306;","&#35686;&#21578;&#65281;&#27492;&#32178;&#31449;&#26159;&#19981;&#20844;&#38283;&#30340;&#65292;&#25152;&#26377;&#21205;&#20316;&#26159;&#26371;&#34987;&#35352;&#37636;&#12290;", "&#30331;&#20837;", "&#23433;&#20840;&#24615;(SSL)&#30331;&#20837;", "&#25773;&#25918;", "&#21034;&#38500;", "&#20998;&#20139;&#65109;", "&#20786;&#23384;", "&#25511;&#21046;&#25773;&#25918;&#28165;&#21934;&#65072; \"%1\" - %2 &#27161;&#38988;", "&#32232;&#36655;&#22120;", "&#27298;&#35222;&#22120;", "&#36984;&#25799;","&#38918;&#24207;", "&#29376;&#24907;", "&#36039;&#35338;", "&#21034;&#38500;", "&#21517;&#31281;", "&#32317;&#25976;&#65109;", "&#37679;&#35492;", "&#36984;&#25799;&#20013;&#65306;", "&#27425;&#24207;&#65109;", "&#32232;&#36655;&#25773;&#25918;&#28165;&#21934;", "&#21034;&#38500;&#27492;&#21152;&#20837;", "&#21152;&#20837;&#25773;&#25918;&#28165;&#21934;", "&#21517;&#23383;&#65109;", "&#24314;&#31435;", "&#25773;&#25918;&#65306;", "&#27284;&#26696;", "&#23560;&#36655;", "&#20840;&#37096;", "&#24050;&#36984;&#25799;", "&#26032;&#22686;", "&#25773;&#25918;", "&#32232;&#36655;", "&#26032;&#22686;", "&#36984;&#25799;&#65306;", "&#25773;&#25918;&#25511;&#21046;&#65306;", "&#25773;&#25918;&#30446;&#37636;&#65306;", "&#29105;&#36984;&#25976;&#20540;", "Keyteq &#25552;&#25552;&#20320;&#65306;", "(&#27298;&#26597;&#26356;&#26032;)", "&#20027;&#38913;", "&#21482;&#25628;&#23563; id3", "&#23560;&#36655;", "&#27161;&#38988;", "&#27468;&#25163;", "&#29105;&#36984;&#27468;&#25163;&#23560;&#36655;", "&#27298;&#35222;", "&#20998;&#20139;&#25773;&#25918;&#30446;&#37636;", "&#29992;&#25142;", "&#31649;&#29702;", "&#26368;&#26032;", "&#26368;&#29105;&#38272;", "&#30331;&#20986;", "&#36984;&#38917;", "&#27298;&#26597;", "&#20854;&#20182;", "&#32232;&#36655;&#20351;&#29992;&#32773;", "&#26032;&#22686;&#20351;&#29992;&#32773;", "&#20840;&#21517;", "&#30331;&#20837;", "&#35722;&#26356;&#23494;&#30908;&#65311;", "&#23494;&#30908;", "&#20633;&#35387;", "&#23384;&#21462;&#23652;&#32026;", "&#38283;", "&#38364;", "&#21034;&#38500;&#20351;&#29992;&#32773;", "&#20999;&#26039;&#20351;&#29992;&#32773;","&#37325;&#26032;&#25972;&#29702;","&#26032;&#22686;&#20351;&#29992;&#32773;", "&#21034;&#38500;", "&#30331;&#20986;", "&#20351;&#29992; EXTM3U &#25928;&#26524;&#65311;", "&#39023;&#31034;&#22810;&#23569;&#34892; (&#29105;&#38272;/&#26032;)", "&#26368;&#22823;&#25628;&#23563;&#34892;&#25976;", "&#37325;&#35373;", "&#38283;&#21855;&#30446;&#37636;", "&#36339;&#21040;&#30446;&#37636;&#65306; %1", "&#19979;&#36617;", "&#36339;&#21040;&#19978;&#19968;&#23652;", "&#36339;&#21040;&#26681;&#30446;&#37636;", "&#27298;&#26597;&#26356;&#26032;", "&#20351;&#29992;&#32773;", "&#35486;&#35328;", "&#36984;&#38917;", "&#24050;&#36215;&#21205;", "&#38568;&#27231;", "&#35373;&#23450;", "&#26681;&#30446;&#37636;&#32085;&#23565;&#36335;&#24465;", "&#20018;&#27969;&#36335;&#24465;", "&#38928;&#35373;&#35486;&#35328;", "&#35222;&#31383;&#31995;&#32113;", "&#35201;&#27714;HTTPS", "&#20801;&#35377;&#25628;&#23563;", "&#20801;&#35377;&#19979;&#36617;","&#36926;&#26178;", "&#22577;&#21578;&#30331;&#20837;&#22833;&#25943;", "&#35531;&#31561;&#31561; - &#24314;&#31435;&#27284;&#26696;&#30446;&#37636;&#20013;","&#25773;&#25918;&#28165;&#21934;&#19981;&#34987;&#26356;&#26032;&#65281;", "&#31649;&#29702;&#32773;", "&#20351;&#29992;HTTPS&#30331;&#20837;&#24460;&#26356;&#25913;&#65281;");
 
-$klang[13]  = array("Italian", "ISO-8859-1", "Italiano", "Cosa c'è di Hot", "Cosa c'è di nuovo", "Ricerca", "(soltanto 1% visibile)", "sec", "risultato della ricerca: '%1'", "trovato", "nessuno.", "aggiona opzioni ricerca nel database", "Cancella records non utilizzati?", "Ricostruisci ID3?", 
-"modalità di Debug?", "Aggiorna", "Annulla", "aggiorna ricerca nel database", "Trovati %1 files.", "Impossibile determinare questo file: %1, saltato.", "Installato: %1 - Aggiornato: %2, scansione:", "Scansione:", "Fallita - ricerca: %1", "Impossibile leggere questo file: %1. Saltato.", "Rimosso: %1", 
-"Inserito %1, aggiornato %1, cancellato %3, quando %4 è fallito e %5 saltato su %6 files - %7 secondi - %8 segnati per la cancellazione.", "Fatto", "Chiuso", "Impossibile trovare files qui: \"%1\"", "KPlaylist Login", "Lista album per artista: %1", "Hotselect %1", "Nessuna canzone selezionata. Playlist non aggiornata.", "Playlist aggiornata!", "Indietro", "Playlist aggiunta!", 
-"Ricorda di ricaricare la pagina.", "login:", "password:", "Attenzione! Questo non è un sito pubblico. Tutte le azioni vengono registrate.", "Login", "SSL richiesto per l'accesso.", "Play", "Cancella", "Condiviso:", "Salva", "Controllo playlist: \"%1\" - %2 titoli", 
-"Editor", "Visualizzatore", "Selezione", "Seq", "Stato", "Informazioni", "Canc", "Nome", "Totale:", "Errore", "Azione da eseguire sulla selezione:", 
-"Sequenza:", "Edita playlist", "Cancella questa riga", "aggiungi playlist", "Nome:", "Crea", "Esegui:", "File", "Album", "Tutto", "Selezionati", 
-"aggiungi", "play", "modifica", "nuovo", "Selezione:", "Controllo:", "Playlist:", "Selezione numerica", "Keyteq vi propone:", "(controlla aggiornamenti)", "Homepage", 
-"solo id3", "album", "titolo", "artista", "Seleziona album per artista", "visualizza", "Playlists condivise", "Utenti", "Controllo dell'amministratore", "Cosa c'è di nuovo", "Cosa c'è di Hot", "Esci", "Opzioni", "Controlla", "Mio", "modifica utente", "nuovo utente", "Nome completo", "Login", "Cambio Password?", "Password", "Commento", 
-"Livello d'accesso", "On", "Off", "Cancella utente", "Uscita utente", "Refresh", "Nuovo utente", "canc", "Uscita", "Usa opzione EXTM3U", "Mostra quante righe (hot/nuove)", 
-"Righe massime da cercare", "Reset", "Apri directory", "Vai alla directory: %1", "Download", "Sali di un livello", "Vai al livello principale", "Controlla per l'aggiornamento", "utenti", "lingua", "opzioni", 
-"Booted", "Casuale:", "Impostazioni", "Directory iniziale", "locazione brano", "Lingua di default", "Un sistema Windows", "Richiede HTTPS", "Permetti ricerca", "Permetti download", "timeout sessione", 
-"Riporta tentativi falliti di login", "Aspetta - estrazione lista file", "La playlist non può essere aggiunta!", "Amministratore", "Collegarsi tramite HTTPS per cambiare!", "Abilita morore di streaming", "Titolo", "Artista", "Album", "Commento", "Anno", 
-"Traccia", "Genere", "non settato", "Limitazione download (kbps)", "Utente", "%1 minuti - %2 titoli", "%1 kilobit %2 minuti", "Lista generi: %1", "Vai", "%1d %2h %3m playtime %4 files %5 mb", "Nessuna risorsa.", 
-"Password cambiata!", "Crea utente", "Fai la tua selezione!", "Cos'è l'update?", "Aiuto", "Usa immagini esterne?", "Path immagini esterne", "Password corrente", "La passord corrente è sbagliata!", "Archiver preferito", "L'archivio potrebbe non essere stato creato", 
-"Probabile file duplicato: %1 - %2", "Eliminare la playlist?", "Alfabetico", "Random", "Ordina", "Originale", "Usa javascript", "Eliminare questo utente?", "Guarda la history", "history", "Righe",  "File CSS Esterno");
+$klang[15] = array("Traditional Chinese - big5", "big5", "ÁcÅé¤¤¤å", "³Ì¼öªù", "³Ì·s", "·j´M", "(¥u¦³ %1 µ§Åã¥Ü)", "¬í", "'%1' ¡G·j´Mµ²ªG", "§ä¨ì", "¨S¦³", "§ó·s·j´M¸ê®Æ®w¿ï¶µ", "§R°£ ¥¼¥Î¹Lªº°O¿ı¡H", "­««Ø ID3", "°£ÂÎ¼Ò¦¡", "§ó·s", "¨ú®ø", "§ó·s·j´M¸ê®Æ®w", "§ä¨ì %1 ÀÉ®×¡C", "½T©w¤£¨ì¦¹ %1 ÀÉ®×¡J ²¤¹L¡C", "¤w¦w¸Ë¡J %1 - §ó·s¡G %2 ¡M ±½ºË¡G","±½ºË¡G", "¥¢±Ñ - °İÃD¡J %1", "Åª¤£¨ì¦¹ %1 ÀÉ®× ¡J²¤¹L", "¤w²¾°£¡G %1", "¤w´¡¤J %1 ¡A ¤w§ó·s %2 ¡A ¤w§R°£ %3¡A ¦aÂI %4 ¥¢±Ñ ¤Î %6 ÀÉ®×¤¤²¤¹L%5 - %7 ¬í - ¤w§R°£ %8 ¦³°O¸¹ªºÀÉ®×","¤w§¹¦¨", "?³¬", "¦b¦¹§ä¤£¨ì¥ô¦óÀÉ®×¡G '%1'", "kPlaylist µn¤J", "¦¹ºq¤âªº±M¿è²M³æ¡G %1", "¼ö¿ï %1", "¨S¦³ºq¦±¿ï¾Ü¡C ¼½©ñ²M³æ¨S¦³§ó·s¡C", "¼½©ñ²M³æ¤w§ó·s¡I", "ªğ¦^", "¼½©ñ²M³æ¤w¥[¤J¡I", "°O¦í­«·s¾ã²z¦¹­¶¡C", "µn¤J¦WºÙ¡G", "±K½X¡G", "Äµ§i¡I¦¹ºô¯¸¬O¤£¤½¶}ªº¡A©Ò¦³°Ê§@¬O·|³Q°O¿ı¡C", "µn¤J", "¦w¥ş©Ê(SSL)µn¤J", "¼½©ñ", "§R°£", "¤À¨É¡R", "Àx¦s", "±±¨î¼½©ñ²M³æ¡J '%1' - %2 ¼ĞÃD", "½s¿è¾¹", "ÀËµø¾¹", "¿ï¾Ü", "¶¶§Ç", "ª¬ºA", "¸ê°T", "§R°£", "¦WºÙ", "Á`¼Æ¡R", "¿ù»~", "¿ï¾Ü¤¤¡G", "¦¸§Ç¡R", "½s¿è¼½©ñ²M³æ","§R°£¦¹¥[¤J", "¥[¤J¼½©ñ²M³æ", "¦W¦r¡R", "«Ø¥ß", "¼½©ñ¡G", "ÀÉ®×", "±M¿è", "¥ş³¡", "¤w¿ï¾Ü", "·s¼W", "¼½©ñ", "½s¿è", "·s¼W", "¿ï¾Ü¡G", "¼½©ñ±±¨î¡G", "¼½©ñ¥Ø¿ı¡G", "¼ö¿ï¼Æ­È", "Keyteq ´£´£§A¡G", "(ÀË¬d§ó·s)", "¥D­¶", "¥u·j´M id3", "±M¿è", "¼ĞÃD", "ºq¤â", "¼ö¿ïºq¤â±M¿è", "ÀËµø", "¤À¨É¼½©ñ¥Ø¿ı", "¥Î¤á", "ºŞ²z", "³Ì·s", "³Ì¼öªù","µn¥X", "¿ï¶µ", "ÀË¬d", "¨ä¥L", "½s¿è¨Ï¥ÎªÌ", "·s¼W¨Ï¥ÎªÌ", "¥ş¦W", "µn¤J", "ÅÜ§ó±K½X¡H", "±K½X", "³Æµù", "¦s¨ú¼h¯Å", "¶}", "Ãö", "§R°£¨Ï¥ÎªÌ", "¤ÁÂ_¨Ï¥ÎªÌ", "­«·s¾ã²z","·s¼W¨Ï¥ÎªÌ", "§R°£", "µn¥X", "¨Ï¥Î EXTM3U ®ÄªG¡H", "Åã¥Ü¦h¤Ö¦æ (¼öªù/·s)", "³Ì¤j·j´M¦æ¼Æ", "­«³]", "¶}±Ò¥Ø¿ı", "¸õ¨ì¥Ø¿ı¡G %1", "¤U¸ü", "¸õ¨ì¤W¤@¼h", "¸õ¨ì®Ú¥Ø¿ı","ÀË¬d§ó·s", "¨Ï¥ÎªÌ", "»y¨¥", "¿ï¶µ", "¤w°_°Ê", "ÀH¾÷", "³]©w", "®Ú¥Ø¿ıµ´¹ï¸ô®|", "¦ê¬y¸ô®|", "¹w³]»y¨¥", "µøµ¡¨t²Î", "­n¨DHTTPS", "¤¹³\·j´M", "¤¹³\¤U¸ü", "¹O®É", "³ø§iµn¤J¥¢±Ñ", "½Ğµ¥µ¥ - «Ø¥ßÀÉ®×¥Ø¿ı¤¤", "¼½©ñ²M³æ¤£³Q§ó·s¡I", "ºŞ²zªÌ", "¨Ï¥ÎHTTPSµn¤J«á§ó§ï¡I");
 
-$klang[14]  = array("Traditional Chinese [&amp;#12345] ", "big5", "&#32321;&#39636;&#20013;&#25991;", "&#26368;&#29105;&#38272;", "&#26368;&#26032;", "&#25628;&#23563;", 
-"(&#21482;&#26377; %1 &#31558;&#39023;&#31034;)", "&#31186;", "'%1' &#65306;&#25628;&#23563;&#32080;&#26524;", "&#25214;&#21040;", "&#27794;&#26377;", 
-"&#26356;&#26032;&#25628;&#23563;&#36039;&#26009;&#24235;&#36984;&#38917;", "&#21034;&#38500; &#26410;&#29992;&#36942;&#30340;&#35352;&#37636;&#65311;", 
-"&#37325;&#24314; ID3", "&#38500;&#34802;&#27169;&#24335;", "&#26356;&#26032;", "&#21462;&#28040;", "&#26356;&#26032;&#25628;&#23563;&#36039;&#26009;&#24235;", 
-"&#25214;&#21040; %1 &#27284;&#26696;&#12290;", "&#30906;&#23450;&#19981;&#21040;&#27492; %1 &#27284;&#26696;&#65072; &#30053;&#36942;&#12290;", 
-"&#24050;&#23433;&#35037;&#65072; %1 - &#26356;&#26032;&#65306; %2 &#65104; &#25475;&#30596;&#65306;", "&#25475;&#30596;&#65306;", "&#22833;&#25943; - &#21839;&#38988;&#65072; %1", 
-"&#35712;&#19981;&#21040;&#27492; %1 &#27284;&#26696; &#65072;&#30053;&#36942;", "&#24050;&#31227;&#38500;&#65306; %1", 
-"&#24050;&#25554;&#20837; %1 &#65292; &#24050;&#26356;&#26032; %2 &#65292; &#24050;&#21034;&#38500; %3&#65292; &#22320;&#40670; %4  &#22833;&#25943; &#21450; %6 &#27284;&#26696;&#20013;&#30053;&#36942;%5  - %7 &#31186; - &#24050;&#21034;&#38500; %8 &#26377;&#35352;&#34399;&#30340;&#27284;&#26696;",
-"&#24050;&#23436;&#25104;", "&#38359;&#38281;", "&#22312;&#27492;&#25214;&#19981;&#21040;&#20219;&#20309;&#27284;&#26696;&#65306; \"%1\"",
-"kPlaylist &#30331;&#20837;", "&#27492;&#27468;&#25163;&#30340;&#23560;&#36655;&#28165;&#21934;&#65306; %1", "&#29105;&#36984; %1", 
-"&#27794;&#26377;&#27468;&#26354;&#36984;&#25799;&#12290; &#25773;&#25918;&#28165;&#21934;&#27794;&#26377;&#26356;&#26032;&#12290;",
-"&#25773;&#25918;&#28165;&#21934;&#24050;&#26356;&#26032;&#65281;", "&#36820;&#22238;", "&#25773;&#25918;&#28165;&#21934;&#24050;&#21152;&#20837;&#65281;", 
-"&#35352;&#20303;&#37325;&#26032;&#25972;&#29702;&#27492;&#38913;&#12290;", "&#30331;&#20837;&#21517;&#31281;&#65306;", "&#23494;&#30908;&#65306;",
-"&#35686;&#21578;&#65281;&#27492;&#32178;&#31449;&#26159;&#19981;&#20844;&#38283;&#30340;&#65292;&#25152;&#26377;&#21205;&#20316;&#26159;&#26371;&#34987;&#35352;&#37636;&#12290;", 
-"&#30331;&#20837;", "&#23433;&#20840;&#24615;(SSL)&#30331;&#20837;", "&#25773;&#25918;", "&#21034;&#38500;", "&#20998;&#20139;&#65109;", "&#20786;&#23384;", 
-"&#25511;&#21046;&#25773;&#25918;&#28165;&#21934;&#65072; \"%1\" - %2 &#27161;&#38988;", "&#32232;&#36655;&#22120;", "&#27298;&#35222;&#22120;", "&#36984;&#25799;",
-"&#38918;&#24207;", "&#29376;&#24907;", "&#36039;&#35338;", "&#21034;&#38500;", "&#21517;&#31281;", "&#32317;&#25976;&#65109;", "&#37679;&#35492;", "&#36984;&#25799;&#20013;&#65306;",
-"&#27425;&#24207;&#65109;", "&#32232;&#36655;&#25773;&#25918;&#28165;&#21934;", "&#21034;&#38500;&#27492;&#21152;&#20837;", "&#21152;&#20837;&#25773;&#25918;&#28165;&#21934;",
-"&#21517;&#23383;&#65109;", "&#24314;&#31435;", "&#25773;&#25918;&#65306;", "&#27284;&#26696;", "&#23560;&#36655;", "&#20840;&#37096;", "&#24050;&#36984;&#25799;", "&#26032;&#22686;", 
-"&#25773;&#25918;", "&#32232;&#36655;", "&#26032;&#22686;", "&#36984;&#25799;&#65306;", "&#25773;&#25918;&#25511;&#21046;&#65306;", "&#25773;&#25918;&#30446;&#37636;&#65306;",
-"&#29105;&#36984;&#25976;&#20540;", "Keyteq &#25552;&#25552;&#20320;&#65306;", "(&#27298;&#26597;&#26356;&#26032;)", "&#20027;&#38913;", "&#21482;&#25628;&#23563; id3", "&#23560;&#36655;",
-"&#27161;&#38988;", "&#27468;&#25163;", "&#29105;&#36984;&#27468;&#25163;&#23560;&#36655;", "&#27298;&#35222;", "&#20998;&#20139;&#25773;&#25918;&#30446;&#37636;", "&#29992;&#25142;",
-"&#31649;&#29702;", "&#26368;&#26032;", "&#26368;&#29105;&#38272;", "&#30331;&#20986;", "&#36984;&#38917;", "&#27298;&#26597;", "&#20854;&#20182;", "&#32232;&#36655;&#20351;&#29992;&#32773;", 
-"&#26032;&#22686;&#20351;&#29992;&#32773;", "&#20840;&#21517;", "&#30331;&#20837;", "&#35722;&#26356;&#23494;&#30908;&#65311;", "&#23494;&#30908;", "&#20633;&#35387;", 
-"&#23384;&#21462;&#23652;&#32026;", "&#38283;", "&#38364;", "&#21034;&#38500;&#20351;&#29992;&#32773;", "&#20999;&#26039;&#20351;&#29992;&#32773;", "&#37325;&#26032;&#25972;&#29702;", 
-"&#26032;&#22686;&#20351;&#29992;&#32773;", "&#21034;&#38500;", "&#30331;&#20986;", "&#20351;&#29992; EXTM3U &#25928;&#26524;&#65311;", 
-"&#39023;&#31034;&#22810;&#23569;&#34892; (&#29105;&#38272;/&#26032;)", "&#26368;&#22823;&#25628;&#23563;&#34892;&#25976;", "&#37325;&#35373;", 
-"&#38283;&#21855;&#30446;&#37636;", "&#36339;&#21040;&#30446;&#37636;&#65306; %1", "&#19979;&#36617;", "&#36339;&#21040;&#19978;&#19968;&#23652;", 
-"&#36339;&#21040;&#26681;&#30446;&#37636;", "&#27298;&#26597;&#26356;&#26032;", "&#20351;&#29992;&#32773;", "&#35486;&#35328;", "&#36984;&#38917;", 
-"&#24050;&#36215;&#21205;", "&#38568;&#27231;", "&#35373;&#23450;", "&#26681;&#30446;&#37636;&#32085;&#23565;&#36335;&#24465;", "&#20018;&#27969;&#36335;&#24465;", 
-"&#38928;&#35373;&#35486;&#35328;", "&#35222;&#31383;&#31995;&#32113;", "&#35201;&#27714;HTTPS", "&#20801;&#35377;&#25628;&#23563;", "&#20801;&#35377;&#19979;&#36617;",
-"&#36926;&#26178;", "&#22577;&#21578;&#30331;&#20837;&#22833;&#25943;", "&#35531;&#31561;&#31561; - &#24314;&#31435;&#27284;&#26696;&#30446;&#37636;&#20013;",
-"&#25773;&#25918;&#28165;&#21934;&#19981;&#34987;&#26356;&#26032;&#65281;", "&#31649;&#29702;&#32773;", 
-"&#20351;&#29992;HTTPS&#30331;&#20837;&#24460;&#26356;&#25913;&#65281;");
+$klang[16] = array("Traditional Chinese - gb2312", "gb2312", "ÁcÅé¤¤¤å", "³Ì¼öªù", "³Ì·s", "·j´M", "(¥u¦³ %1 µ§Åã¥Ü)", "¬í", "'%1' ¡G·j´Mµ²ªG", "§ä¨ì", "¨S¦³", "§ó·s·j´M¸ê®Æ®w¿ï¶µ", "§R°£ ¥¼¥Î¹Lªº°O¿ı¡H", "­««Ø ID3", "°£ÂÎ¼Ò¦¡", "§ó·s", "¨ú®ø", "§ó·s·j´M¸ê®Æ®w", "§ä¨ì %1 ÀÉ®×¡C", "½T©w¤£¨ì¦¹ %1 ÀÉ®×¡J ²¤¹L¡C", "¤w¦w¸Ë¡J %1 - §ó·s¡G %2 ¡M ±½ºË¡G", "±½ºË¡G", "¥¢±Ñ - °İÃD¡J %1", "Åª¤£¨ì¦¹ %1 ÀÉ®× ¡J²¤¹L", "¤w²¾°£¡G %1", "¤w´¡¤J %1 ¡A ¤w§ó·s %2 ¡A ¤w§R°£ %3¡A ¦aÂI %4 ¥¢±Ñ ¤Î %6 ÀÉ®×¤¤²¤¹L%5 - %7 ¬í - ¤w§R°£ %8 ¦³°O¸¹ªºÀÉ®×", "¤w§¹¦¨", "?³¬", "¦b¦¹§ä¤£¨ì¥ô¦óÀÉ®×¡G '%1'", "kPlaylist µn¤J", "¦¹ºq¤âªº±M¿è²M³æ¡G %1", "¼ö¿ï %1", "¨S¦³ºq¦±¿ï¾Ü¡C ¼½©ñ²M³æ¨S¦³§ó·s¡C", "¼½©ñ²M³æ¤w§ó·s¡I", "ªğ¦^", "¼½©ñ²M³æ¤w¥[¤J¡I", "°O¦í­«·s¾ã²z¦¹­¶¡C", "µn¤J¦WºÙ¡G", "±K½X¡G", "Äµ§i¡I¦¹ºô¯¸¬O¤£¤½¶}ªº¡A©Ò¦³°Ê§@¬O·|³Q°O¿ı¡C", "µn¤J", "¦w¥ş©Ê(SSL)µn¤J", "¼½©ñ", "§R°£", "¤À¨É¡R", "Àx¦s", "±±¨î¼½©ñ²M³æ¡J '%1' - %2 ¼ĞÃD", "½s¿è¾¹", "ÀËµø¾¹", "¿ï¾Ü", "¶¶§Ç", "ª¬ºA", "¸ê°T", "§R°£", "¦WºÙ", "Á`¼Æ¡R", "¿ù»~", "¿ï¾Ü¤¤¡G", "¦¸§Ç¡R", "½s¿è¼½©ñ²M³æ", "§R°£¦¹¥[¤J", "¥[¤J¼½©ñ²M³æ", "¦W¦r¡R", "«Ø¥ß", "¼½©ñ¡G", "ÀÉ®×", "±M¿è", "¥ş³¡", "¤w¿ï¾Ü", "·s¼W", "¼½©ñ", "½s¿è", "·s¼W", "¿ï¾Ü¡G", "¼½©ñ±±¨î¡G", "¼½©ñ¥Ø¿ı¡G", "¼ö¿ï¼Æ­È", "Keyteq ´£´£§A¡G", "(ÀË¬d§ó·s)", "¥D­¶", "¥u·j´M id3", "±M¿è", "¼ĞÃD", "ºq¤â", "¼ö¿ïºq¤â±M¿è", "ÀËµø", "¤À¨É¼½©ñ¥Ø¿ı", "¥Î¤á", "ºŞ²z", "³Ì·s", "³Ì¼öªù", "µn¥X", "¿ï¶µ", "ÀË¬d", "¨ä¥L", "½s¿è¨Ï¥ÎªÌ", "·s¼W¨Ï¥ÎªÌ", "¥ş¦W", "µn¤J", "ÅÜ§ó±K½X¡H", "±K½X", "³Æµù", "¦s¨ú¼h¯Å", "¶}", "Ãö", "§R°£¨Ï¥ÎªÌ", "¤ÁÂ_¨Ï¥ÎªÌ", "­«·s¾ã²z", "·s¼W¨Ï¥ÎªÌ", "§R°£", "µn¥X", "¨Ï¥Î EXTM3U ®ÄªG¡H", "Åã¥Ü¦h¤Ö¦æ (¼öªù/·s)", "³Ì¤j·j´M¦æ¼Æ", "­«³]", "¶}±Ò¥Ø¿ı", "¸õ¨ì¥Ø¿ı¡G %1", "¤U¸ü", "¸õ¨ì¤W¤@¼h", "¸õ¨ì®Ú¥Ø¿ı", "ÀË¬d§ó·s", "¨Ï¥ÎªÌ", "»y¨¥", "¿ï¶µ", "¤w°_°Ê", "ÀH¾÷", "³]©w", "®Ú¥Ø¿ıµ´¹ï¸ô®|", "¦ê¬y¸ô®|", "¹w³]»y¨¥", "µøµ¡¨t²Î", "­n¨DHTTPS", "¤¹³\·j´M", "¤¹³\¤U¸ü", "¹O®É", "³ø§iµn¤J¥¢±Ñ", "½Ğµ¥µ¥ - «Ø¥ßÀÉ®×¥Ø¿ı¤¤", "¼½©ñ²M³æ¤£³Q§ó·s¡I", "ºŞ²zªÌ", "¨Ï¥ÎHTTPSµn¤J«á§ó§ï¡I");
 
-$klang[15] = array("Traditional Chinese - big5", "big5", "ÁcÅé¤¤¤å", "³Ì¼öªù", "³Ì·s", "·j´M", "(¥u¦³ %1 µ§Åã¥Ü)", "¬í", "'%1' ¡G·j´Mµ²ªG", "§ä¨ì", "¨S¦³", "§ó·s·j´M¸ê®Æ®w¿ï¶µ", 
-"§R°£ ¥¼¥Î¹Lªº°O¿ı¡H", "­««Ø ID3", "°£ÂÎ¼Ò¦¡", "§ó·s", "¨ú®ø", "§ó·s·j´M¸ê®Æ®w", "§ä¨ì %1 ÀÉ®×¡C", "½T©w¤£¨ì¦¹ %1 ÀÉ®×¡J ²¤¹L¡C", "¤w¦w¸Ë¡J %1 - §ó·s¡G %2 ¡M ±½ºË¡G",
-"±½ºË¡G", "¥¢±Ñ - °İÃD¡J %1", "Åª¤£¨ì¦¹ %1 ÀÉ®× ¡J²¤¹L", "¤w²¾°£¡G %1", "¤w´¡¤J %1 ¡A ¤w§ó·s %2 ¡A ¤w§R°£ %3¡A ¦aÂI %4 ¥¢±Ñ ¤Î %6 ÀÉ®×¤¤²¤¹L%5 - %7 ¬í - ¤w§R°£ %8 ¦³°O¸¹ªºÀÉ®×",
-"¤w§¹¦¨", "?³¬", "¦b¦¹§ä¤£¨ì¥ô¦óÀÉ®×¡G '%1'", "kPlaylist µn¤J", "¦¹ºq¤âªº±M¿è²M³æ¡G %1", "¼ö¿ï %1", "¨S¦³ºq¦±¿ï¾Ü¡C ¼½©ñ²M³æ¨S¦³§ó·s¡C", "¼½©ñ²M³æ¤w§ó·s¡I", "ªğ¦^", 
-"¼½©ñ²M³æ¤w¥[¤J¡I", "°O¦í­«·s¾ã²z¦¹­¶¡C", "µn¤J¦WºÙ¡G", "±K½X¡G", "Äµ§i¡I¦¹ºô¯¸¬O¤£¤½¶}ªº¡A©Ò¦³°Ê§@¬O·|³Q°O¿ı¡C", "µn¤J", "¦w¥ş©Ê(SSL)µn¤J", "¼½©ñ", "§R°£", "¤À¨É¡R", 
-"Àx¦s", "±±¨î¼½©ñ²M³æ¡J '%1' - %2 ¼ĞÃD", "½s¿è¾¹", "ÀËµø¾¹", "¿ï¾Ü", "¶¶§Ç", "ª¬ºA", "¸ê°T", "§R°£", "¦WºÙ", "Á`¼Æ¡R", "¿ù»~", "¿ï¾Ü¤¤¡G", "¦¸§Ç¡R", "½s¿è¼½©ñ²M³æ",
-"§R°£¦¹¥[¤J", "¥[¤J¼½©ñ²M³æ", "¦W¦r¡R", "«Ø¥ß", "¼½©ñ¡G", "ÀÉ®×", "±M¿è", "¥ş³¡", "¤w¿ï¾Ü", "·s¼W", "¼½©ñ", "½s¿è", "·s¼W", "¿ï¾Ü¡G", "¼½©ñ±±¨î¡G", "¼½©ñ¥Ø¿ı¡G", 
-"¼ö¿ï¼Æ­È", "Keyteq ´£´£§A¡G", "(ÀË¬d§ó·s)", "¥D­¶", "¥u·j´M id3", "±M¿è", "¼ĞÃD", "ºq¤â", "¼ö¿ïºq¤â±M¿è", "ÀËµø", "¤À¨É¼½©ñ¥Ø¿ı", "¥Î¤á", "ºŞ²z", "³Ì·s", "³Ì¼öªù",
-"µn¥X", "¿ï¶µ", "ÀË¬d", "¨ä¥L", "½s¿è¨Ï¥ÎªÌ", "·s¼W¨Ï¥ÎªÌ", "¥ş¦W", "µn¤J", "ÅÜ§ó±K½X¡H", "±K½X", "³Æµù", "¦s¨ú¼h¯Å", "¶}", "Ãö", "§R°£¨Ï¥ÎªÌ", "¤ÁÂ_¨Ï¥ÎªÌ", "­«·s¾ã²z",
-"·s¼W¨Ï¥ÎªÌ", "§R°£", "µn¥X", "¨Ï¥Î EXTM3U ®ÄªG¡H", "Åã¥Ü¦h¤Ö¦æ (¼öªù/·s)", "³Ì¤j·j´M¦æ¼Æ", "­«³]", "¶}±Ò¥Ø¿ı", "¸õ¨ì¥Ø¿ı¡G %1", "¤U¸ü", "¸õ¨ì¤W¤@¼h", "¸õ¨ì®Ú¥Ø¿ı",
-"ÀË¬d§ó·s", "¨Ï¥ÎªÌ", "»y¨¥", "¿ï¶µ", "¤w°_°Ê", "ÀH¾÷", "³]©w", "®Ú¥Ø¿ıµ´¹ï¸ô®|", "¦ê¬y¸ô®|", "¹w³]»y¨¥", "µøµ¡¨t²Î", "­n¨DHTTPS", "¤¹³\·j´M", "¤¹³\¤U¸ü", "¹O®É", 
-"³ø§iµn¤J¥¢±Ñ", "½Ğµ¥µ¥ - «Ø¥ßÀÉ®×¥Ø¿ı¤¤", "¼½©ñ²M³æ¤£³Q§ó·s¡I", "ºŞ²zªÌ", "¨Ï¥ÎHTTPSµn¤J«á§ó§ï¡I");
-
-$klang[16] = array("Traditional Chinese - gb2312", "gb2312", "ÁcÅé¤¤¤å", "³Ì¼öªù", "³Ì·s", "·j´M", "(¥u¦³ %1 µ§Åã¥Ü)", "¬í", "'%1' ¡G·j´Mµ²ªG", "§ä¨ì", "¨S¦³", 
-"§ó·s·j´M¸ê®Æ®w¿ï¶µ", "§R°£ ¥¼¥Î¹Lªº°O¿ı¡H", "­««Ø ID3", "°£ÂÎ¼Ò¦¡", "§ó·s", "¨ú®ø", "§ó·s·j´M¸ê®Æ®w", "§ä¨ì %1 ÀÉ®×¡C", "½T©w¤£¨ì¦¹ %1 ÀÉ®×¡J ²¤¹L¡C", 
-"¤w¦w¸Ë¡J %1 - §ó·s¡G %2 ¡M ±½ºË¡G", "±½ºË¡G", "¥¢±Ñ - °İÃD¡J %1", "Åª¤£¨ì¦¹ %1 ÀÉ®× ¡J²¤¹L", "¤w²¾°£¡G %1", 
-"¤w´¡¤J %1 ¡A ¤w§ó·s %2 ¡A ¤w§R°£ %3¡A ¦aÂI %4 ¥¢±Ñ ¤Î %6 ÀÉ®×¤¤²¤¹L%5 - %7 ¬í - ¤w§R°£ %8 ¦³°O¸¹ªºÀÉ®×", "¤w§¹¦¨", "?³¬", "¦b¦¹§ä¤£¨ì¥ô¦óÀÉ®×¡G '%1'", "kPlaylist µn¤J", 
-"¦¹ºq¤âªº±M¿è²M³æ¡G %1", "¼ö¿ï %1", "¨S¦³ºq¦±¿ï¾Ü¡C ¼½©ñ²M³æ¨S¦³§ó·s¡C", "¼½©ñ²M³æ¤w§ó·s¡I", "ªğ¦^", "¼½©ñ²M³æ¤w¥[¤J¡I", "°O¦í­«·s¾ã²z¦¹­¶¡C", "µn¤J¦WºÙ¡G", "±K½X¡G", 
-"Äµ§i¡I¦¹ºô¯¸¬O¤£¤½¶}ªº¡A©Ò¦³°Ê§@¬O·|³Q°O¿ı¡C", "µn¤J", "¦w¥ş©Ê(SSL)µn¤J", "¼½©ñ", "§R°£", "¤À¨É¡R", "Àx¦s", "±±¨î¼½©ñ²M³æ¡J '%1' - %2 ¼ĞÃD", "½s¿è¾¹", "ÀËµø¾¹", "¿ï¾Ü", 
-"¶¶§Ç", "ª¬ºA", "¸ê°T", "§R°£", "¦WºÙ", "Á`¼Æ¡R", "¿ù»~", "¿ï¾Ü¤¤¡G", "¦¸§Ç¡R", "½s¿è¼½©ñ²M³æ", "§R°£¦¹¥[¤J", "¥[¤J¼½©ñ²M³æ", "¦W¦r¡R", "«Ø¥ß", "¼½©ñ¡G", "ÀÉ®×", "±M¿è", 
-"¥ş³¡", "¤w¿ï¾Ü", "·s¼W", "¼½©ñ", "½s¿è", "·s¼W", "¿ï¾Ü¡G", "¼½©ñ±±¨î¡G", "¼½©ñ¥Ø¿ı¡G", "¼ö¿ï¼Æ­È", "Keyteq ´£´£§A¡G", "(ÀË¬d§ó·s)", "¥D­¶", "¥u·j´M id3", "±M¿è", "¼ĞÃD", 
-"ºq¤â", "¼ö¿ïºq¤â±M¿è", "ÀËµø", "¤À¨É¼½©ñ¥Ø¿ı", "¥Î¤á", "ºŞ²z", "³Ì·s", "³Ì¼öªù", "µn¥X", "¿ï¶µ", "ÀË¬d", "¨ä¥L", "½s¿è¨Ï¥ÎªÌ", "·s¼W¨Ï¥ÎªÌ", "¥ş¦W", "µn¤J", "ÅÜ§ó±K½X¡H", 
-"±K½X", "³Æµù", "¦s¨ú¼h¯Å", "¶}", "Ãö", "§R°£¨Ï¥ÎªÌ", "¤ÁÂ_¨Ï¥ÎªÌ", "­«·s¾ã²z", "·s¼W¨Ï¥ÎªÌ", "§R°£", "µn¥X", "¨Ï¥Î EXTM3U ®ÄªG¡H", "Åã¥Ü¦h¤Ö¦æ (¼öªù/·s)", "³Ì¤j·j´M¦æ¼Æ", 
-"­«³]", "¶}±Ò¥Ø¿ı", "¸õ¨ì¥Ø¿ı¡G %1", "¤U¸ü", "¸õ¨ì¤W¤@¼h", "¸õ¨ì®Ú¥Ø¿ı", "ÀË¬d§ó·s", "¨Ï¥ÎªÌ", "»y¨¥", "¿ï¶µ", "¤w°_°Ê", "ÀH¾÷", "³]©w", "®Ú¥Ø¿ıµ´¹ï¸ô®|", "¦ê¬y¸ô®|", 
-"¹w³]»y¨¥", "µøµ¡¨t²Î", "­n¨DHTTPS", "¤¹³\·j´M", "¤¹³\¤U¸ü", "¹O®É", "³ø§iµn¤J¥¢±Ñ", "½Ğµ¥µ¥ - «Ø¥ßÀÉ®×¥Ø¿ı¤¤", "¼½©ñ²M³æ¤£³Q§ó·s¡I", "ºŞ²zªÌ", 
-"¨Ï¥ÎHTTPSµn¤J«á§ó§ï¡I");
-
-$klang[17]  = array("Korean", "ISO-8859-1", "&#54620;&#44397;&#50612;", "&#51064;&#44592;&#51221;&#48372;", "&#52572;&#49888;&#51221;&#48372;", "&#44160;&#49353;", 
-"(%1 &#47564; &#48372;&#51076;)", "&#52488;", "&#44160;&#49353; &#44208;&#44284; : '%1'", "&#52286;&#50520;&#51020;", "&#50630;&#51020;.", "&#44160;&#49353; &#51088;&#47308; &#50741;&#49496; &#50629;&#45936;&#51060;&#53944;", "&#49324;&#50857;&#54616;&#51648; &#50506;&#45716; &#44592;&#47197; &#49325;&#51228;?", "ID3&#51116;&#44396;&#49457;?", "&#46356;&#48260;&#44536; &#47784;&#46300;?", "&#50629;&#45936;&#51060;&#53944;", "&#52712;&#49548;", "&#44160;&#49353; &#51088;&#47308; &#50629;&#45936;&#51060;&#53944;", "%1 &#54028;&#51068;&#51012; &#52286;&#50520;&#51020;.", "&#51060; &#54028;&#51068;&#51012; &#44208;&#51221;&#54624; &#49688; &#50630;&#51020;: %1, &#44148;&#45320;&#46848;.", "&#49444;&#52824;&#46120;: %1 - &#50629;&#45936;&#51060;&#53944;: %2, &#44160;&#49353;:", "&#44160;&#49353;:", "&#49892;&#54056; - &#51656;&#47928;: %1", "&#51060; &#54028;&#51068;&#51012; &#51069;&#51012; &#49688; &#50630;&#51020;: %1. &#44148;&#45320;&#46848;.", "&#51228;&#44144;&#46120;: %1", "%6 &#54028;&#51068;&#46308; &#51473; %4 &#45716; &#49892;&#54056;, %5&#45716; &#44148;&#45320;&#46832;&#44256;,%1 &#52628;&#44032; %2 &#44081;&#49888;&#46104;&#44256; %3 &#49325;&#51228;&#46120; - %7 &#52488; - %8 &#51008; &#49325;&#51228;&#54364;&#49884;&#46120;.", "&#45149;", "&#45803;&#51020;", "&#50612;&#46500; &#54028;&#51068;&#46020; &#52286;&#51012; &#49688; &#50630;&#51020;: \"%1\"", "kPlaylist &#47196;&#44536;&#50728;", "&#50500;&#54000;&#49828;&#53944;&#51032; &#50536;&#48276; &#47532;&#49828;&#53944; : %1", "&#51064;&#44592;&#49440;&#53469;&#44257; %1", "&#44257;&#51060; &#49440;&#53469;&#46104;&#51648; &#50506;&#50520;&#51020;. Playlist&#44032; &#44081;&#49888;&#46104;&#51648; &#50506;&#50520;&#51020;.", "Playlist &#44081;&#49888;!", "&#46244;&#47196;", "Playlist &#52628;&#44032;!", "&#51060; &#54168;&#51060;&#51648;&#47484; &#45796;&#49884; &#51069;&#51004;&#49464;&#50836;.", "&#47196;&#44536;&#51064;:", "&#50516;&#54840;:", "&#51452;&#51032;! &#51060; &#44275;&#51008; &#44277;&#44060;&#46108; &#50937;&#49324;&#51060;&#53944;&#44032; &#50500;&#45785;&#45768;&#45796;. &#47784;&#46304; &#54665;&#46041;&#51060; &#44592;&#47197;&#46121;&#45768;&#45796;.", "&#47196;&#44536;&#51064;", "&#47196;&#44536;&#50728;&#51012; &#50948;&#54644; SSL&#51060; &#54596;&#50836;&#54633;&#45768;&#45796;.", "&#51116;&#49373;", "&#49325;&#51228;", "&#44277;&#50976;&#46120;:", "&#51200;&#51109;", "playlist &#44288;&#47532;: \"%1\" - %2 &#51228;&#47785;", "&#54200;&#51665;&#44592;", "&#48624;&#50612;", "&#49440;&#53469;", "&#49692;&#49436;", "&#49345;&#53468;", "&#51221;&#48372;", "&#49325;&#51228;", "&#51060;&#47492;", "&#54633;&#44228;:", "&#50724;&#47448;", "&#49440;&#53469;&#54620; &#46041;&#51089;:", "&#49692;&#49436;:", "playlist &#54200;&#51665;", "&#51060; &#44592;&#47197;&#51012; &#49325;&#51228;&#54632;", "playlist &#52628;&#44032;", "&#51060;&#47492;:", "&#47564;&#46308;&#44592;", "&#51116;&#49373;:", "&#54028;&#51068;:", "&#50536;&#48276;", "&#51204;&#48512;", "&#49440;&#53469;&#46120;", "&#52628;&#44032;", "&#51116;&#49373;", "&#54200;&#51665;", "&#49352;&#47196; &#47564;&#46308;&#44592;", "&#49440;&#53469;:", "&#51116;&#49373; &#44288;&#47532;:", "Playlist:", "&#51064;&#44592;&#49440;&#53469;&#44257; &#49707;&#51088;", "&#45817;&#49888;&#50640;&#44172; Keyteq &#51060; &#51452;&#45716; &#44163;:", "(&#50629;&#44536;&#47112;&#51060;&#46300;&#47484; &#52404;&#53356;&#54616;&#49464;&#50836;)", "&#54856;", "id3&#47564;", "&#50536;&#48276;", "&#51228;&#47785;", "&#50500;&#54000;&#49828;&#53944;", "&#50500;&#54000;&#49828;&#53944;&#50640;&#49436; &#51064;&#44592;&#50536;&#48276;", "&#48372;&#44592;", "&#44277;&#50976;&#54620; playlist", "&#49324;&#50857;&#51088;", "&#50612;&#46300;&#48124; &#44288;&#47532;", "&#52572;&#49888;&#51221;&#48372;", "&#51064;&#44592;&#51221;&#48372;", "&#47196;&#44536;&#50500;&#50883;", "&#50741;&#49496;", "&#52404;&#53356;", "&#45208;&#51032;", "&#49324;&#50857;&#51088; &#54200;&#51665;", "&#49352;&#47196;&#50868; &#49324;&#50857;&#51088;", "&#51060;&#47492;", "&#47196;&#44536;&#51064;", "&#50516;&#54840;&#47484; &#48148;&#44984;&#49884;&#44192;&#49845;&#45768;&#44620;?", "&#50516;&#54840;", "&#53076;&#47704;&#53944;", "&#51217;&#44540;&#47112;&#48296;", "&#53020;&#44592;", "&#45124;&#44592;", "&#49324;&#50857;&#51088; &#49325;&#51228;", "&#49324;&#50857;&#51088; &#47196;&#44536;&#50500;&#50883;", "&#49352;&#47196; &#44256;&#52824;&#44592;", "&#49352;&#47196;&#50868; &#49324;&#50857;&#51088;", "&#49325;&#51228;", "&#47196;&#44536;&#50500;&#50883;", "EXTM3U &#47484; &#49324;&#50857;&#54633;&#45768;&#44620;?", "&#51460; &#49688; &#48372;&#51060;&#44592;(hot/new)", "&#44032;&#51109; &#47566;&#51008; &#44160;&#49353; &#51460;", "&#47532;&#49483;", "&#46356;&#47113;&#53664;&#47532; &#50676;&#44592;", "&#46356;&#47113;&#53664;&#47532;&#47196; &#44032;&#44592;: %1", "&#45236;&#47140;&#48155;&#44592;", "&#54620; &#45800;&#44228; &#50948;&#47196; &#44032;&#44592;", "&#51228;&#51068; &#50948;&#47196; &#44032;&#44592;.", "&#50629;&#44536;&#47112;&#51060;&#47484; &#52404;&#53356;&#54616;&#49464;&#50836;", "&#49324;&#50857;&#51088;", "&#50616;&#50612;", "&#50741;&#49496;", "&#48512;&#54021;&#46120;", "&#46244;&#49438;&#44592;:", "&#49464;&#54021;", "&#44592;&#48376; &#46356;&#47113;&#53664;&#47532;", "&#49828;&#53944;&#47548; &#51109;&#49548;", "&#44592;&#48376; &#50616;&#50612;", "&#50952;&#46020;&#50864; &#49884;&#49828;&#53596;", "HTTPS &#44032; &#54596;&#50836;&#54632;", "Seek &#54728;&#50857;", "&#45236;&#47140;&#48155;&#44592; &#54728;&#50857;", "&#49464;&#49496; &#49884;&#44036;&#51473;&#45800;", "&#49892;&#54056;&#54620; &#47196;&#44596; &#49884;&#46020; &#50508;&#47532;&#44592;", "&#51104;&#44624;&#47564; - &#54028;&#51068; &#47785;&#47197;&#51012; &#44032;&#51648;&#44256; &#50724;&#44256; &#51080;&#49845;&#45768;&#45796;", "Playlist &#50640; &#52628;&#44032;&#54624; &#49688; &#50630;&#49845;&#45768;&#45796;!", "&#50612;&#46300;&#48124;", 
-"&#48148;&#44984;&#44592; &#50948;&#54644;&#49436; HTTPS&#47196; &#47196;&#44596;&#54616;&#49464;&#50836;!");
+$klang[17]  = array("Korean", "ISO-8859-1", "&#54620;&#44397;&#50612;", "&#51064;&#44592;&#51221;&#48372;", "&#52572;&#49888;&#51221;&#48372;", "&#44160;&#49353;", "(%1 &#47564; &#48372;&#51076;)", "&#52488;", "&#44160;&#49353; &#44208;&#44284; : '%1'", "&#52286;&#50520;&#51020;", "&#50630;&#51020;.", "&#44160;&#49353; &#51088;&#47308; &#50741;&#49496; &#50629;&#45936;&#51060;&#53944;", "&#49324;&#50857;&#54616;&#51648; &#50506;&#45716; &#44592;&#47197; &#49325;&#51228;?", "ID3&#51116;&#44396;&#49457;?", "&#46356;&#48260;&#44536; &#47784;&#46300;?", "&#50629;&#45936;&#51060;&#53944;", "&#52712;&#49548;", "&#44160;&#49353; &#51088;&#47308; &#50629;&#45936;&#51060;&#53944;", "%1 &#54028;&#51068;&#51012; &#52286;&#50520;&#51020;.", "&#51060; &#54028;&#51068;&#51012; &#44208;&#51221;&#54624; &#49688; &#50630;&#51020;: %1, &#44148;&#45320;&#46848;.", "&#49444;&#52824;&#46120;: %1 - &#50629;&#45936;&#51060;&#53944;: %2, &#44160;&#49353;:", "&#44160;&#49353;:", "&#49892;&#54056; - &#51656;&#47928;: %1", "&#51060; &#54028;&#51068;&#51012; &#51069;&#51012; &#49688; &#50630;&#51020;: %1. &#44148;&#45320;&#46848;.", "&#51228;&#44144;&#46120;: %1", "%6 &#54028;&#51068;&#46308; &#51473; %4 &#45716; &#49892;&#54056;, %5&#45716; &#44148;&#45320;&#46832;&#44256;,%1 &#52628;&#44032; %2 &#44081;&#49888;&#46104;&#44256; %3 &#49325;&#51228;&#46120; - %7 &#52488; - %8 &#51008; &#49325;&#51228;&#54364;&#49884;&#46120;.", "&#45149;", "&#45803;&#51020;", "&#50612;&#46500; &#54028;&#51068;&#46020; &#52286;&#51012; &#49688; &#50630;&#51020;: \"%1\"", "kPlaylist &#47196;&#44536;&#50728;", "&#50500;&#54000;&#49828;&#53944;&#51032; &#50536;&#48276; &#47532;&#49828;&#53944; : %1", "&#51064;&#44592;&#49440;&#53469;&#44257; %1", "&#44257;&#51060; &#49440;&#53469;&#46104;&#51648; &#50506;&#50520;&#51020;. Playlist&#44032; &#44081;&#49888;&#46104;&#51648; &#50506;&#50520;&#51020;.", "Playlist &#44081;&#49888;!", "&#46244;&#47196;", "Playlist &#52628;&#44032;!", "&#51060; &#54168;&#51060;&#51648;&#47484; &#45796;&#49884; &#51069;&#51004;&#49464;&#50836;.", "&#47196;&#44536;&#51064;:", "&#50516;&#54840;:", "&#51452;&#51032;! &#51060; &#44275;&#51008; &#44277;&#44060;&#46108; &#50937;&#49324;&#51060;&#53944;&#44032; &#50500;&#45785;&#45768;&#45796;. &#47784;&#46304; &#54665;&#46041;&#51060; &#44592;&#47197;&#46121;&#45768;&#45796;.", "&#47196;&#44536;&#51064;", "&#47196;&#44536;&#50728;&#51012; &#50948;&#54644; SSL&#51060; &#54596;&#50836;&#54633;&#45768;&#45796;.", "&#51116;&#49373;", "&#49325;&#51228;", "&#44277;&#50976;&#46120;:", "&#51200;&#51109;", "playlist &#44288;&#47532;: \"%1\" - %2 &#51228;&#47785;", "&#54200;&#51665;&#44592;", "&#48624;&#50612;", "&#49440;&#53469;", "&#49692;&#49436;", "&#49345;&#53468;", "&#51221;&#48372;", "&#49325;&#51228;", "&#51060;&#47492;", "&#54633;&#44228;:", "&#50724;&#47448;", "&#49440;&#53469;&#54620; &#46041;&#51089;:", "&#49692;&#49436;:", "playlist &#54200;&#51665;", "&#51060; &#44592;&#47197;&#51012; &#49325;&#51228;&#54632;", "playlist &#52628;&#44032;", "&#51060;&#47492;:", "&#47564;&#46308;&#44592;", "&#51116;&#49373;:", "&#54028;&#51068;:", "&#50536;&#48276;", "&#51204;&#48512;", "&#49440;&#53469;&#46120;", "&#52628;&#44032;", "&#51116;&#49373;", "&#54200;&#51665;", "&#49352;&#47196; &#47564;&#46308;&#44592;", "&#49440;&#53469;:", "&#51116;&#49373; &#44288;&#47532;:", "Playlist:", "&#51064;&#44592;&#49440;&#53469;&#44257; &#49707;&#51088;", "&#45817;&#49888;&#50640;&#44172; Keyteq &#51060; &#51452;&#45716; &#44163;:", "(&#50629;&#44536;&#47112;&#51060;&#46300;&#47484; &#52404;&#53356;&#54616;&#49464;&#50836;)", "&#54856;", "id3&#47564;", "&#50536;&#48276;", "&#51228;&#47785;", "&#50500;&#54000;&#49828;&#53944;", "&#50500;&#54000;&#49828;&#53944;&#50640;&#49436; &#51064;&#44592;&#50536;&#48276;", "&#48372;&#44592;", "&#44277;&#50976;&#54620; playlist", "&#49324;&#50857;&#51088;", "&#50612;&#46300;&#48124; &#44288;&#47532;", "&#52572;&#49888;&#51221;&#48372;", "&#51064;&#44592;&#51221;&#48372;", "&#47196;&#44536;&#50500;&#50883;", "&#50741;&#49496;", "&#52404;&#53356;", "&#45208;&#51032;", "&#49324;&#50857;&#51088; &#54200;&#51665;", "&#49352;&#47196;&#50868; &#49324;&#50857;&#51088;", "&#51060;&#47492;", "&#47196;&#44536;&#51064;", "&#50516;&#54840;&#47484; &#48148;&#44984;&#49884;&#44192;&#49845;&#45768;&#44620;?", "&#50516;&#54840;", "&#53076;&#47704;&#53944;", "&#51217;&#44540;&#47112;&#48296;", "&#53020;&#44592;", "&#45124;&#44592;", "&#49324;&#50857;&#51088; &#49325;&#51228;", "&#49324;&#50857;&#51088; &#47196;&#44536;&#50500;&#50883;", "&#49352;&#47196; &#44256;&#52824;&#44592;", "&#49352;&#47196;&#50868; &#49324;&#50857;&#51088;", "&#49325;&#51228;", "&#47196;&#44536;&#50500;&#50883;", "EXTM3U &#47484; &#49324;&#50857;&#54633;&#45768;&#44620;?", "&#51460; &#49688; &#48372;&#51060;&#44592;(hot/new)", "&#44032;&#51109; &#47566;&#51008; &#44160;&#49353; &#51460;", "&#47532;&#49483;", "&#46356;&#47113;&#53664;&#47532; &#50676;&#44592;", "&#46356;&#47113;&#53664;&#47532;&#47196; &#44032;&#44592;: %1", "&#45236;&#47140;&#48155;&#44592;", "&#54620; &#45800;&#44228; &#50948;&#47196; &#44032;&#44592;", "&#51228;&#51068; &#50948;&#47196; &#44032;&#44592;.", "&#50629;&#44536;&#47112;&#51060;&#47484; &#52404;&#53356;&#54616;&#49464;&#50836;", "&#49324;&#50857;&#51088;", "&#50616;&#50612;", "&#50741;&#49496;", "&#48512;&#54021;&#46120;", "&#46244;&#49438;&#44592;:", "&#49464;&#54021;", "&#44592;&#48376; &#46356;&#47113;&#53664;&#47532;", "&#49828;&#53944;&#47548; &#51109;&#49548;", "&#44592;&#48376; &#50616;&#50612;", "&#50952;&#46020;&#50864; &#49884;&#49828;&#53596;", "HTTPS &#44032; &#54596;&#50836;&#54632;", "Seek &#54728;&#50857;", "&#45236;&#47140;&#48155;&#44592; &#54728;&#50857;", "&#49464;&#49496; &#49884;&#44036;&#51473;&#45800;", "&#49892;&#54056;&#54620; &#47196;&#44596; &#49884;&#46020; &#50508;&#47532;&#44592;", "&#51104;&#44624;&#47564; - &#54028;&#51068; &#47785;&#47197;&#51012; &#44032;&#51648;&#44256; &#50724;&#44256; &#51080;&#49845;&#45768;&#45796;", "Playlist &#50640; &#52628;&#44032;&#54624; &#49688; &#50630;&#49845;&#45768;&#45796;!", "&#50612;&#46300;&#48124;", "&#48148;&#44984;&#44592; &#50948;&#54644;&#49436; HTTPS&#47196; &#47196;&#44596;&#54616;&#49464;&#50836;!");
 
 $klang[18]  = array("Estonian", "iso-8859-1", "eesti keel", "Mis hetkel populaarne", "Mis vanalehm", "Peksapihku", "mitte munnigi %1 ei ole näha", "peeretus", "Peksapihku tulemused: '%1'", "tapeti", "türa no mitte midagi ei leia", "kägarda peksapihku trammi tagumineratas", "Saadavittu need pasapead?", "Käipõrgu ID3?", "Siluvalmoel?", "Kägarda", "Soepeast", "kägarda peksapihku trammi", "Tapeti %1 kõrvits.", "Ei suudetud ümbernikkuda kõrvitsat: %1,  Kepiti süütut", "Näpiti nibusid: %1 - Kägardatud: %2, rinnad jäid koju:", "Rinnad jäid koju:", "Läks viinaravile - sopajoodik: %1", "Ei suudetud sünnitada : %1. Kepiti süütut", "Võeti libuna tööle: %1", "Vänati ilgelt taha %1, kägardatud %2, saadetudvittu %3 kus %4 läks viinaravile ning %5 Kepiti süütud hooradeks%6 kõrvits ning see kõik toimus %7 peeretuse -%8 saeti mitmeks tükiks ja saadeti vittu.", "Keerasidki kõik lõpuks persse. palju õnne!", "Tapa see idjootne asi!", "Ei suudetud sünnitada mitteainustki kõrvitsat: \"%1\"", "kJäänuse hukkumine", "koristaja saeti mitmeks tükiks türasid: %1", "Vaata kuumalt! %1", "Jäänust ei kägardatud.", "jäänus kägardatud!", "Edaspiidi", "jäänus peeretas", "Ära unusta, et siit ei ole keegi veel eluga pääsenud!", "hukkumine", "Pane paar sõna!", "Kõik munnid  on hukkunud.", "Hukku", "SSL venelits saeti mitmeks tükiks hukkuma", "Söösitta", "Saadavittu", "Abordid:", "Silita peenist", "Raisk jäänus: \"%1\" - %2 sitapeadest", "emakeppija", "isakeppija", "õekeppar", "kepieit", "lehmanisa", "kepiinfo", "Saada", "Pealdis", "Kogumoos", "Putsis", "munn on õekepparid:", "Kepitudeit:", "kepiema jäänust", "Saadavittu see mõtetus", "peereta jäänus", "perselutsija", "keeruta", "Söögisitt:", "Fail", "Album", "Kõiksemees korraga", "Õekepparid", "peereta", "mine:", "kepiema", "vanalehm", "Õekeppar:", "Söösitta Raisk:", "Jäänused:", "Vaata kuumalt numbriliselt", "Keyteq annab taha:", "(liputaja saeti mitmeks tükiks)", "Hooralaager", "mitte munnigi id3", "album", "sitapea", "türa", "Vaata kuumalt koristaja lahmakat türa", "kepiisa", "Abordi jäänused", "Rullnokad", "Sajajalgne raisk", "Mida vanalehm", "Mis hetkel populaarne", "Käi koju põngerjas", "tagumineratas", "Liputa", "kusi", "kepiema rullnokk", "vanalehm rullnokk", "Purjus perselutsija", "Hukkumine", "röövi kommipoodi?", "Kommipood", "Kauri", "Mõistuse vastane", "Välja", "Sisse", "saadvittu rullnokk", "Hukkuära rullnokk", "Käi putsi", "Vanalehm rullnokk", "saada", "hukkuära", "Pitsike EXTM3U-d ja kutu?", "Miks kõik on perses (kuum/vanalehm)", "Väga palju pihkupeksjaid on perses", "Sitakäi", "Vehi riista", "Võta veidike riista: %1", "Magatama", "Mine ülalkorrusele", "Mine vaata rooti riista", "Liputaja saeti mitmeks tükiks", "rullnokad", "Vemblad", "tagumineratas", "Allalastud", "Täiestisegamini", "Kotikuke", "Üleküla riist", "Ribidevahele pekstud", "Peatage vemblad", "Windows-i ajuleiutis", "venelits HTTPS", "karaga pikkipead", "karaga magatama", "hooaeg läbi", "hukkumist", "Võta sisse - neela alla kõrvitsa jäänukid", "Jäänust ei suudetud peeretada", "Sajajalgne", "Hukku", "Nuga ribidevahele vanapaks", "Sitapea", "Türa", "Koristaja", "Kauri", "löödi teibasse", "hirmuks teistele", "Tüüphukkamine", "Ei ole");
 
-$klang[19]  = array("Portuguese of Brazil", "ISO-8859-1", "brasileiro", "este &eacute; popular", "Este &eacute; novo", "Busca", "(apenas %1 encontrado)", "seg", "Resultados da busca: '%1'", "encontrado", "Nenhum", "atualizar op&ccedil;&otilde;es da busca na base de dados ", "Apagar entradas sem uso? ", "Reconstruir ID3?", "Modo Debug?", "Atualizar", "Cancelar", "Atualizar busca no banco de dados", "Encontrados %1 arquivos.", "N&atilde;o foi poss&iacute;vel determinar este arquivo: %1, descartado", "Install %1 - Atualizar: %2, escanear:", "Escanear:", "Falha na busca: %1", "N&atilde;o foi poss&iacute;vel ler este arquivo: %1. Descartado.", "Removido: %1", "Inserido %1, atualizado %2, apagado %2, onde %4, falhou em %5, descartado por %6, arquivos - %7 seg - %8 marcado para ser deletado", "Finalizado", "Fechar", "N&atilde;o foi poss&iacute;vel encontrar arquivos aqui: &quot;%1&quot;", "Logon kPlaylist", "Lista de &aacute;lbum por artista: %1", "Populares %1", "Nenhuma m&uacute;sica selecionada. Lista n&atilde;o atualizada.", "Lista atualizada!", "Voltar", "Lista atualizada", "Lembre-se de atualizar a p&aacute;gina.", "login:", "senha:", "Aten&ccedil;&atilde;o! Este n&atilde;o &eacute; um site restrito. Todas as a&ccedil;&otilde;es s&atilde;o monitoradas.", "Login", "SSL necess&aacute;rio para entrar.", "Tocar", "Apagar", "Compartilhado", "Salvar", "Lista de controlhe: &quot;%1&quot; - %2 t&iacute;tulos", "Editor", "Visualizador", "Selecionar", "Seq", "Status", "Info", "Del", "Nome", "Totais", "Erro", "A&ccedil;&atilde;o selecionada:", "Sequ&ecirc;ncia", "editar lista", "Apagar esta entrada", "adicionar lista", "Nome:", "Criar", "Tocar:", "Arquivo", "&Aacute;lbum", "Todos", "Selecionado", "adicionar", "tocar", "editar", "novo", "Selecionar", "Controle", "Lista:", "Selecionar n&uacute;mero", "Keyteq oferece:", "(verificar atualiza&ccedil;&atilde;o)", "P&aacute;gina incial", "apenas id3", "&aacute;lbum", "t&iacute;tulo", "artista", "Selecionar &aacute;lbum por artista", "ver", "Listas compartilhadas", "Usu&aacute;rios", "Controle de administrador", "Este &eacute; novo", "Este &eacute; popular", "Logout", "Op&ccedil;&otilde;es", "Verificar", "Meu", "editar usu&aacute;rio", "novo usu&aacute;rio", "Nome completo", "Login", "Mudar senha?", "Senha", "Coment&aacute;rio", "N&iacute;vel de acesso", "Ligado", "Desligado", "Apagar usu&aacute;rio", "Desconectar usu&aacute;rio", "Atualizar", "Novo usu&aacute;rio", "apagar", "desconectar", "Utilizar op&ccedil;&atilde;o EXTM3U?", "Mostrar quantos arquivos (popular/novo)", "M&aacute;ximo de arquivos encontrados", "Restaurar", "Abrir diret&oacute;rio", "Para o diret&oacute;rio: %1", "Download", "Subir um n&iacute;vel", "Para o diret&oacute;rio principal", "Verificar atualiza&ccedil;&otilde;es", "usu&aacute;rios", "Linguagem", "op&ccedil;&otilde;es", "Carregado", "Aleat&oacute;rio", "Configura&ccedil;&otilde;es", "Diret&oacute;rio base", "Local de stream", "Linguagem padr&atilde;o", "Sistema Windows", "Requer HTTPS", "Permitir busca", "Permitir download", "Sess&atilde;o expirou", "Falha na tentativa de login", "Aguarde - buscando a lista de arquivos", "Lista n&atilde;o pode ser adicionada!", "0 = Admin, 1 = Usu&aacute;rio", "In&iacute;cio de uma sess&atilde;o com o HTTPS a mudar", "Habilite engenharia streaming", "Titulo", "Artista", "Album", "Comentário", "Ano", "Trilha", "Gênero", "Desativado", "Taxa máxima de download (kbps)", "Usuário", "%1 minuto(s) - %2 Titulos ", "%1 kbit %2 minuto(s)", "Lista de Generos: %1 ", "Ir", "%1d %2h %3m Tocando %4 files %5 mb", "Nenhun recursos relevantes aqui", "Mundança Senha", "Assine", "Por favor faça uma seleção", "O que foi atualizado ?", "Clique aqui para Ajuda", "Use Imagens Externas", "Path externo de imagens ", "Senha Atual", "A senha atual nao confere", "Arquivo preferido ", "Arquivo não pode ser feito");
+$klang[19] = array('Brazillian Portuguese', 'ISO-8859-1', 'Português do Brasil', 'Mais Popular', 'Novo', 'Busca', '(apenas %1 encontrado)', 'seg', 'Resultados da busca: \'%1\'', 'encontrado', 'Nenhum.', 'atualizar opções de busca na base de dados ', 'Apagar entradas sem uso? ', 'Reconstruir ID3?', 'Modo Debug?', 'Atualizar', 'Cancelar', 'Atualizar busca no banco de dados', 'Encontrados %1 arquivos.', 'Não foi possível determinar este arquivo: %1, descartado', 'Instalação %1 - Atualizar: %2, escanear:', 'Escanear:', 'Falha na busca: %1', 'Não foi possível ler este arquivo: %1. Descartado.', 'Removido: %1', 'Inserido %1, atualizado %2, apagado %2, onde %4, falhou em %5, descartado por %6, arquivos - %7 seg - %8 marcado para ser deletado', 'Finalizado', 'Fechar', 'Não foi encontrado nenhum arquivo aqui: "%1"', 'Logon kPlaylist', 'Lista de álbum por artista: %1', 'Populares %1', 'Nenhuma música selecionada. Lista não atualizada.', 'Lista atualizada!', 'Voltar', 'Lista atualizada', 'Lembre-se de atualizar a página.', 'Login:', 'Senha:', 'Atenção! Este não é um site restrito. Todas as ações são monitoradas.', 'Login', 'SSL necessário para entrar.', 'Tocar', 'Apagar', 'Compartilhado', 'Salvar', 'Lista de controlhe: "%1" - %2 títulos', 'Editor', 'Visualizador', 'Selecionar', 'Seq', 'Status', 'Info', 'Del', 'Nome', 'Totais:', 'Erro', 'Ação selecionada:', 'Sequência:', 'editar lista', 'Apagar esta entrada', 'adicionar lista', 'Nome:', 'Criar', 'Tocar:', 'Arquivo', 'Álbum', 'Todos', 'Selecionado', 'adicionar', 'tocar', 'editar', 'novo', 'Selecionar', 'Controle', 'Lista:', 'Selecionar número', 'Keyteq oferece:', '(verificar atualização)', 'Página inicial', 'apenas id3', 'Álbum', 'Título', 'Artista', 'Selecionar álbum por artista', 'ver', 'Listas compartilhadas', 'Usuários', 'Controle de administrador', 'Este é novo', 'Este é popular', 'Sair', 'Opções', 'Verificar', 'Meu', 'editar usuário', 'novo usuário', 'Nome completo', 'Login', 'Mudar senha?', 'Senha', 'Comentário', 'Nível de acesso', 'Ligado', 'Desligado', 'Apagar usuário', 'Desconectar usuário', 'Atualizar', 'Novo usuário', 'apagar', 'desconectar', 'Utilizar opção EXTM3U?', 'Mostrar quantos arquivos (popular/novo)', 'Máximo de arquivos encontrados', 'Restaurar', 'Abrir diretório', 'Para o diretório: %1', 'Download', 'Subir um nível', 'Para o diretório principal', 'Verificar atualizações', 'usuários', 'Linguagem', 'opções', 'Carregado', 'Aleatório', 'Configurações', 'Diretório base', 'Local de stream', 'Linguagem padrão', 'Sistema Windows', 'Requer HTTPS', 'Permitir busca', 'Permitir download', 'Sessão expirou', 'Falha na tentativa de login', 'Aguarde - buscando a lista de arquivos', 'Lista não pode ser adicionada!', '0 = Admin, 1 = Usuário', 'Início de uma sessão com o HTTPS a mudar', 'Habilite processo streaming', 'Título', 'Artista', 'Álbum', 'Comentário', 'Ano', 'Trilha', 'Gênero', 'Desativado', 'Taxa máxima de download (kbps)', 'Usuário', '%1 minuto(s) - %2 Títulos ', '%1 kbit %2 minuto(s)', 'Lista de Gêneros: %1 ', 'Ir', '%1d %2h %3m Tocando %4 files %5 mb', 'Nenhum recurso relevante aqui.', 'Mundança Senha', 'Assine', 'Por favor faça uma seleção', 'O que é foi atualizado?', 'Clique aqui para Ajuda', 'Usar Imagens Externas?', 'Path externo de imagens ', 'Senha Atual', 'A senha atual não confere', 'Arquivo preferido ', 'Arquivo não pode ser feito', 'Provavelmente encontrado arquivo duplicado: "%1" "%2"', 'Deseja apagar a lista?', 'Alfabético', 'Randômico', 'Tipo', 'Original', 'Usar javascript', 'Você deseja realmente deletar este usuário?', 'Ver descrição', 'Descrição', 'Filas', 'Arquivo CSS externo', 'Remover duplos', 'OK', 'ERR', 'Stream', '(mostrar como)', 'arquivos', 'álbuns', '%1d %2h %3m %4s', 'Geral', 'Customizar', 'Menu do arquivo', 'Clique em ? para ajuda.', 'Automático banco de dados sync', 'Enviar extensão de arquivo ', 'Permitir streams não autorizados ', 'Incluir cabeçálho', 'Javascript externo', 'Homepage', 'Exibir o que Keyteq lhe oferece a parte', 'Mostrar atualização a parte', 'Mostrar estatísticas', 'Escrever ID3v2 com stream', 'Habilite assinatura do usuário', 'Tipo de arquivos', 'Sim', 'Não', 'Extensão', 'MIME', 'Incluir no M3U', 'Editar tipo de arquivo', 'É isso mesmo?', 'Optimistic filecheck', 'Randomizar', 'Modo', 'Lista', 'Nenhum, direto', 'Meus favoritos', 'Não foi encontrado nenhum sucesso (hit)', 'Sempre sucessos (hits)', 'Ordem', 'Habilitar suporte LAME?', 'Desabilitado', 'Pertimir o uso de LAME?', 'E-mail', 'Permitir o envio de arquivos por e-mail?', 'Servidor SMTP', 'Porta SMTP', 'E-mail para', 'Mensagem', 'Enviar', 'E-mail enviado!', 'Ativar upload', 'Diretório de uploads', 'Ativar mp3mail', 'Upload', 'Upload completo', 'Não foi possível fazer upload do arquivo', 'É necessário ativar cookies para o login', 'Período', 'Sempre', 'Esta semana ', 'Este mês', 'Último mês', 'Sucessos (hits)', 'Comando LAME', 'Exibir capa do álbum', 'Arquivos do álbum', 'Mudar o tamanho das imagens do álbum', 'Altura do álbum', 'Largura do álbum', 'Método de enviar e-mail', 'Direto', 'Pear', 'Aguarde', 'Por favor, insira seu e-mail válido nas opções', 'Listas em espera?', 'Exibir álbum da URL', 'URL do álbum', 'Não foi possível enviar!', 'Usuário adicionado!', 'Compressor de arquivos', 'Arquivo deletado.');
 
-$klang[20]  = array("Simplified Chinese ", "big5", "¼òÌåÖĞÎÄ", "ÈÈÁ¦ÍÆ¼ö", "×î½ü¸üĞÂ", "ËÑË÷", "Ä¿Ç°Ö»ÓĞ %1", "Ãë", "ËÑË÷½á¹û£º¡°%1¡±", "±»ÕÒµ½", "Ã»ÓĞ", "¸üĞÂËÑË÷Êı¾İ¿âÑ¡Ïî", "É¾µôÎ´Ê¹ÓÃµÄ¼ÍÂ¼£¿", "ÖØ½¨ID3±êÇ©£¿", "ÅÅ´íÄ£Ê½£¿", "Éı¼¶", "È¡Ïû", "¸üĞÂËÑË÷Êı¾İ¿â", "¹²ÕÒµ½ %1 ¸öÎÄ¼ş", "ÎŞ·¨Ê¶±ğ´ËÎÄ¼ş£º%1£¬ÒÑÌø¹ı£¡", "ÒÑ°²×°£º%1 -¸üĞÂ£º%2£¬É¨Ãè£º", "É¨Ãè£º", "²éÑ¯¡°%1¡±Ê§°ÜÁË", "ÎŞ·¨¶ÁÈ¡´ËÎÄ¼ş£º%1£¬ÒÑÌø¹ı£¡", "%1ÒÑ±»É¾³ı£¡", "ÒÑÔÚ%4²åÈë%1£¬¸üĞÂ%2£¬É¾³ı%3", "ÒÑÍê³É", "¹Ø±Õ", "ÔÚ¡°%1¡±ÕÒ²»µ½ÈÎºÎÎÄ¼ş", "µÇÂ½KPlayList", "¡°%1¡±µÄ×¨¼­ÁĞ±í", "¼öÑ¡%1", "Î´Ñ¡ÔñÆµµÀ£¡²¥·ÅÁĞ±íÎ´¸üĞÂ£¡", "²¥·ÅÁĞ±íÒÑ±»¸üĞÂ£¡", "·µ»Ø", "²¥·ÅÁĞ±íÒÑÌí¼Ó£¡", "Çë¼ÇµÃË¢ĞÂÒ³Ãæ£¡", "ÕÊºÅ£º", "¼ÓÃÜ·ÃÎÊ£º", "Çë×¢Òâ£¡´ËÍøÕ¾²¢·Ç¹«¹²µÄ£¬ËùÓĞ²Ù×÷½«±»ÏµÍ³¼ÇÂ¼£¡", "µÇÂ½", "µÇÂ½ĞèÒªSSLÖ§³Ö£¡", "²¥·Å", "É¾³ı", "¹²Ïí£º", "±£´æ", "¿ØÖÆ²¥·ÅÁĞ±í£º¡°%1¡±-%2 ±êÌâ", "±à¼­ÈË£º", "²é¿´Õß£º", "Ñ¡Ôñ", "Ãë", "×´Ì¬", "ĞÅÏ¢", "É¾³ı", "Ãû³Æ", "×Ü¼Æ£º", "´íÎó", "µ±±»Ñ¡ÖĞÊ±£º", "¾ùºâ£º", "±à¼­²¥·ÅÁĞ±í", "É¾³ı´Ë¼ÍÂ¼", "Ìí¼Ó²¥·ÅÁĞ±í", "Ãû³Æ£º", "´´½¨", "ÕıÔÚ²¥·Å£º", "ÎÄ¼ş", "×¨¼­", "È«²¿", "±»Ñ¡ÖĞµÄ", "Ìí¼Ó", "²¥·Å", "±à¼­", "ĞÂ", "Ñ¡Ôñ£º", "²¥·Å¿ØÖÆ£º", "²¥·ÅÁĞ±í£º", "¼öÑ¡ÊıÄ¿", "Keyteq ÌáÊ¾Äã", "£¨¼ì²é¸üĞÂ£©", "ÍøÕ¾", "½öID3", "×¨¼­", "±êÌâ", "ÒÕÊõ¼Ò", "ÒÕÊõ¼Ò¼öÑ¡×¨¼­", "²é¿´", "±»¹²ÏíµÄ²¥·ÅÁĞ±í", "ÓÃ»§", "¹ÜÀíÔ±¿ØÖÆÃæ°å", "×î½ü¸üĞÂ", "ÈÈÁ¦ÍÆ¼ö", "ÍË³ö", "Ñ¡Ïî", "¼ì²é", "ÎÒµÄ", "±à¼­ÓÃ»§ĞÅÏ¢", "´´½¨ĞÂÓÃ»§ÕÊºÅ", "È«Ãû", "ÕÊºÅ", "¸ü¸ÄÃÜÂë£¿", "ÃÜÂë", "×¢ÊÍ", "·ÃÎÊÈ¨ÏŞ", "ÊÇ", "·ñ", "É¾³ıÓÃ»§", "Ê¹ÓÃ»§ÍË³ö", "Ë¢ĞÂ", "´´½¨ĞÂÓÃ»§ÕÊºÅ", "É¾³ı", "ÍË³ö", "Ê¹ÓÃEXTM3UÊôĞÔ£¨.m3u£©", "²é¿´ĞĞÊı£¨×îÈÈ/×îĞÂ£©", "×î´óËÑË÷ĞĞÊı", "ÖØÖÃ", "´ò¿ªÄ¿Â¼", "½øÈëµ½Ä¿Â¼£º%1", "ÏÂÔØ", "·µ»ØÉÏÒ»¼¶Ä¿Â¼", "·µ»Ø¸ùÄ¿Â¼", "¼ì²éÉı¼¶", "ÓÃ»§", "ÓïÑÔ", "Ñ¡Ïî", "ÒÑ±»ÏµÍ³Ìß³ö", "ÂÒĞò²¥·Å£º", "ÉèÖÃ", "¸ùÄ¿Â¼", "Á÷ÎÄ¼şÔ´", "È±Ê¡ÓïÑÔ", "WindowsÏµÍ³", "ĞèÒªHTTPS", "ÔÊĞíËÑË÷", "ÔÊĞíÏÂÔØ", "SessionÁ÷³Ì³¬Ê±", "±¨¸æÊ§°ÜµÄµÇÂ½³¢ÊÔĞĞÎª", "ÇëÉÔµÈ¡ª¡ªÕıÔÚ¶ÁÈ¡ÎÄ¼şÁĞ±í", "²¥·ÅÁĞ±íÎŞ·¨±»Ìí¼Ó£¡", "¹ÜÀíÔ±", "»»ÒÔHTTPS·½Ê½µÇÂ½", "Á÷ÒıÇæÉúĞ§", "±êÌâ", "ÒÕÊõ¼Ò", "×¨¼­", "×¢ÊÍ", "Äê", "Òô¹ì", "Á÷ÅÉ", "Î´ÉèÖÃ", "×î´óÏÂÔØËÙÂÊ(Kbps)", "ÓÃ»§", "%1 ·ÖÖÓ - %2 ¸ö±êÌâ", "%1 Ç§±ÈÌØ %2 ·ÖÖÓ", "Á÷ÅÉÁĞ±í", "È·¶¨", "%1d %2h %3m ²¥·ÅÊ±³¤ %4 ¸öÎÄ¼ş %5 Õ×", "Ã»ÓĞÏà¹Ø×ÊÔ´", "ÃÜÂëÒÑ¾­³É¹¦ĞŞ¸Ä£¡", "µÇÂ½", "ÇåÑ¡ÔñÒ»Ïî£¡", "×î½üÓĞÊ²Ã´¸üĞÂ£¿", "µã»÷ÕâÀï»ñÈ¡°ïÖú", "Ê¹ÓÃÀ©Õ¹Í¼ÏñÏÔÊ¾£¿", "À©Õ¹Í¼Æ¬Â·¾¶", "µ±Ç°ÃÜÂë", "µ±Ç°ÃÜÂë»¥²»Æ¥Åä£¡", "¿ÉÈ¡µÃµÄ´æµµ", "ÎŞ·¨´æµµ", "¿ÉÄÜÏàÍ¬µÄÎÄ¼ş%1-%2ÕÒµ½ÁË", "ÕæµÄÉ¾³ı²¥·ÅÁĞ±í£¿", "°´×ÖÄ¸Ë³ĞòÅÅĞò", "Ëæ»ú²¥·Å", "ÅÅĞò", "ÆğÔ´");
+$klang[20]  = array("Simplified Chinese", "big5", "¼òÌåÖĞÎÄ", "ÈÈÁ¦ÍÆ¼ö", "×î½ü¸üĞÂ", "ËÑË÷", "Ä¿Ç°Ö»ÓĞ %1", "Ãë", "ËÑË÷½á¹û£º¡°%1¡±", "±»ÕÒµ½", "Ã»ÓĞ", "¸üĞÂËÑË÷Êı¾İ¿âÑ¡Ïî", "É¾µôÎ´Ê¹ÓÃµÄ¼ÍÂ¼£¿", "ÖØ½¨ID3±êÇ©£¿", "ÅÅ´íÄ£Ê½£¿", "Éı¼¶", "È¡Ïû", "¸üĞÂËÑË÷Êı¾İ¿â", "¹²ÕÒµ½ %1 ¸öÎÄ¼ş", "ÎŞ·¨Ê¶±ğ´ËÎÄ¼ş£º%1£¬ÒÑÌø¹ı£¡", "ÒÑ°²×°£º%1 -¸üĞÂ£º%2£¬É¨Ãè£º", "É¨Ãè£º", "²éÑ¯¡°%1¡±Ê§°ÜÁË", "ÎŞ·¨¶ÁÈ¡´ËÎÄ¼ş£º%1£¬ÒÑÌø¹ı£¡", "%1ÒÑ±»É¾³ı£¡", "ÒÑÔÚ%4²åÈë%1£¬¸üĞÂ%2£¬É¾³ı%3", "ÒÑÍê³É", "¹Ø±Õ", "ÔÚ¡°%1¡±ÕÒ²»µ½ÈÎºÎÎÄ¼ş", "µÇÂ½KPlayList", "¡°%1¡±µÄ×¨¼­ÁĞ±í", "¼öÑ¡%1", "Î´Ñ¡ÔñÆµµÀ£¡²¥·ÅÁĞ±íÎ´¸üĞÂ£¡", "²¥·ÅÁĞ±íÒÑ±»¸üĞÂ£¡", "·µ»Ø", "²¥·ÅÁĞ±íÒÑÌí¼Ó£¡", "Çë¼ÇµÃË¢ĞÂÒ³Ãæ£¡", "ÕÊºÅ£º", "¼ÓÃÜ·ÃÎÊ£º", "Çë×¢Òâ£¡´ËÍøÕ¾²¢·Ç¹«¹²µÄ£¬ËùÓĞ²Ù×÷½«±»ÏµÍ³¼ÇÂ¼£¡", "µÇÂ½", "µÇÂ½ĞèÒªSSLÖ§³Ö£¡", "²¥·Å", "É¾³ı", "¹²Ïí£º", "±£´æ", "¿ØÖÆ²¥·ÅÁĞ±í£º¡°%1¡±-%2 ±êÌâ", "±à¼­ÈË£º", "²é¿´Õß£º", "Ñ¡Ôñ", "Ãë", "×´Ì¬", "ĞÅÏ¢", "É¾³ı", "Ãû³Æ", "×Ü¼Æ£º", "´íÎó", "µ±±»Ñ¡ÖĞÊ±£º", "¾ùºâ£º", "±à¼­²¥·ÅÁĞ±í", "É¾³ı´Ë¼ÍÂ¼", "Ìí¼Ó²¥·ÅÁĞ±í", "Ãû³Æ£º", "´´½¨", "ÕıÔÚ²¥·Å£º", "ÎÄ¼ş", "×¨¼­", "È«²¿", "±»Ñ¡ÖĞµÄ", "Ìí¼Ó", "²¥·Å", "±à¼­", "ĞÂ", "Ñ¡Ôñ£º", "²¥·Å¿ØÖÆ£º", "²¥·ÅÁĞ±í£º", "¼öÑ¡ÊıÄ¿", "Keyteq ÌáÊ¾Äã", "£¨¼ì²é¸üĞÂ£©", "ÍøÕ¾", "½öID3", "×¨¼­", "±êÌâ", "ÒÕÊõ¼Ò", "ÒÕÊõ¼Ò¼öÑ¡×¨¼­", "²é¿´", "±»¹²ÏíµÄ²¥·ÅÁĞ±í", "ÓÃ»§", "¹ÜÀíÔ±¿ØÖÆÃæ°å", "×î½ü¸üĞÂ", "ÈÈÁ¦ÍÆ¼ö", "ÍË³ö", "Ñ¡Ïî", "¼ì²é", "ÎÒµÄ", "±à¼­ÓÃ»§ĞÅÏ¢", "´´½¨ĞÂÓÃ»§ÕÊºÅ", "È«Ãû", "ÕÊºÅ", "¸ü¸ÄÃÜÂë£¿", "ÃÜÂë", "×¢ÊÍ", "·ÃÎÊÈ¨ÏŞ", "ÊÇ", "·ñ", "É¾³ıÓÃ»§", "Ê¹ÓÃ»§ÍË³ö", "Ë¢ĞÂ", "´´½¨ĞÂÓÃ»§ÕÊºÅ", "É¾³ı", "ÍË³ö", "Ê¹ÓÃEXTM3UÊôĞÔ£¨.m3u£©", "²é¿´ĞĞÊı£¨×îÈÈ/×îĞÂ£©", "×î´óËÑË÷ĞĞÊı", "ÖØÖÃ", "´ò¿ªÄ¿Â¼", "½øÈëµ½Ä¿Â¼£º%1", "ÏÂÔØ", "·µ»ØÉÏÒ»¼¶Ä¿Â¼", "·µ»Ø¸ùÄ¿Â¼", "¼ì²éÉı¼¶", "ÓÃ»§", "ÓïÑÔ", "Ñ¡Ïî", "ÒÑ±»ÏµÍ³Ìß³ö", "ÂÒĞò²¥·Å£º", "ÉèÖÃ", "¸ùÄ¿Â¼", "Á÷ÎÄ¼şÔ´", "È±Ê¡ÓïÑÔ", "WindowsÏµÍ³", "ĞèÒªHTTPS", "ÔÊĞíËÑË÷", "ÔÊĞíÏÂÔØ", "SessionÁ÷³Ì³¬Ê±", "±¨¸æÊ§°ÜµÄµÇÂ½³¢ÊÔĞĞÎª", "ÇëÉÔµÈ¡ª¡ªÕıÔÚ¶ÁÈ¡ÎÄ¼şÁĞ±í", "²¥·ÅÁĞ±íÎŞ·¨±»Ìí¼Ó£¡", "¹ÜÀíÔ±", "»»ÒÔHTTPS·½Ê½µÇÂ½", "Á÷ÒıÇæÉúĞ§", "±êÌâ", "ÒÕÊõ¼Ò", "×¨¼­", "×¢ÊÍ", "Äê", "Òô¹ì", "Á÷ÅÉ", "Î´ÉèÖÃ", "×î´óÏÂÔØËÙÂÊ(Kbps)", "ÓÃ»§", "%1 ·ÖÖÓ - %2 ¸ö±êÌâ", "%1 Ç§±ÈÌØ %2 ·ÖÖÓ", "Á÷ÅÉÁĞ±í", "È·¶¨", "%1d %2h %3m ²¥·ÅÊ±³¤ %4 ¸öÎÄ¼ş %5 Õ×", "Ã»ÓĞÏà¹Ø×ÊÔ´", "ÃÜÂëÒÑ¾­³É¹¦ĞŞ¸Ä£¡", "µÇÂ½", "ÇåÑ¡ÔñÒ»Ïî£¡", "×î½üÓĞÊ²Ã´¸üĞÂ£¿", "µã»÷ÕâÀï»ñÈ¡°ïÖú", "Ê¹ÓÃÀ©Õ¹Í¼ÏñÏÔÊ¾£¿", "À©Õ¹Í¼Æ¬Â·¾¶", "µ±Ç°ÃÜÂë", "µ±Ç°ÃÜÂë»¥²»Æ¥Åä£¡", "¿ÉÈ¡µÃµÄ´æµµ", "ÎŞ·¨´æµµ", "¿ÉÄÜÏàÍ¬µÄÎÄ¼ş%1-%2ÕÒµ½ÁË", "ÕæµÄÉ¾³ı²¥·ÅÁĞ±í£¿", "°´×ÖÄ¸Ë³ĞòÅÅĞò", "Ëæ»ú²¥·Å", "ÅÅĞò", "ÆğÔ´");
 
 $klang[21]  = array("Catalan", "iso-8859-1", "Català", "El més nou", "Novetat", "Cerca", "(només es mostra %1)", "seg", "Resultats de la Recerca: '%1'", "trobat", "Cap.", "actualitza les opcions de recerca a la base de dades", "Esborrar registres no utilitzats?", "Regenerar ID3?", "Mode depuració?", "Actualitza", "Cancel·la", "Actualitza base de dades de recerca", "Trobats %1 fitxers.", "No puc determinar aquest fitxer: %1, l'ignoro.", "Instal·lat: %1 - Actualitzat: %2, Escanejat:", "Scanejat:", "Error - query: %1", "No puc llegir aquest arxiu: %1. L'ignoro.", "Esborrat: %1","Insertat %1, actualitzat %2, esborrat %3 amb %4 errors i %5 ignorats de %6 arxius - %7 seg - %8 marcats per esborrar.", "Fet", "Tanca", "No he trobat cap arxiu a: \"%1\"", "Entrar a kPlaylist", "Llista d'àlbums de l'artista: %1", "Marcat %1", "No s'han sel·leccionat cançons. Playlist no actualitzada.", "Playlist actualitzada!", "Tornar", "Playlist afegida!", "Recorda recarregar la pàgina.", "Entrar:", "Secret:", "Compte! Això és una WEB no pública. Totes les accions es registren. ", "Entrar", "Es requereix SSL per entrar.", "Reprodueix", "Esborra", "Compartit:", "Graba.", "Playlist de Control: \"%1\" - %2 títols", "Editor", "Visualitzador", "Sel·lecciona", "Seq", "Estat", "Info", "Esborra", "Nom", "Totals:", "Error", "Accions en sel·leccionar:", "Seqüència:", "edita Playlist","Esborra aquesta entrada", "afegeix playlist", "Nom:", "Crea", "Reprodueix:", "Arxiu", "Àlbum", "Tot", "Sel·leccionat", "afegeix", "reprodueix", "edita", "nou", "Sel·lecciona:", "Control de reproducció:", "Playlist;", "Sel·lecció numérica", "Keyteq et dona:", "(actualització de soft)", "Homesite", "només id3", "àlbum", "títol", "artista", "àlbum sel·leccionat de l'artista", "veure", "Playlists compartits", "Usuaris", "Control d'Administrador", "Que hi ha de nou", "Que hi ha novedos", "Sortir", "Opcions", "Txequeja", "Jo", "edita usuari", "nou usuari", "Nom complet", "Entrada", "Canviar password?", "Password", "Comentari", "Nivell d'accés", "On", "Off", "Esborrar usuari", "Desconnectar usuari", "Refrescar", "Nou usuari", "esborra", "sortir", "Utilitzar característiques EXTM3U?", "Mostrar quantes columnes (hot/nou)", "Màxim de columnes de recerca", "Resetejar", "Obrir directori", "Anar al directori: %1", "Descarregar", "Pujar un nivell", "Anar al directori root.", "Txequeja actualitzacions.", "usuaris", "Llenguatge", "opcions", "Iniciat", "Aleatori:", "Configuració", "directori base", "Localització d'Stream", "Llenguatge per defecte", "Sistema Windows", "Necessita HTTPS", "Permetre recerques", "Permetre descàrregues", "Temps de sessió (COOKIE)", "Reporta errors d'intent d'entrada", "Espera. Recuperant llista de fitxers.", "No es pot afegir la Playlist!", "Admin", "Entra per HTTPS per acceptar els canvis!", "Activa el motor d'streaming", "Títol", "Artista", "Àlbum", "Comentaris", "Any", "Pista", "Gènere", "no especificat", "Màxim ample de descàrrega (kbps)", "Usuari", "%1 mins - %2 títols", "%1 kbit %2 mins", "Llista de gèneres: %1", "Som-hi", "Temps de reproducció %1d %2h %3m %4 arxius %5 mb", "No hi ha arxius relevants.", "Password canviat!", "Signa", "Siusplau fes una sel·lecció!", "Que hi ha de nou?", "Clica aquí per a ajuda", "Utilitza imatges externes?", "Camí per a imatges externes", "Password actual", "Password actual no coincideix!", "Arxivador preferit", "No es pot crear l'arxiu", "Trobat un problable arxiu duplicat: %1 - %2", "Esborrar Playlist de debò?", "Alfabètic", "Al·leatori", "Ordena", "Original", "Utilitza javascript", "Estas segur que vols esborrar aquest usuari?", "Veure historial", "Historial", "Files", "Arxiu CCS extern");
 
 $klang[22]  = array("Bulgarian", "windows-1251", "Áúëãàğñêè", "Êîå å ñóïåğ?", "Êîå å íîâî?", "Òúğñåíå", "(only %1 shown)", "ñåê", "Ğåçóëòàò îò òúğñåíåòî: '%1' ", "íàìåğåí", "Íèùî.", "Îáíîâëåíèå íà áàçàòàäàííè çà òúğñåíå - îïöèÿ", "Èçòğèâàíå íà íåèçïîëçâàíèòå çàïèñè?", "Âúçñòàíîâÿâàì ID3? ", "Îòñòğàíÿâàíå íà äåôåêòèòå ?", "Îáíîâëåíèå", "Îòêàç", "Îáíîâëåíèå íà áàçàòàäàííè çà òúğñåíå", "Íàìåğåíè %1 ôàèëà. ", "Íåìîçå äà ñå îïğåäåëè òîçè ôàèë: %1, ïğîïóñíàò.  ", "Èíñòàëèğàí: %1 - Îáíîâëåíèå: %2, ñêàíèğàíå:", "Ñêàíèğàíå:", "Ãğåøêà - âúïğîñ: %1 ", "Òîçè ôàèë íåìîçå äà ñå ïğî÷åòå: %1. Ïğîïóñíàò.", "Ïğåìàõíàòè: %1 ","Âêàğàíè %1, îáíîâëåíèå %2, èçòğèòè %3 êúäå %4 failed and %5 skipped through %6 files - %7 sec - %8 marked for deletion", "Ãîòîâî", "Çàòâîğè", "Íåìîæå äà ñå íàìåğÿò íèêàêâè ôàèëîâå òóêà:  \"%1\" ", "kPlaylist Âõîä", "Ñïèñúê íà àëáóìèòå ïî ïåâöè: %1", "Áúğç èçáîğ %1 ", "Íèêàêâè ïåñíè íå ñà èçáğàíè. Playlist íå å îáíîâåí. ", "Playlist îáíîâÿâàíå!", "Îáğàòíî", "Playlist äîáàâÿíå!", "Íåçàáğàâÿéòå äà ïğåçàğåäèòå ñòğàíèöàòà.", "Èìå:", "Ïàğîëà:", "Ñúîáùåíèå! Òîâà íå å îáùåñòâåí ñàéò. Âñè÷êó äåéñòâèÿ ñå çàïàçâàò.", "Âëåç", "Íåîáõîâèìî å SSL çà ôëèçàíå.", "Ïóñíè", "Èçòğèé", "Ñïîäåëè:", "Çàïàçè", "Óïğàâëåíèå playlist: \"%1\" - %2 çàãëàâèå", "Ğåäàêòîğ", "Ïîãëåäíè", "Èçáåğè", "Ïîñëåä.", "Ñúñòîÿíèå", "Èíôîğìàöèÿ", "Èçòğ.", "Èìå", "Îáùî:", "Ãğåøêà", "Äåéñòâèå íà èçáğàíîòî:", "Ïîñëåäîâàòåëíîñò:", "Ğåäàêöèÿ playlist ", "Èçòğèéòå òîâà", "äîáàâÿíå playlist ", "Èìå:", "Ñúçäàé", "Ïóñíè:", "Ôàéë", "Àëáóì", "Âñè÷êî", "Èçáåğè", "äîáàâè", "ïóñíè", "ğåäàêòèğàíå", "íîâ", "Èçáåğè:", "Êîíòğîë íà ïóñêàíå:", "Playlist:", "Áúğçî èçáèğàíå ïî íîìåğ", "Keyteq gives you:", "(ïğîâåğè çà îáíîâÿâàíå)", "Homesite ", "ñàìî id3 ", "àëáóì", "çàãëàâèå", "ïåâåö", "Áúğçî èçáèğàíå ïî áóêâà", "âèæ", "Ñïîäåëè playlists ", "Ïîòğåáèòåëè", "Àäìèí. óïğàâëåíèå", "Êîå å íîâî?", "Êîå å ñóïåğ?", "Èçëèçàíå", "Íàñòğîéêè", "Øàõ", "Ìîé", "ğåäàêòèğàíå íà ïîòğåáèòåëÿ", "íîâ ïîòğåáèòåë", "Ïúëíî èìå", "Èìå(íèê)", "Ñìÿíà íà ïàğîëàòà?", "Ïàğîëà", "Êîìåíòàğ", "Èçáîğ íà äîñòúïà", "Âêë.", "Èçêë.", "Èçòğèâàíå íà ïîòğåáèòåë", "Èçëèçàíå íà ïîòğåáèòåë", "Îïğåñíåíèå", "Íîâ ïîòğåáèòåë", "èçòğ.", "èçõîä", "Èçïîëçâàíå íà Winàmp EXTM3U?", "Ïîêàçâàíå íà êîëêî êîëîíè (ãîğåùè/íîâè)", "Ìàêñèìóì êîëîíè íà òúğñåíå", "Ğåçåò", "Îòâîğè äèğåêòîğèÿ", "Îòèäè â äèğåêòîğèÿ:  %1 ", "Ñâàëÿíå", "Îòèäè åíà ñòúïêà íàãîğå", "Îòèäè â ãëàâíàòà äèğåêòîğèÿ.", "Ïğîâåğè îáíîâëåíèåòî", "ïîòğåáèëòåëè", "Åçèê", "Îïöèè", "Booted", "Shuffle:", "Íàñòğèéêè", "Ãëàâíà äèğåêòîğèÿ", "Stream location", "Åçèê ïî ïîäğàçáèğàíå", "A Windows system", "Èçèñêâàíå HTTPS ", "Allow seek", "Âèíàãè ñâàëÿíå", "Âğåìå íà ñåñèÿòà", "Ğàïîğò íà íåóñïåëèòå äà âëÿçàò", "Hold on - fetching file list", "Playlist  íåìîæå äà áúäå äîáàâåí!", "Àäìèíèñòğàòîğ", "Âëåç ñ HTTPS çà ñìÿíà!", "Ğàçğåøåí streaming engine ", "Çàãëàâèå", "Ïåâåö", "Àëáóì", "Êîìåíòàğ", "Ãîäèíà", "Ïåñåí", "Æàíğ", "íå èçáğàíî", "Ìàêñ. ñêîğîñò íà ñâàëÿíğ (kbps)", "Ïîòğåáèòåë", "%1 ìèí. - %2 çàãëàâèÿ ", "%1 kbit %2 ìèí. ", "Æàíğîâ ñïèñúê: %1", "Îòèäè", "%1äåí %2÷. %3ì. âğåìå çà ñëóøàíå %4 ôàéëîâå %5 ìá.", "No relevant resources here.", "Ïàğîëàòà å ñìåíåíà!", "Ğåãèñòğàöèÿ", "Ìîëå íàïğàâåòå èçáîğ!", "Êàêâî ñå îáíîâëÿâà", "Íàòèñíåòå òóê çà ïîìîù", "Èçïîëçâàíå íà âúíøíè ñíèìêè?", "Ïúòÿ äî âúíøíèòå ñíèìêè", "Òåêóùà ïàğîëà", "Òåêóùàòà ïàğîëà íå ñúâïàäà!", "Preferred archiver", "Àğõèâà íåìîçå äà áúäå íàïğàâåí", "Probable file duplicate found:  %1 - %2", "Èñêàòå ëè äà èçòğèåòå playlist?", "Ïî àçáó÷åí ğåä", "Ğàáúğêàíî", "Ñîğòèğàíî", "Îğèãèíàë", "Èçïîëçâàé javascript ", "Ñèãóğåí ëè ñòå, ÷å èñêàòå äà èçòğèåòå òîçè ïîòğåáèòåë?", "Âèç èñòîğèÿòà", "èñòîğèÿ", "Êîëîíè", "Âúíøåí CSS ôàèë");
 
-$klang[23]  = array("Polish", "iso-8859-1", "Polski", "Popularne", "Nowo&#347;ci", "Wyszukaj", "pokazano tylko %1", "sek", "Wyniki wyszukiwania: \'%1\'", "znaleziono", "Nic.", "aktualizacja opcji wyszukiwania bazy", "Usun&#261;&#263; nieu&#380;ywane wpisy?", "Odbudowa&#263; ID3?", "Tryb usuwania b&#322;&#281;dów?", "Aktualizacja", "Anuluj", "aktualizacja wyszukiwania bazy", "Znaleziono %1 plików", "Nie mo&#380;na okre&#380;li&#263; po&#322;o&#380;enia pliku: %1", "Instalacja: %1 - Aktualizacja: %2, badanie:", "Skanowanie:", "Niepowodzenie - pytanie: %1", "Nie mo&#380;na odczyta&#263; tego pliku: %1. Pomini&#281;cie.", "Usuni&#281;to: %1", "Wstawiono %1, uaktualniono %2, usuni&#281;to %3 gdzie %4 uszkodzonych i %5 pomini&#281;to z powodu %6 plików - %7 sek - %8 zaznaczonych do usuni&#281;cia. ", "Sko&#324;czone", "Zamknij", "Nie mo&#380;na znale&#378;&#263; tutaj &#380;adnych plików: \"%1\"", "Logowanie kPlaylist", "Lista albumów dla wykonawcy: %1", "popularny wybór %1", "nie wybrana melodia. Playlista nie zaktualizowana.", "Playlista zaktualizowana!", "Wstecz", "Playlista dodana!", "Pami&#281;taj o prze&#322;adowaniu strony", "login:", "has&#322;o:", "Uwaga! To nie jest strona publiczna. Wszystkie akcje s&#261; rejestrowane.", "Login", "Do zalogowania wymagany jest SSL", "Odgrywaj", "Usu&#324;", "Wspólny:", "Zapisz", "Kontrola playlist: \"%1\" - %2 tytu&#322;y", "Edytor", "Przegl&#261;darka", "Zaznacz", "Ci&#261;g", "Status", "Info", "Kasuj", "Nazwa", "Podsumowanie:", "B&#322;&#261;d", "Akcja na zaznaczonych:", "Kolejno&#347;&#263;", "edytuj playlist&#281;", "Usu&#324; ten zapis", "dodaj playlist&#281;", "Nazwa:", "Utwórz", "Odtwarzaj:", "Plik", "Album", "Wszystko", "Wybrane", "dodaj", "odtwarzaj", "edytuj", "nowe", "Zaznacz:", "Kontrol odtwarzania:", "Playlista:", "popularne numery", "Twój identyfikator:", "(sprawd&#378; czy s&#261; poprawki)", "Stona domowa", "tylko id3", "album", "tytu&#322;", "wykonawca", "Popularne albumy wykonawcy", "widok", "Wspólne playlisty", "U&#380;ytkownicy", "Panel administratora", "Nowo&#347;ci", "Popularne", "Wylogowanie", "Opcje", "Sprawd&#378;", "Mój", "edytuj u&#380;ytkownika", "nowy u&#380;ytkownik", "Pe&#322;na nazwa", "Login", "Zmieni&#263; has&#322;o?", "Has&#322;o", "Komentarz", "poziom dost&#281;pu", "W&#322;&#261;czony", "Wy&#322;&#261;czony", "Usu&#324; u&#380;ytkownika", "Wyloguj u&#380;ytkownika", "Od&#347;wie&#380;", "Nowy u&#380;ytkownik", "usu&#324;", "wyloguj", "Mo&#380;liwo&#347;&#263; u&#380;ycia EXTM3U?", "Ile pokaza&#263; wierszy (popularne/nowe)", "Max przeszukiwanych wierszy", "Resetuj", "Otwórz katalog", "Id&#378; do katalogu: %1", "Pobierz", "Id&#378; katalog wy&#380;ej", "Id&#378; do katalogu g&#322;ównego", "Sprawd&#378; czy s&#261; poprawki", "u&#380;ytkownicy", "J&#281;zyk", "opcje", "Inicjowanie", "Mieszanie:", "Ustawienia", "Katalog bazowy", "Lokalizacja strumienia", "Domy&#347;lny j&#281;zyk", "System Windows?", "Wymagane HTTPS", "Wszyscy mog&#261; ogl&#261;da&#263;", "Wszyscy mog&#261; &#347;ci&#261;ga&#263;", "Maksymalny czas sesji", "Raportuj b&#322;&#281;dne próby logowania", "W&#322;&#261;cz wstrzymywanie - najlepsze listy plików", "Playlista nie mo&#380;e by&#263; dodana!", "Administrator", "Zaloguj z HTTPS aby zmieni&#263;!", "Aktywny strumie&#324; silnika", "Tytu&#322;", "Wykonawca", "Album", "Komentarz", "Rok", "&#346;cie&#380;ka", "Rodzaj", "nie ustawione", "Max pr&#281;dko&#347;&#263; &#347;ci&#261;gania (kbps)", "U&#380;ytkownik", "%1 minuty - %2 tytu&#322;y", "%1 kbit %2 minuty", "Rodzaj listy: %1", "Id&#378;", "%1d %2h %3m czas odtwarzania %4 plików %5 MB", "Nie zwi&#261;zany z tymi zasobami", "Has&#322;o zmienione!", "Wy&#347;lij", "Prosz&#281; wykona&#263; zaznaczenie!", "Co to jest aktualizacja?", "Kliknij tutaj aby uzyska&#263; pomoc", "U&#380;y&#263; zewn&#281;trznych obrazków?", "&#346;cie&#380;ka zewn&#281;trznych obrazków", "Bie&#380;&#261;ce has&#322;o", "Bie&#380;&#261;ce has&#322;o nie jest w&#322;a&#347;ciwe!", "Preferowany archiwizator", "Archiwum nie mo&#380;e zosta&#263; utworzone", "Prawdopodobnie znaleziono duplikat pliku: %1 - %2", "Na pewno usun&#261;&#263; pleylist&#281;?", "Alfabetycznie", "Losowo", "Sortuj", "Oryginalnie", "U&#380;yj javascript", "Czy jeste&#347; pewny, &#380;e chcesz usun&#261;&#263; tego uzytkownika?", "Przegl&#261;daj histori&#281;", "historia", "Wiersze", 
-"Zewn&#281;trzny plik CSS");
+$klang[23]  = array("Polish", "ISO-8859-2", "Polski", "Popularne", "Nowo&#347;ci", "Wyszukaj", "pokazano tylko %1", "sek", "Wyniki wyszukiwania: \'%1\'", "znaleziono", "Nic.", "aktualizacja opcji wyszukiwania bazy", "Usun&#261;&#263; nieu&#380;ywane wpisy?", "Odbudowa&#263; ID3?", "Tryb usuwania b&#322;&#281;dów?", "Aktualizacja", "Anuluj", "aktualizacja wyszukiwania bazy", "Znaleziono %1 plików", "Nie mo&#380;na okre&#380;li&#263; po&#322;o&#380;enia pliku: %1", "Instalacja: %1 - Aktualizacja: %2, badanie:", "Skanowanie:", "Niepowodzenie - pytanie: %1", "Nie mo&#380;na odczyta&#263; tego pliku: %1. Pomini&#281;cie.", "Usuni&#281;to: %1", "Wstawiono %1, uaktualniono %2, usuni&#281;to %3 gdzie %4 uszkodzonych i %5 pomini&#281;to z powodu %6 plików - %7 sek - %8 zaznaczonych do usuni&#281;cia. ", "Sko&#324;czone", "Zamknij", "Nie mo&#380;na znale&#378;&#263; tutaj &#380;adnych plików: \"%1\"", "Logowanie kPlaylist", "Lista albumów dla wykonawcy: %1", "popularny wybór %1", "nie wybrana melodia. Playlista nie zaktualizowana.", "Playlista zaktualizowana!", "Wstecz", "Playlista dodana!", "Pami&#281;taj o prze&#322;adowaniu strony", "login:", "has&#322;o:", "Uwaga! To nie jest strona publiczna. Wszystkie akcje s&#261; rejestrowane.", "Login", "Do zalogowania wymagany jest SSL", "Odgrywaj", "Usu&#324;", "Wspólny:", "Zapisz", "Kontrola playlist: \"%1\" - %2 tytu&#322;y", "Edytor", "Przegl&#261;darka", "Zaznacz", "Ci&#261;g", "Status", "Info", "Kasuj", "Nazwa", "Podsumowanie:", "B&#322;&#261;d", "Akcja na zaznaczonych:", "Kolejno&#347;&#263;", "edytuj playlist&#281;", "Usu&#324; ten zapis", "dodaj playlist&#281;", "Nazwa:", "Utwórz", "Odtwarzaj:", "Plik", "Album", "Wszystko", "Wybrane", "dodaj", "odtwarzaj", "edytuj", "nowe", "Zaznacz:", "Kontrol odtwarzania:", "Playlista:", "popularne numery", "Twój identyfikator:", "(sprawd&#378; czy s&#261; poprawki)", "Stona domowa", "tylko id3", "album", "tytu&#322;", "wykonawca", "Popularne albumy wykonawcy", "widok", "Wspólne playlisty", "U&#380;ytkownicy", "Panel administratora", "Nowo&#347;ci", "Popularne", "Wylogowanie", "Opcje", "Sprawd&#378;", "Mój", "edytuj u&#380;ytkownika", "nowy u&#380;ytkownik", "Pe&#322;na nazwa", "Login", "Zmieni&#263; has&#322;o?", "Has&#322;o", "Komentarz", "poziom dost&#281;pu", "W&#322;&#261;czony", "Wy&#322;&#261;czony", "Usu&#324; u&#380;ytkownika", "Wyloguj u&#380;ytkownika", "Od&#347;wie&#380;", "Nowy u&#380;ytkownik", "usu&#324;", "wyloguj", "Mo&#380;liwo&#347;&#263; u&#380;ycia EXTM3U?", "Ile pokaza&#263; wierszy (popularne/nowe)", "Max przeszukiwanych wierszy", "Resetuj", "Otwórz katalog", "Id&#378; do katalogu: %1", "Pobierz", "Id&#378; katalog wy&#380;ej", "Id&#378; do katalogu g&#322;ównego", "Sprawd&#378; czy s&#261; poprawki", "u&#380;ytkownicy", "J&#281;zyk", "opcje", "Inicjowanie", "Mieszanie:", "Ustawienia", "Katalog bazowy", "Lokalizacja strumienia", "Domy&#347;lny j&#281;zyk", "System Windows?", "Wymagane HTTPS", "Wszyscy mog&#261; ogl&#261;da&#263;", "Wszyscy mog&#261; &#347;ci&#261;ga&#263;", "Maksymalny czas sesji", "Raportuj b&#322;&#281;dne próby logowania", "W&#322;&#261;cz wstrzymywanie - najlepsze listy plików", "Playlista nie mo&#380;e by&#263; dodana!", "Administrator", "Zaloguj z HTTPS aby zmieni&#263;!", "Aktywny strumie&#324; silnika", "Tytu&#322;", "Wykonawca", "Album", "Komentarz", "Rok", "&#346;cie&#380;ka", "Rodzaj", "nie ustawione", "Max pr&#281;dko&#347;&#263; &#347;ci&#261;gania (kbps)", "U&#380;ytkownik", "%1 minuty - %2 tytu&#322;y", "%1 kbit %2 minuty", "Rodzaj listy: %1", "Id&#378;", "%1d %2h %3m czas odtwarzania %4 plików %5 MB", "Nie zwi&#261;zany z tymi zasobami", "Has&#322;o zmienione!", "Wy&#347;lij", "Prosz&#281; wykona&#263; zaznaczenie!", "Co to jest aktualizacja?", "Kliknij tutaj aby uzyska&#263; pomoc", "U&#380;y&#263; zewn&#281;trznych obrazków?", "&#346;cie&#380;ka zewn&#281;trznych obrazków", "Bie&#380;&#261;ce has&#322;o", "Bie&#380;&#261;ce has&#322;o nie jest w&#322;a&#347;ciwe!", "Preferowany archiwizator", "Archiwum nie mo&#380;e zosta&#263; utworzone", "Prawdopodobnie znaleziono duplikat pliku: %1 - %2", "Na pewno usun&#261;&#263; pleylist&#281;?", "Alfabetycznie", "Losowo", "Sortuj", "Oryginalnie", "U&#380;yj javascript", "Czy jeste&#347; pewny, &#380;e chcesz usun&#261;&#263; tego uzytkownika?", "Przegl&#261;daj histori&#281;", "historia", "Wiersze", "Zewn&#281;trzny plik CSS");
 
-$klang[24]  = array("Lithuanian", "ISO-8859-13", "Lietuviškai", "Daniausiai klausomi", "Nauja", "Paieška", "(rodoma tiktai %1)", "sec", "Paieškos rezultatai: \'%1\'", "rasta", "N&#279;ra.", "atnaujinti paiškos duomen&#371; baz&#279;s nustatymus", "Ištrinti nereikalingus &#303;rašus?", "Atnaujinti ID3?", "Su klaid&#371; aptikimu?", "Atnaujinti", "Nutraukti", "atnaujinti paieškos duomen&#371; baz&#281;", "Rasta %1 fail&#371;.", "Neina nustatyti šio failo: %1, praleidiam.", "&#302;diegta: %1 - Atnaujinti: %2, skenuoti:", "Skenuoti:", "Nepavykusi uklausa: %1", "Neina perskaityt šio failo: %1. Praleidiam.", "Pašalinta: %1", "&#302;traukta %1, atnaujinta %2, ištrinta %3 kur %4 nepavyk&#281; ir %5 praleisti iš %6 fail&#371; - %7 sec - %8 paym&#279;ti ištrynimui.", "Atlikta", "Udaryti", "Nepavyko rasti joki&#371; fail&#371; &#269;ia: \"%1\"", "kPlaylist Prisijungimas", "Album&#371; s&#261;rašas pagal autori&#371;: %1", "Populiariausi %1", "Nepaim&#279;jote n&#279; vieno failo. Playlist\'as neatnaujintas.", "Playlist\'as atnaujintas!", "Atgal", "&#302;trauktas Playlist\'as.", "Neumirškite perkrauti puslapio.", "vartotojo vardas:", "slaptaodis:", "D&#279;mesio! Tai ne viešas interneto puslapis. Visi veiksmai yra &#303;rašomi.", "Prisijungti", "SSL reikia norint prisijungti.", "Groti", "Ištrinti", "Vieši:", "Išsaugoti", "Redaguojamas Playlist\'as: \"%1\" - %2 pavadinimai", "Redaktorius", "Pervalga", "Paym&#279;ti", "T&#281;sinys", "Pad&#279;tis", "Info", "Ištrinti", "Vardas", "Išviso:", "Klaida", "Atlikti veiksm&#261; su paym&#279;tais:", "Eil&#279;s tvarka:", "redaguoti playlist\'&#261;", "Ištrinti š&#303; &#303;raš&#261;", "&#303;traukti playlist\'&#261;", "Vardas:", "Sukurti", "Groti:", "Failas", "Albumas", "Visi", "Paym&#279;tus", "&#303;traukti", "groti", "redaguoti", "naujas", "Paym&#279;ti:", "Grojimo valdymas:", "Playlist\'as:", "Pasirink&#371; numeravimas", "Keyteq si&#363;lo:", "(patikrinti ar naudoji naujausi&#261; versij&#261;)", "J&#363;s&#371; puslapis", "tiktai id3", "albumas", "pavainimas", "atlik&#279;jas", "Paym&#279;ti atlik&#279;jo album&#261;", "peri&#363;r&#279;ti", "Vieši playlist\'ai", "Vartotojai", "Admin valdymas", "Naujienos", "Daniausiai", "Atsijungti", "Nustatymai", "Paym&#279;ti", "Mano", "redaguoti vartotoj&#261;", "naujas vartotojas", "Pilnas vardas", "Vartotojo vardas", "Pakeisti slaptaod&#303;?", "Slaptaodis", "Komentaras", "Vartotojo lygis", "&#302;jungta", "Išjungta", "Ištrinti vartotoj&#261;", "Atjungti vartotoj&#261;", "Perkrauti", "Naujas vartotojas", "ištrinti", "atjungti", "Naudoti EXTM3U?", "Kiek rodyti stulpeli&#371;?", "Daugiausia paieškos eilu&#269;i&#371;", "Atstatyti", "Atidaryti direktorij&#261;", "Eiti &#303;: %1", "Parsisi&#371;sti", "Vienu ejimu atgal", "&#302; root direktorij&#261;", "Patikrinti atnaujinim&#261;", "vartotojai", "Kalba", "nustatymai", "Pakrautas", "Maišyti:", "Nustatymai", "Pradin&#279; direktorija", "Stream vieta", "Pagrindin&#279; kalba", "Windows sistema", "Reikalauti HTTPS", "Leisti paiešk&#261;", "Leisti parsisiuntimus", "Session timeout", "Pranešti apie nepavykusius prisijungimus", "Palaukite - sudaromas fail&#371; s&#261;rašas", "Playlist\'o neina &#303;traukti", "Admin", "Prisijunkite su HTTPS nor&#279;dami k&#261; nors pakeisti!", "Leisti streming", "Pavadinimas", "Atlik&#279;jas", "Albumas", "Komentaras", "metai", "Takelis", "anras", "nenustatyta", "Didiausias siuntimosi greitis", "Vartotojas", "%1 min - %2 pavadinimai", "% kbit %2 min", "anr&#371; s&#261;rašas: %1", "Eiti", "%1 d %2h %3m grojimo laikas %4 fail7 %5 mb", "N&#279;ra susijusi&#371; resurs&#371;.", "Slaptaodis pakeistas.", "Prisiregistruoti", "Pasirinkite!", "Kas yra - Atnaujinimas?", "Pagalba", "Naudoti išorinius paveiksliukus", "Išorini&#371; paveiksliuk&#371; vieta", "Dabartrinis slaptaodis", "Slaptaodiai nesutampa", "Naudojamas archyvatorius", "Nepavyko sudaryti archyvo", "Grei&#269;iausiai rasti du vienodi failai: \"%1\" \"%2\"", "Ištrinti playlist\'&#261;?", "Alfabetiškai", "Atsitiktinai", "Sutraukti", "Orginaliai", "Naudoti javascript", "Ar tikrai norite ištrinti š&#303; vartotoj&#261;?", "Peri&#363;r&#279;ti istorij&#261;", "istorija", "Eilut&#279;s", "Išorinis CSS failas", "Ištrinti dublikatus", "Taip", "Klaida", "Stream", "(rodyti kaip)", "failai", "albumai", "%1d %2h %3m %4s", "Pagrindinis", "Redaguoti", "Fail&#371; palaikymas", "Paspauskite ant ? kad gaut pagalb&#261;.", "Automatinis Duomen&#371; baz&#279;s atnaujinimas", "Nusi&#371;sti failo pl&#279;tin&#303;", "Leisti neautorizuotus streamus", "&#302;traukti headerius", "Išorinis javascript", "Puslapis", "Rodyti Keuteq duoda tau", "Rodyti atnaujinim&#261;", "Rodyti statistik&#261;", "&#302;rašyti ID3v2 su streamu", "Leisti vartotoj&#371; prisiregistravim&#261;", "Fail&#371; tipai", "Taip", "Ne", "Pl&#279;tinys", "MIME", "&#302;traukti M3U", "redaguoti fail&#371; tip&#261;", "Tikrai?");
+$klang[24]  = array('Lithuanian', 'ISO-8859-13', 'Lietuviğkai', 'Da&#254;niausiai klausomi', 'Nauja', 'Paie&#240;ka', '(rodoma tiktai %1)', 'sec', 'Paie&#65533;kos rezultatai: \'%1\'', 'rasta', 'N&#279;ra.', 'atnaujinti pai&#65533;kos duomen&#371; baz&#279;s nustatymus', 'I&#65533;trinti nereikalingus &#303;ra&#65533;us?', 'Atnaujinti ID3?', 'Su klaid&#371; aptikimu?', 'Atnaujinti', 'Nutraukti', 'atnaujinti paie&#65533;kos duomen&#371; baz&#281;', 'Rasta %1 fail&#371;.', 'Neina nustatyti &#65533;io failo: %1, praleid&#65533;iam.', '&#302;diegta: %1 - Atnaujinti: %2, skenuoti:', 'Skenuoti:', 'Nepavykusi u&#65533;klausa: %1', 'Neina perskaityt &#65533;io failo: %1. Praleid&#65533;iam.', 'Pa&#65533;alinta: %1', '&#302;traukta %1, atnaujinta %2, i&#65533;trinta %3 kur %4 nepavyk&#281; ir %5 praleisti i&#65533; %6 fail&#371; - %7 sec - %8 pa&#65533;ym&#279;ti i&#65533;trynimui.', 'Atlikta', 'U&#65533;daryti', 'Nepavyko rasti joki&#371; fail&#371; &#269;ia: "%1"', 'kPlaylist Prisijungimas', 'Album&#371; s&#261;ra&#65533;as pagal autori&#371;: %1', 'Populiariausi %1', 'Nepa&#65533;im&#279;jote n&#279; vieno failo. Playlist\'as neatnaujintas.', 'Playlist\'as atnaujintas!', 'Atgal', '&#302;trauktas Playlist\'as.', 'Neu&#65533;mir&#65533;kite perkrauti puslapio.', 'vartotojo vardas:', 'slapta&#65533;odis:', 'D&#279;mesio! Tai ne vie&#65533;as interneto puslapis. Visi veiksmai yra &#303;ra&#65533;omi.', 'Prisijungti', 'SSL reikia norint prisijungti.', 'Groti', 'I&#65533;trinti', 'Vie&#65533;i:', 'I&#65533;saugoti', 'Redaguojamas Playlist\'as: "%1" - %2 pavadinimai', 'Redaktorius', 'Per&#65533;valga', 'Pa&#65533;ym&#279;ti', 'T&#281;sinys', 'Pad&#279;tis', 'Info', 'I&#65533;trinti', 'Vardas', 'I&#65533;viso:', 'Klaida', 'Atlikti veiksm&#261; su pa&#65533;ym&#279;tais:', 'Eil&#279;s tvarka:', 'redaguoti playlist\'&#261;', 'I&#65533;trinti &#65533;&#303; &#303;ra&#65533;&#261;', '&#303;traukti playlist\'&#261;', 'Vardas:', 'Sukurti', 'Groti:', 'Failas', 'Albumas', 'Visi', 'Pa&#65533;ym&#279;tus', '&#303;traukti', 'groti', 'redaguoti', 'naujas', 'Pa&#65533;ym&#279;ti:', 'Grojimo valdymas:', 'Playlist\'as:', 'Pasirink&#371; numeravimas', 'Keyteq si&#363;lo:', '(patikrinti ar naudoji naujausi&#261; versij&#261;)', 'J&#363;s&#371; puslapis', 'tiktai id3', 'albumas', 'pavainimas', 'atlik&#279;jas', 'Pa&#65533;ym&#279;ti atlik&#279;jo album&#261;', 'per&#65533;i&#363;r&#279;ti', 'Vie&#65533;i playlist\'ai', 'Vartotojai', 'Admin valdymas', 'Naujienos', 'Da&#65533;niausiai', 'Atsijungti', 'Nustatymai', 'Pa&#65533;ym&#279;ti', 'Mano', 'redaguoti vartotoj&#261;', 'naujas vartotojas', 'Pilnas vardas', 'Vartotojo vardas', 'Pakeisti slapta&#65533;od&#303;?', 'Slapta&#65533;odis', 'Komentaras', 'Vartotojo lygis', '&#302;jungta', 'I&#65533;jungta', 'I&#65533;trinti vartotoj&#261;', 'Atjungti vartotoj&#261;', 'Perkrauti', 'Naujas vartotojas', 'i&#65533;trinti', 'atjungti', 'Naudoti EXTM3U?', 'Kiek rodyti stulpeli&#371;?', 'Daugiausia paie&#65533;kos eilu&#269;i&#371;', 'Atstatyti', 'Atidaryti direktorij&#261;', 'Eiti &#303;: %1', 'Parsisi&#371;sti', 'Vienu ejimu atgal', '&#302; root direktorij&#261;', 'Patikrinti atnaujinim&#261;', 'vartotojai', 'Kalba', 'nustatymai', 'Pakrautas', 'Mai&#65533;yti:', 'Nustatymai', 'Pradin&#279; direktorija', 'Stream vieta', 'Pagrindin&#279; kalba', 'Windows sistema', 'Reikalauti HTTPS', 'Leisti paie&#65533;k&#261;', 'Leisti parsisiuntimus', 'Session timeout', 'Prane&#65533;ti apie nepavykusius prisijungimus', 'Palaukite - sudaromas fail&#371; s&#261;ra&#65533;as', 'Playlist\'o neina &#303;traukti', 'Admin', 'Prisijunkite su HTTPS nor&#279;dami k&#261; nors pakeisti!', 'Leisti streming', 'Pavadinimas', 'Atlik&#279;jas', 'Albumas', 'Komentaras', 'metai', 'Takelis', '&#65533;anras', 'nenustatyta', 'Did&#65533;iausias siuntimosi greitis', 'Vartotojas', '%1 min - %2 pavadinimai', '%1 kbit %2 min', '&#65533;anr&#371; s&#261;ra&#65533;as: %1', 'Eiti', '%1 d %2h %3m grojimo laikas %4 fail7 %5 mb', 'N&#279;ra susijusi&#371; resurs&#371;.', 'Slapta&#65533;odis pakeistas.', 'Prisiregistruoti', 'Pasirinkite!', 'Kas yra - Atnaujinimas?', 'Pagalba', 'Naudoti i&#65533;orinius paveiksliukus', 'I&#65533;orini&#371; paveiksliuk&#371; vieta', 'Dabartrinis slapta&#65533;odis', 'Slapta&#65533;od&#65533;iai nesutampa', 'Naudojamas archyvatorius', 'Nepavyko sudaryti archyvo', 'Grei&#269;iausiai rasti du vienodi failai: "%1" "%2"', 'I&#65533;trinti playlist\'&#261;?', 'Alfabeti&#65533;kai', 'Atsitiktinai', 'Sutraukti', 'Orginaliai', 'Naudoti javascript', 'Ar tikrai norite i&#65533;trinti &#65533;&#303; vartotoj&#261;?', 'Per&#65533;i&#363;r&#279;ti istorij&#261;', 'istorija', 'Eilut&#279;s', 'I&#65533;orinis CSS failas', 'I&#65533;trinti dublikatus', 'Taip', 'Klaida', 'Stream', '(rodyti kaip)', 'failai', 'albumai', '%1d %2h %3m %4s', 'Pagrindinis', 'Redaguoti', 'Fail&#371; palaikymas', 'Paspauskite ant ? kad gaut pagalb&#261;.', 'Automatinis Duomen&#371; baz&#279;s atnaujinimas', 'Nusi&#371;sti failo pl&#279;tin&#303;', 'Leisti neautorizuotus streamus', '&#302;traukti headerius', 'I&#65533;orinis javascript', 'Puslapis', 'Rodyti Keuteq duoda tau', 'Rodyti atnaujinim&#261;', 'Rodyti statistik&#261;', '&#302;ra&#65533;yti ID3v2 su streamu', 'Leisti vartotoj&#371; prisiregistravim&#261;', 'Fail&#371; tipai', 'Taip', 'Ne', 'Pl&#279;tinys', 'MIME', '&#302;traukti M3U', 'redaguoti fail&#371; tip&#261;', 'Tikrai?', 'Optimistinis fail&#184; patikrinimas', 'Sumai&#240;yti', 'Metodas', 'Playlistas', 'N&#235;ra, tiesiogiai', 'M&#235;gstamiausi', 'Nerasta nei vieno paspaudimo', 'Vis&#184; laik&#184; hitai', 'U&#254;sisakyti', '&#193;jungti LAME palaikym&#224;?', 'I&#240;jungta', 'Lesti naudotis LAME?', 'El. pa&#240;tas', 'Lesiti si&#184;sti failus el. pa&#240;tu?', 'SMTP serveris', 'SMTP portas', 'Kam si&#184;sti', '&#222;inut&#235;', 'Si&#184;sti', 'Lai&#240;kas i&#240;si&#184;stas!', 'Aktyvuoti atsiuntimus', 'Atsiuntim&#184; direktorija', 'Aktivuoti mp3pa&#240;t&#224;', 'Atsi&#184;sti', 'Failas atsi&#184;stas', 'Nepavyko atsi&#184;sti failo!', 'Cookies palaikymas turi b&#251;ti &#225;jungtas jei norite prisijungti!', 'Periodas', 'kadanors', '&#240;i&#224; savait&#191;', '&#240;&#225; m&#235;nes&#225;', 'praeit&#224; m&#235;nes&#225;', 'paspaudimai', 'LAME komanda', 'Rodyti albumo vir&#240;el&#225;', 'Albumo failai', 'Pakeisti albumo paveiksliuk&#184; dyd&#225;', 'Albumo auk&#240;tis', 'Albumo plotis', 'Siuntimo el. pa&#240;tu metodas', 'Tiesiogiai', 'Netiesiogiai', 'Palaukti', '&#193;veskite teising&#224; el. pa&#240;to adres&#224; nustatymuose.', 'Playlist\'as inline?', 'Rodyti album&#224; i&#240; nuorodos?', 'Albumo nuoroda', 'Nepavyko nusi&#184;sti!', 'Vartotojas &#225;trauktas!', 'Archyv&#224; suk&#251;r&#235;', 'Archyvas i&#240;trintas.', 'Vartotojo apra&#240;ymas atnaujintas!', 'Atitikmenys', '%1 &#225;ra&#240;¸', 'Priëjimas prie logø', 'Skaitoma', 'Suarchyvuota', 'Suvestin&#235;', '&#193;vesta %1 - %2', 'daugiau', 'Publikuoti', '%1 mb', '%1 kb', '%1 bait¸');
 
 $klang[25]  = array("Thai", "ISO-8859-11", "&#3652;&#3607;&#3618;", "&#3617;&#3634;&#3651;&#3627;&#3617;&#3656;", "&#3617;&#3634;&#3649;&#3619;&#3591;", "&#3588;&#3657;&#3609;&#3627;&#3634;", "(&#3649;&#3626;&#3604;&#3591;&#3648;&#3593;&#3614;&#3634;&#3632; %1)", "&#3623;&#3636;&#3609;&#3634;&#3607;&#3637;", "&#3612;&#3621;&#3585;&#3634;&#3619;&#3588;&#3657;&#3609;&#3627;&#3634; :\'%1\'", "&#3614;&#3610;", "&#3652;&#3617;&#3656;", "&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;&#3605;&#3633;&#3623;&#3648;&#3621;&#3639;&#3629;&#3585;&#3600;&#3634;&#3609;&#3586;&#3657;&#3629;&#3617;&#3641;&#3621;&#3626;&#3635;&#3627;&#3619;&#3633;&#3610;&#3588;&#3657;&#3609;&#3627;&#3634;", "&#3621;&#3610;&#3648;&#3619;&#3588;&#3588;&#3629;&#3619;&#3660;&#3604;&#3607;&#3637;&#3656;&#3652;&#3617;&#3656;&#3648;&#3588;&#3618;&#3651;&#3594;&#3657;", "&#3626;&#3619;&#3657;&#3634;&#3591; ID3 &#3651;&#3627;&#3617;&#3656;", "&#3648;&#3611;&#3636;&#3604; Debug Mode", "&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;", "&#3618;&#3585;&#3648;&#3621;&#3636;&#3585;", "&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;&#3600;&#3634;&#3609;&#3586;&#3657;&#3629;&#3617;&#3641;&#3621;&#3651;&#3609;&#3585;&#3634;&#3619;&#3588;&#3657;&#3609;&#3627;&#3634;", "&#3614;&#3610;&#3607;&#3633;&#3657;&#3591;&#3627;&#3617;&#3604; %1 &#3652;&#3615;&#3621;&#3660;", "&#3652;&#3617;&#3656;&#3626;&#3634;&#3617;&#3634;&#3619;&#3606;&#3619;&#3632;&#3610;&#3640;&#3652;&#3615;&#3621;&#3660; %1 , &#3586;&#3657;&#3634;&#3617;&#3652;&#3611;", "&#3605;&#3636;&#3604;&#3605;&#3633;&#3657;&#3591;: %1 -&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;: %2 ,&#3605;&#3619;&#3623;&#3592;&#3627;&#3634;", "&#3605;&#3619;&#3623;&#3592;&#3627;&#3634;", "&#3585;&#3634;&#3619;&#3588;&#3657;&#3609;&#3627;&#3634;&#3612;&#3636;&#3604;&#3614;&#3621;&#3634;&#3604; :%1", "&#3652;&#3617;&#3656;&#3626;&#3634;&#3617;&#3634;&#3619;&#3606;&#3629;&#3656;&#3634;&#3609;&#3652;&#3615;&#3621;&#3660; : %1 &#3586;&#3657;&#3634;&#3617;&#3652;&#3611;", "&#3621;&#3610; %1", "&#3648;&#3614;&#3636;&#3656;&#3617; %1 ,&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591; %2,&#3621;&#3610; %3,&#3607;&#3637;&#3656; %4,&#3612;&#3636;&#3604;&#3614;&#3621;&#3634;&#3604;&#3649;&#3621;&#3632; %5 ,&#3586;&#3657;&#3634;&#3617;&#3652;&#3611; %6 &#3652;&#3615;&#3621;&#3660; %7 &#3623;&#3636;&#3609;&#3634;&#3607;&#3637; %8 &#3607;&#3635;&#3648;&#3588;&#3619;&#3639;&#3656;&#3629;&#3591;&#3627;&#3617;&#3634;&#3618;&#3648;&#3614;&#3639;&#3656;&#3629;&#3621;&#3610;", "&#3648;&#3619;&#3637;&#3618;&#3610;&#3619;&#3657;&#3629;&#3618;", "&#3611;&#3636;&#3604;", "&#3652;&#3617;&#3656;&#3614;&#3610;&#3652;&#3615;&#3621;&#3660;&#3652;&#3604;&#3654;&#3607;&#3637;&#3656;&#3617;&#3637;&#3626;&#3656;&#3623;&#3609;&#3611;&#3619;&#3632;&#3585;&#3629;&#3610; \"%1\"", "&#3648;&#3586;&#3657;&#3634;&#3626;&#3641;&#3656;&#3619;&#3632;&#3610;&#3610;", "&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3629;&#3633;&#3621;&#3610;&#3633;&#3617;&#3626;&#3635;&#3627;&#3619;&#3633;&#3610;&#3624;&#3636;&#3621;&#3611;&#3636;&#3609; : %1", "&#3606;&#3641;&#3585;&#3648;&#3621;&#3639;&#3629;&#3585;&#3617;&#3634;&#3585;&#3607;&#3637;&#3656;&#3626;&#3640;&#3604; %1", "&#3652;&#3617;&#3656;&#3614;&#3610;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3607;&#3637;&#3656;&#3648;&#3621;&#3639;&#3629;&#3585; &#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;&#3652;&#3617;&#3656;&#3652;&#3604;&#3657;&#3617;&#3637;&#3585;&#3634;&#3619;&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;", "&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;&#3649;&#3621;&#3657;&#3623;", "&#3618;&#3657;&#3629;&#3618;&#3585;&#3621;&#3633;&#3610;", "&#3648;&#3614;&#3636;&#3656;&#3617;&#3648;&#3586;&#3657;&#3634;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;", "&#3629;&#3618;&#3656;&#3634;&#3621;&#3639;&#3617;&#3607;&#3637;&#3656;&#3592;&#3632;&#3648;&#3611;&#3636;&#3604;&#3627;&#3609;&#3657;&#3634;&#3605;&#3656;&#3634;&#3591;&#3609;&#3637;&#3657;&#3651;&#3627;&#3617;&#3656;&#3629;&#3637;&#3585;&#3588;&#3619;&#3633;&#3657;&#3591;", "&#3648;&#3586;&#3657;&#3634;&#3626;&#3641;&#3656;&#3619;&#3632;&#3610;&#3610; :", "&#3619;&#3627;&#3633;&#3626;&#3612;&#3656;&#3634;&#3609;", "&#3627;&#3617;&#3634;&#3618;&#3648;&#3627;&#3605;&#3640; : &#3648;&#3623;&#3655;&#3610;&#3648;&#3614;&#3592;&#3627;&#3609;&#3657;&#3634;&#3627;&#3609;&#3637;&#3657;&#3617;&#3636;&#3651;&#3594;&#3656;&#3627;&#3609;&#3657;&#3634;&#3626;&#3634;&#3608;&#3634;&#3619;&#3603;&#3632;&#3585;&#3634;&#3585;&#3619;&#3632;&#3607;&#3635;&#3607;&#3635;&#3607;&#3633;&#3657;&#3591;&#3627;&#3617;&#3604;&#3592;&#3632;&#3606;&#3647;&#3585;&#3610;&#3633;&#3609;&#3607;&#3638;&#3585;&#3652;&#3623;&#3657;", "&#3648;&#3586;&#3657;&#3634;&#3626;&#3641;&#3656;&#3619;&#3632;&#3610;&#3610;", "&#3605;&#3657;&#3629;&#3591;&#3585;&#3634;&#3619; SSL &#3648;&#3614;&#3639;&#3656;&#3629;&#3585;&#3634;&#3619;&#3648;&#3586;&#3657;&#3634;&#3626;&#3641;&#3656;&#3619;&#3632;&#3610;&#3610;", "&#3648;&#3621;&#3656;&#3609;", "&#3621;&#3610;", "&#3629;&#3609;&#3640;&#3597;&#3634;&#3605;&#3651;&#3627;&#3657;&#3612;&#3641;&#3657;&#3629;&#3639;&#3656;&#3609;&#3651;&#3594;&#3657;&#3604;&#3657;&#3623;&#3618;&#3652;&#3604;&#3657;", "&#3610;&#3633;&#3609;&#3607;&#3638;&#3585;", "&#3588;&#3623;&#3610;&#3588;&#3640;&#3617;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609; : \"%1\" - %2 &#3594;&#3639;&#3656;&#3629;", "&#3585;&#3634;&#3619;&#3649;&#3585;&#3657;&#3652;&#3586;", "&#3604;&#3641;", "&#3648;&#3621;&#3639;&#3629;&#3585;", "&#3621;&#3635;&#3604;&#3633;&#3610;", "&#3626;&#3606;&#3634;&#3609;&#3632;", "&#3619;&#3634;&#3618;&#3621;&#3632;&#3648;&#3629;&#3637;&#3618;&#3604;", "&#3621;&#3610;", "&#3594;&#3639;&#3656;&#3629;", "&#3607;&#3633;&#3657;&#3591;&#3627;&#3617;&#3604; :", "&#3612;&#3636;&#3604;&#3614;&#3621;&#3634;&#3604;", "&#3585;&#3634;&#3619;&#3585;&#3619;&#3632;&#3607;&#3635;&#3610;&#3609;&#3585;&#3634;&#3619;&#3648;&#3621;&#3639;&#3629;&#3585;", "&#3621;&#3635;&#3604;&#3633;&#3610;&#3607;&#3637;&#3656; :", "&#3649;&#3585;&#3657;&#3652;&#3586;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;", "&#3621;&#3610;&#3607;&#3633;&#3657;&#3591;&#3627;&#3617;&#3604;", "&#3648;&#3614;&#3636;&#3656;&#3617;&#3648;&#3586;&#3657;&#3634;&#3626;&#3641;&#3656;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;", "&#3594;&#3639;&#3656;&#3629; :", "&#3626;&#3619;&#3657;&#3634;&#3591;", "&#3648;&#3621;&#3656;&#3609; :", "&#3652;&#3615;&#3621;&#3660;", "&#3629;&#3633;&#3621;&#3610;&#3633;&#3617;", "&#3607;&#3633;&#3657;&#3591;&#3627;&#3617;&#3604;", "&#3606;&#3641;&#3585;&#3648;&#3621;&#3639;&#3629;&#3585;", "&#3648;&#3614;&#3636;&#3656;&#3617;", "&#3648;&#3621;&#3656;&#3609;", "&#3649;&#3585;&#3657;&#3652;&#3586;", "&#3651;&#3627;&#3617;&#3656;", "&#3648;&#3621;&#3639;&#3629;&#3585; :", "&#3588;&#3623;&#3610;&#3588;&#3640;&#3617;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609; :", "&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609; :", "&#3627;&#3617;&#3634;&#3618;&#3648;&#3621;&#3586;&#3607;&#3637;&#3656;&#3606;&#3641;&#3585;&#3648;&#3621;&#3639;&#3629;&#3585;&#3617;&#3634;&#3585;&#3607;&#3637;&#3656;&#3626;&#3640;&#3604;", "&#3588;&#3635;&#3649;&#3609;&#3632;&#3609;&#3635;&#3592;&#3634;&#3585; Keyteq", "&#3605;&#3619;&#3623;&#3592;&#3626;&#3629;&#3610;&#3648;&#3614;&#3639;&#3656;&#3629;&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;&#3619;&#3640;&#3656;&#3609;&#3586;&#3629;&#3591;&#3595;&#3629;&#3615;&#3607;&#3660;&#3649;&#3623;&#3619;&#3660;", "&#3627;&#3609;&#3657;&#3634;&#3627;&#3621;&#3633;&#3585;", "&#3648;&#3593;&#3614;&#3634;&#3632; ID3", "&#3629;&#3633;&#3621;&#3610;&#3633;&#3617;", "&#3594;&#3639;&#3656;&#3629;&#3629;&#3633;&#3621;&#3610;&#3633;&#3617;", "&#3624;&#3636;&#3621;&#3611;&#3636;&#3609;", "&#3629;&#3633;&#3621;&#3611;&#3633;&#3617;&#3607;&#3637;&#3656;&#3606;&#3641;&#3585;&#3648;&#3621;&#3639;&#3629;&#3585;&#3607;&#3634;&#3585;&#3607;&#3637;&#3656;&#3626;&#3640;&#3604;&#3592;&#3634;&#3585;&#3624;&#3636;&#3621;&#3611;&#3636;&#3609;", "&#3648;&#3586;&#3657;&#3634;&#3594;&#3617;", "&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;&#3607;&#3637;&#3656;&#3651;&#3627;&#3657;&#3651;&#3594;&#3657;&#3652;&#3604;&#3657;", "&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;", "&#3626;&#3656;&#3623;&#3609;&#3612;&#3641;&#3657;&#3604;&#3641;&#3649;&#3621;&#3619;&#3632;&#3610;&#3610;", "&#3617;&#3634;&#3651;&#3627;&#3617;&#3656;", "&#3617;&#3634;&#3649;&#3619;&#3591;", "&#3629;&#3629;&#3585;&#3592;&#3634;&#3585;&#3619;&#3632;&#3610;&#3610;", "&#3605;&#3633;&#3623;&#3648;&#3621;&#3639;&#3629;&#3585;", "&#3605;&#3619;&#3623;&#3592;&#3626;&#3629;&#3610;", "&#3588;&#3635;&#3626;&#3633;&#3656;&#3591;&#3629;&#3639;&#3656;&#3609;", "&#3649;&#3585;&#3657;&#3652;&#3586;&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;", "&#3648;&#3614;&#3636;&#3656;&#3617;&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;", "&#3594;&#3639;&#3656;&#3629;&#3592;&#3619;&#3636;&#3591;", "&#3594;&#3639;&#3656;&#3629;&#3648;&#3614;&#3639;&#3656;&#3629;&#3648;&#3586;&#3657;&#3634;&#3619;&#3632;&#3610;&#3610;", "&#3648;&#3611;&#3621;&#3637;&#3656;&#3618;&#3609;&#3619;&#3627;&#3633;&#3626;&#3612;&#3656;&#3634;&#3609;?", "&#3619;&#3627;&#3633;&#3626;&#3612;&#3656;&#3634;&#3609;", "&#3586;&#3657;&#3629;&#3648;&#3626;&#3609;&#3629;&#3649;&#3609;&#3632;", "&#3619;&#3632;&#3604;&#3633;&#3610;&#3651;&#3609;&#3585;&#3634;&#3619;&#3651;&#3594;&#3657;&#3591;&#3634;&#3609;", "&#3585;&#3635;&#3621;&#3633;&#3591;&#3651;&#3594;&#3657;&#3591;&#3634;&#3609;&#3629;&#3618;&#3641;&#3656;", "&#3652;&#3617;&#3656;&#3652;&#3604;&#3657;&#3651;&#3594;&#3657;", "&#3621;&#3610;&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;", "&#3609;&#3635;&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;&#3629;&#3629;&#3585;&#3592;&#3634;&#3585;&#3585;&#3634;&#3619;&#3651;&#3594;&#3657;&#3591;&#3634;&#3609;", "refresh", "&#3648;&#3614;&#3636;&#3656;&#3617;&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;&#3651;&#3627;&#3617;&#3656;", "&#3621;&#3610;&#3629;&#3629;&#3585;&#3592;&#3634;&#3585;&#3619;&#3632;&#3610;&#3610;", "&#3629;&#3629;&#3585;&#3592;&#3634;&#3585;&#3619;&#3632;&#3610;&#3610;", "&#3651;&#3594;&#3657;&#3588;&#3640;&#3603;&#3626;&#3617;&#3610;&#3633;&#3605;&#3636; EXTM3U", "&#3592;&#3635;&#3609;&#3623;&#3609;&#3649;&#3606;&#3623;&#3607;&#3637;&#3656;&#3605;&#3657;&#3629;&#3591;&#3585;&#3634;&#3619;&#3651;&#3627;&#3657;&#3649;&#3626;&#3604;&#3591; (&#3617;&#3634;&#3651;&#3627;&#3617;&#3656;/&#3617;&#3634;&#3649;&#3619;&#3591;)", "&#3592;&#3635;&#3609;&#3623;&#3609;&#3649;&#3606;&#3623;&#3626;&#3641;&#3591;&#3626;&#3640;&#3604;&#3651;&#3609;&#3585;&#3634;&#3619;&#3588;&#3657;&#3609;&#3627;&#3634;", "&#3618;&#3585;&#3648;&#3621;&#3636;&#3585;", "&#3648;&#3611;&#3636;&#3604; Directory", "&#3652;&#3611; Directory  : %1", "&#3604;&#3634;&#3623;&#3609;&#3660;&#3650;&#3627;&#3621;&#3604;", "&#3586;&#3638;&#3657;&#3609;&#3652;&#3611; 1 &#3619;&#3632;&#3604;&#3633;&#3610;", "&#3652;&#3611;&#3607;&#3637;&#3656; Directory &#3610;&#3609;&#3626;&#3640;&#3604;", "&#3605;&#3619;&#3623;&#3592;&#3626;&#3629;&#3610;&#3648;&#3614;&#3639;&#3656;&#3629;&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;&#3619;&#3640;&#3656;&#3609;&#3586;&#3629;&#3591;&#3595;&#3629;&#3615;&#3607;&#3660;&#3649;&#3623;&#3619;&#3660;", "&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;", "&#3616;&#3634;&#3625;&#3634;", "&#3605;&#3633;&#3623;&#3648;&#3621;&#3639;&#3629;&#3585;", "&#3648;&#3619;&#3636;&#3656;&#3617;&#3605;&#3657;&#3609;", "&#3626;&#3640;&#3656;&#3617;", "&#3585;&#3634;&#3619;&#3605;&#3633;&#3657;&#3591;&#3588;&#3656;&#3634;", "Directory &#3648;&#3585;&#3655;&#3610;&#3626;&#3639;&#3656;&#3629;", "&#3649;&#3627;&#3621;&#3656;&#3591; Stream", "&#3616;&#3634;&#3625;&#3605;&#3633;&#3657;&#3591;&#3605;&#3657;&#3609;", "&#3619;&#3632;&#3610;&#3610;  Windows", "&#3605;&#3657;&#3629;&#3591;&#3585;&#3634;&#3619;&#3651;&#3594;&#3657; Https", "&#3629;&#3609;&#3640;&#3597;&#3634;&#3605;&#3651;&#3627;&#3657;&#3648;&#3621;&#3639;&#3656;&#3629;&#3609;&#3648;&#3614;&#3621;&#3591;&#3652;&#3604;&#3657;", "&#3629;&#3609;&#3640;&#3597;&#3634;&#3605;&#3651;&#3627;&#3657;&#3604;&#3634;&#3623;&#3609;&#3660;&#3650;&#3627;&#3621;&#3604;&#3652;&#3604;&#3657;", "Session timeout", "&#3619;&#3634;&#3618;&#3591;&#3634;&#3609;&#3585;&#3634;&#3619; login &#3607;&#3637;&#3656;&#3612;&#3636;&#3604;&#3614;&#3621;&#3634;&#3604;", "&#3619;&#3629;&#3626;&#3633;&#3585;&#3588;&#3619;&#3641;&#3656;&#3585;&#3635;&#3621;&#3633;&#3591;&#3629;&#3656;&#3634;&#3609;&#3588;&#3656;&#3634;&#3592;&#3634;&#3585;&#3619;&#3632;&#3610;&#3610;", "&#3652;&#3617;&#3656;&#3626;&#3634;&#3617;&#3634;&#3619;&#3606;&#3648;&#3614;&#3636;&#3656;&#3617;&#3651;&#3609;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;&#3652;&#3604;&#3657;", "&#3612;&#3641;&#3657;&#3604;&#3641;&#3649;&#3621;&#3619;&#3632;&#3610;&#3610;", "&#3585;&#3619;&#3640;&#3603;&#3634;&#3648;&#3586;&#3657;&#3634;&#3619;&#3632;&#3610;&#3610;&#3604;&#3657;&#3623;&#3618; HTTPS &#3648;&#3614;&#3639;&#3656;&#3629;&#3648;&#3611;&#3621;&#3637;&#3656;&#3618;&#3609;", "&#3629;&#3609;&#3640;&#3597;&#3634;&#3605;&#3636;&#3651;&#3627;&#3657;&#3651;&#3594;&#3657; stream engine", "&#3594;&#3639;&#3656;&#3629;&#3648;&#3614;&#3621;&#3591;", "&#3624;&#3636;&#3621;&#3611;&#3636;&#3609;", "&#3629;&#3633;&#3621;&#3610;&#3633;&#3617;", "&#3586;&#3657;&#3629;&#3648;&#3626;&#3609;&#3629;&#3632;&#3649;&#3609;&#3632;", "&#3611;&#3637;", "&#3648;&#3614;&#3621;&#3591;&#3607;&#3637;&#3656;", "&#3649;&#3609;&#3623;", "&#3652;&#3617;&#3656;&#3605;&#3633;&#3657;&#3591;", "&#3588;&#3656;&#3634;&#3626;&#3641;&#3591;&#3626;&#3640;&#3604;&#3651;&#3609;&#3585;&#3634;&#3619;&#3604;&#3634;&#3623;&#3609;&#3660;&#3650;&#3627;&#3621;&#3604; (kbps)", "&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;", "%1 &#3609;&#3634;&#3607;&#3637; - %2 &#3648;&#3614;&#3621;&#3591;", "%1 Kbit %2 &#3609;&#3634;&#3607;&#3637;", "&#3649;&#3609;&#3623;&#3648;&#3614;&#3621;&#3591; : %1", "wx", "%1 &#3623;&#3633;&#3609; %2 &#3594;&#3633;&#3656;&#3623;&#3650;&#3617;&#3591; %3 &#3609;&#3634;&#3607;&#3637; &#3651;&#3609;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609; %4 &#3652;&#3615;&#3621;&#3660; %5 mb", "&#3652;&#3617;&#3656;&#3614;&#3610;&#3626;&#3639;&#3656;&#3629;&#3607;&#3637;&#3656;&#3626;&#3634;&#3617;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;&#3652;&#3604;&#3657;", "&#3619;&#3627;&#3633;&#3626;&#3612;&#3656;&#3634;&#3609;&#3606;&#3641;&#3585;&#3648;&#3611;&#3621;&#3637;&#3656;&#3618;&#3609;&#3649;&#3621;&#3657;&#3623;", "&#3621;&#3591;&#3607;&#3632;&#3648;&#3610;&#3637;&#3618;&#3609;", "&#3585;&#3619;&#3640;&#3603;&#3634;&#3607;&#3635;&#3585;&#3634;&#3619;&#3648;&#3621;&#3639;&#3629;&#3585;&#3585;&#3656;&#3629;&#3609;", "&#3617;&#3637;&#3629;&#3632;&#3652;&#3619;&#3651;&#3627;&#3617;&#3656;", "&#3588;&#3621;&#3636;&#3585;&#3607;&#3637;&#3656;&#3609;&#3637;&#3656;&#3648;&#3614;&#3639;&#3656;&#3629;&#3586;&#3629;&#3588;&#3623;&#3634;&#3617;&#3594;&#3656;&#3623;&#3618;&#3648;&#3627;&#3621;&#3639;&#3629;", "&#3651;&#3594;&#3657;&#3619;&#3641;&#3611;&#3616;&#3634;&#3614;&#3592;&#3634;&#3585;&#3616;&#3634;&#3618;&#3609;&#3629;&#3585;", "&#3649;&#3627;&#3621;&#3656;&#3591;&#3586;&#3657;&#3629;&#3617;&#3641;&#3621;&#3619;&#3641;&#3611;&#3616;&#3634;&#3614;", "&#3619;&#3627;&#3633;&#3626;&#3612;&#3656;&#3634;&#3609;&#3648;&#3604;&#3636;&#3617;", "&#3619;&#3627;&#3633;&#3626;&#3612;&#3656;&#3634;&#3609;&#3648;&#3604;&#3636;&#3617;&#3652;&#3617;&#3656;&#3606;&#3641;&#3585;&#3605;&#3657;&#3629;&#3591;", "&#3619;&#3641;&#3611;&#3649;&#3610;&#3610;&#3585;&#3634;&#3619;&#3610;&#3637;&#3610;&#3629;&#3633;&#3604;", "&#3652;&#3617;&#3656;&#3626;&#3634;&#3617;&#3634;&#3619;&#3606;&#3607;&#3635;&#3585;&#3634;&#3619;&#3610;&#3637;&#3610;&#3629;&#3633;&#3604;&#3652;&#3615;&#3621;&#3660;&#3652;&#3604;&#3657;", "&#3614;&#3610;&#3652;&#3615;&#3621;&#3660;&#3607;&#3637;&#3656;&#3595;&#3657;&#3635;&#3585;&#3633;&#3609;&#3588;&#3639;&#3629;: \"%1\" \"%2\"", "&#3588;&#3640;&#3603;&#3649;&#3609;&#3656;&#3651;&#3592;&#3627;&#3619;&#3639;&#3629;&#3623;&#3656;&#3634;&#3592;&#3632;&#3621;&#3610;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3648;&#3621;&#3656;&#3609;", "&#3648;&#3619;&#3637;&#3618;&#3591;&#3605;&#3634;&#3617;&#3621;&#3635;&#3604;&#3633;&#3610;&#3605;&#3633;&#3623;&#3629;&#3633;&#3585;&#3625;&#3619;", "&#3626;&#3640;&#3656;&#3617;", "&#3648;&#3619;&#3637;&#3618;&#3591;&#3621;&#3635;&#3604;&#3633;&#3610;", "&#3607;&#3637;&#3656;&#3617;&#3634;", "&#3651;&#3594;&#3657; javascript", "&#3588;&#3640;&#3603;&#3649;&#3609;&#3656;&#3651;&#3592;&#3623;&#3656;&#3634;&#3592;&#3632;&#3621;&#3610;&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;&#3609;&#3637;&#3657;&#3629;&#3629;&#3585;&#3592;&#3634;&#3585;&#3619;&#3632;&#3610;&#3610;", "&#3604;&#3641;&#3611;&#3619;&#3632;&#3623;&#3633;&#3605;&#3636;&#3585;&#3634;&#3619;&#3651;&#3594;&#3657;", "&#3611;&#3619;&#3632;&#3623;&#3633;&#3605;&#3636;&#3585;&#3634;&#3619;&#3651;&#3594;&#3657;", "&#3627;&#3621;&#3633;&#3585;", "&#3651;&#3594;&#3657; css &#3616;&#3634;&#3618;&#3609;&#3629;&#3585;", "&#3621;&#3610;&#3607;&#3637;&#3656;&#3595;&#3657;&#3635;&#3585;&#3633;&#3609;", "&#3605;&#3585;&#3621;&#3591;", "&#3612;&#3636;&#3604;&#3614;&#3621;&#3634;&#3604;", "Stream", "(&#3649;&#3626;&#3604;&#3591;&#3649;&#3610;&#3610;)", "&#3652;&#3615;&#3621;&#3660;", "&#3629;&#3633;&#3621;&#3610;&#3633;&#3617;", " %1 &#3623;&#3633;&#3609; %2 &#3594;&#3633;&#3656;&#3623;&#3650;&#3617;&#3591; %3 &#3609;&#3634;&#3607;&#3637; %4 &#3623;&#3636;&#3609;&#3634;&#3607;&#3637; ", "&#3607;&#3633;&#3656;&#3623;&#3652;&#3611;", "&#3611;&#3619;&#3633;&#3610;&#3649;&#3605;&#3656;&#3591;", "Filehandling", "&#3588;&#3621;&#3636;&#3585; ? &#3648;&#3614;&#3639;&#3656;&#3629;&#3586;&#3629;&#3588;&#3623;&#3634;&#3617;&#3594;&#3656;&#3623;&#3618;&#3648;&#3627;&#3621;&#3639;&#3629;", "Sync &#3600;&#3634;&#3609;&#3586;&#3657;&#3629;&#3617;&#3641;&#3621;&#3629;&#3633;&#3605;&#3650;&#3609;&#3617;&#3633;&#3605;&#3636;", "&#3626;&#3656;&#3591;&#3626;&#3656;&#3623;&#3609;&#3586;&#3618;&#3634;&#3618;&#3652;&#3615;&#3621;&#3660;", "&#3629;&#3609;&#3640;&#3597;&#3634;&#3605; stream &#3607;&#3637;&#3656;&#3652;&#3617;&#3656;&#3652;&#3604;&#3657;&#3619;&#3633;&#3610;&#3585;&#3634;&#3619;&#3605;&#3619;&#3623;&#3592;&#3626;&#3629;&#3610;", "Include headers", "javascript &#3616;&#3634;&#3618;&#3609;&#3629;&#3585; ", "&#3627;&#3609;&#3657;&#3634;&#3627;&#3621;&#3633;&#3585;", "&#3649;&#3626;&#3604;&#3591;&#3626;&#3656;&#3623;&#3609; Keyteq &#3609;&#3635;&#3648;&#3626;&#3609;&#3629;", "&#3649;&#3626;&#3604;&#3591;&#3626;&#3656;&#3623;&#3609;&#3611;&#3619;&#3633;&#3610;&#3611;&#3619;&#3640;&#3591;&#3619;&#3632;&#3610;&#3610;", "&#3649;&#3626;&#3604;&#3591;&#3626;&#3606;&#3636;&#3605;&#3636;", "&#3648;&#3586;&#3637;&#3618;&#3609; ID3v2 &#3604;&#3657;&#3623;&#3618; stream", "&#3612;&#3641;&#3657;&#3651;&#3594;&#3657;&#3626;&#3634;&#3617;&#3634;&#3619;&#3606;&#3621;&#3591;&#3607;&#3632;&#3648;&#3610;&#3637;&#3618;&#3609;&#3652;&#3604;&#3657;", "&#3594;&#3636;&#3604;&#3652;&#3615;&#3621;&#3660;", "&#3651;&#3594;&#3656;", "&#3652;&#3617;&#3656;&#3651;&#3594;&#3656;", "&#3626;&#3656;&#3623;&#3609;&#3586;&#3618;&#3634;&#3618;", "MIME", "&#3619;&#3623;&#3617;&#3651;&#3609; M3U", "&#3649;&#3585;&#3657;&#3651;&#3586;&#3594;&#3609;&#3636;&#3604;&#3652;&#3615;&#3621;&#3660;", "&#3649;&#3609;&#3656;&#3651;&#3592;&#3627;&#3619;&#3639;&#3629;&#3652;&#3617;&#3656;");
 
-$klang[26]  = array("NewNorwegian", "ISO-8859-1", "Nynorsk", "Kva er mest spelt", "Kva er nytt", "Søk", "(berre %1 vist)", "sek", "Søkeresultat", "Fann", "Ingen.", "Oppdater søkjedatabasevalg", "Slett ubrukte rader", "Ombygg ID3?", "Debug modus", "Oppdater", "Avbryt", "Oppdaterer søkje database", "Fann %1 filer", "kunne ikkje lese fil: %1, hoppa over", "Installert: %1 - Oppdaterar: %2, skanner:", "Skanner:", "Feilet - query: %1", "Kunne ikkje lese denne fila: %1. Hoppa over", "Fjerna: %1", "La inn %1, oppdaterte %2, sletta %3 der %4 feila og %5 blei hoppa over igjennom %6 filer - %7 sek - %8 markert for sletting", "Ferdig", "Steng", "Kunne ikkje finne filer her: \"%1\"", "kPlaylist Innlogging", "Albumliste frå artist: %1", "Snøggvelg %1", "Ingen låtar valgt. Låtliste ikkje oppdatert.", "Låtliste oppdatert!", "Tilbake", "Låtliste lagt til!", "Husk å oppdatere sida.", "Logg inn:", "Hemmeleg", "Advarsel! Dette er ei privat vevside. Alle handligar blir logga", "Logg inn", "SSL krevast for pålogging", "Spel", "Slett", "Delte:", "Lagre", "Kontroller låtliste: \"%1\" - %2 titler", "Editor", "Visar", "Velg", "Sek", "Status", "Informasjon", "Slett", "Navn", "Totalt:", "Feil", "Handling på valgte:", "Sekvens", "rediger låtliste", "Slett denne rekkja", "ny låtliste", "Navn:", "Lag", "Spel:", "Fil", "Album", "Alle", "Valde", "Legg til", "Spel", "rediger", "ny", "Velg", "Spele kontroll:", "Låtliste:", "Hurtigvelg numerisk", "Keyteq gir deg:", "(sjekk for ny versjon)", "Vevside", "Berre id3", "album", "tittel", "artist", "Hurtigvelg album frå artist", "vis", "Delte låtlister", "Brukarar", "Admin kontroll", "Kva er nytt", "Mest spelt", "Logg ut", "Valg", "Sjekk", "Min", "Rediger brukar", "ny brukar", "Fullt namn", "Brukarnamn", "Endre passord?", "passord", "kommentar", "Aksessnivå", "På", "Av", "Slett brukar", "Logg ut brukar", "Oppdater", "Ny brukar", "slett", "logg ut", "bruk EXTM3U eigenskap?", "Vise kor manger rekkejer (mest spelt/nytt)", "Maks søke rekkjer", "Omsetting", "Åpne katalog", "Gå til katalog: %1", "Last ned", "Gå eit steg opp", "Gå til kjerne katalog", "Sjekk for ny versjon", "brukarar", "Språk", "valg", "Avsperra", "Omskuff:", "Instillingar", "Arkiv katalog", "Nedlastingslokalisasjon", "Standardspråk", "Et Windows system", "Krev HTTPS", "Tillat spoling", "Tillat nedlastingar", "Inloggingstidsavbrudd", "Rapportere mislykka påloggingsforsøk", "Vent - Lagar filliste", "Speleliste kunne ikkje bli lagt til!", "Admin", "Logg inn med HTTPS for å endre", "Aktiver innebygd kanalvirkning", "Tittel", "Artist", "Album", "Kommentar", "År", "Låtnummer", "Stil", "ikkje sett", "Maksimal nedlastingshastigheit", "Brukar", "%1 minutt - %2 titlar", "%1 kbit %2 minutt", "Stilliste: %1", "Gå", "%1d %2t %3m speletid %4 %5 mb", "Ingen relevante ressursar her.", "Passord endra!", "Ny brukar", "Vennligst forta eit valg!", "Kva er oppdatering?", "Klikk her for hjelp", "Bruke eksterne bileter?", "Eksterne bilder lokalisering", "Eksisterande passord", "Det eksisterande passord stemmer ikkje!", "Ønsket arkiverer", "Arkiv kunne ikkje bli laga", "Sannsynleg duplikat blei funne: %1 - %2", "Verkeleg slette speleliste?", "Alfabetisk", "Tilfeldeg", "Sorter", "Original", "Bruke javascript", "Sikker på at du vil slette denne brukaren", "Vis historia", "historie", "Rekkjer", "Ekstern CSS fil", "Fjern duplikatar", "OK", "FEIL", "Stream", "(vis som)", "fielr", "album", "%1d %2t %3m %4s", "Generelt", "Skreddarsy", "Filhandtering", "Trykk på ? for hjelp.", "Automatisk database synkronisering", "Send filendelse", "Tillat uatorisert stream", "Inkluder headers", "Ekstern javascript", "Heimeside", "Vis Keyteq gir deg del", "Vis oppgraderingsdel", "Vis statistikk", "Skriv ID3v2 i stream", "Ny brukar funksjonalitet", "Filtyper", "Ja", "Nei", "Filendelse", "MIME", "Inkluder i M3U", "Rediger filtype", "Sikker?", "Optimistisk filsjekk", "Randomiserar", "Modus", "Speleliste", "Ingen, direkte", "Mine favorittar", "Fann ingen rekkjer", "Treff på systemet", "Rekkjefølge", "Slå på lam støtte", "Avslått", "Tillat Lam bruk?");
+$klang[26]  = array('NewNorwegian', 'ISO-8859-1', 'Nynorsk', 'Kva er mest spelt', 'Kva er nytt', 'Søk', '(berre %1 vist)', 'sek', 'Søkeresultat: \'%1\'', 'Fann', 'Ingen.', 'Oppdater søkjedatabasevalg', 'Slett ubrukte rader', 'Ombygg ID3?', 'Debug modus', 'Oppdater', 'Avbryt', 'Oppdaterer søkje database', 'Fann %1 filer', 'kunne ikkje lese fil: %1, hoppa over', 'Installert: %1 - Oppdaterar: %2, skanner:', 'Skanner:', 'Feilet - query: %1', 'Kunne ikkje lese denne fila: %1. Hoppa over', 'Fjerna: %1', 'La inn %1, oppdaterte %2, sletta %3 der %4 feila og %5 blei hoppa over igjennom %6 filer - %7 sek - %8 markert for sletting', 'Ferdig', 'Steng', 'Kunne ikkje finne filer her: "%1"', 'kPlaylist Innlogging', 'Albumliste frå artist: %1', 'Snøggvelg %1', 'Ingen låtar valgt. Låtliste ikkje oppdatert.', 'Låtliste oppdatert!', 'Tilbake', 'Låtliste lagt til!', 'Husk å oppdatere sida.', 'Logg inn:', 'Hemmeleg', 'Advarsel! Dette er ei privat vevside. Alle handligar blir logga', 'Logg inn', 'SSL krevast for pålogging', 'Spel', 'Slett', 'Delte:', 'Lagre', 'Kontroller låtliste: "%1" - %2 titler', 'Editor', 'Visar', 'Velg', 'Sek', 'Status', 'Informasjon', 'Slett', 'Navn', 'Totalt:', 'Feil', 'Handling på valgte:', 'Sekvens', 'rediger låtliste', 'Slett denne rekkja', 'ny låtliste', 'Navn:', 'Lag', 'Spel:', 'Fil', 'Album', 'Alle', 'Valde', 'Legg til', 'Spel', 'rediger', 'ny', 'Velg', 'Spele kontroll:', 'Låtliste:', 'Hurtigvelg numerisk', 'Keyteq gir deg:', '(sjekk for ny versjon)', 'Vevside', 'Berre id3', 'album', 'tittel', 'artist', 'Hurtigvelg album frå artist', 'vis', 'Delte låtlister', 'Brukarar', 'Admin kontroll', 'Kva er nytt', 'Mest spelt', 'Logg ut', 'Valg', 'Sjekk', 'Min', 'Rediger brukar', 'ny brukar', 'Fullt namn', 'Brukarnamn', 'Endre passord?', 'passord', 'kommentar', 'Aksessnivå', 'På', 'Av', 'Slett brukar', 'Logg ut brukar', 'Oppdater', 'Ny brukar', 'slett', 'logg ut', 'bruk EXTM3U eigenskap?', 'Vise kor manger rekkejer (mest spelt/nytt)', 'Maks søke rekkjer', 'Omsetting', 'Åpne katalog', 'Gå til katalog: %1', 'Last ned', 'Gå eit steg opp', 'Gå til kjerne katalog', 'Sjekk for ny versjon', 'brukarar', 'Språk', 'valg', 'Avsperra', 'Omskuff:', 'Instillingar', 'Arkiv katalog', 'Nedlastingslokalisasjon', 'Standardspråk', 'Et Windows system', 'Krev HTTPS', 'Tillat spoling', 'Tillat nedlastingar', 'Inloggingstidsavbrudd', 'Rapportere mislykka påloggingsforsøk', 'Vent - Lagar filliste', 'Speleliste kunne ikkje bli lagt til!', 'Admin', 'Logg inn med HTTPS for å endre', 'Aktiver innebygd kanalvirkning', 'Tittel', 'Artist', 'Album', 'Kommentar', 'År', 'Låtnummer', 'Stil', 'ikkje sett', 'Maksimal nedlastingshastigheit', 'Brukar', '%1 minutt - %2 titlar', '%1 kbit %2 minutt', 'Stilliste: %1', 'Gå', '%1d %2t %3m speletid %4 %5 mb', 'Ingen relevante ressursar her.', 'Passord endra!', 'Ny brukar', 'Vennligst forta eit valg!', 'Kva er oppdatering?', 'Klikk her for hjelp', 'Bruke eksterne bileter?', 'Eksterne bilder lokalisering', 'Eksisterande passord', 'Det eksisterande passord stemmer ikkje!', 'Ønsket arkiverer', 'Arkiv kunne ikkje bli laga', 'Sannsynleg duplikat blei funne: %1 - %2', 'Verkeleg slette speleliste?', 'Alfabetisk', 'Tilfeldeg', 'Sorter', 'Original', 'Bruke javascript', 'Sikker på at du vil slette denne brukaren', 'Vis historia', 'historie', 'Rekkjer', 'Ekstern CSS fil', 'Fjern duplikatar', 'OK', 'FEIL', 'Stream', '(vis som)', 'fielr', 'album', '%1d %2t %3m %4s', 'Generelt', 'Skreddarsy', 'Filhandtering', 'Trykk på ? for hjelp.', 'Automatisk database synkronisering', 'Send filendelse', 'Tillat uatorisert stream', 'Inkluder headers', 'Ekstern javascript', 'Heimeside', 'Vis Keyteq gir deg del', 'Vis oppgraderingsdel', 'Vis statistikk', 'Skriv ID3v2 i stream', 'Ny brukar funksjonalitet', 'Filtyper', 'Ja', 'Nei', 'Filendelse', 'MIME', 'Inkluder i M3U', 'Rediger filtype', 'Sikker?', 'Optimistisk filsjekk', 'Randomiserar', 'Modus', 'Speleliste', 'Ingen, direkte', 'Mine favorittar', 'Fann ingen rekkjer', 'Treff på systemet', 'Rekkjefølge', 'Slå på lam støtte', 'Avslått', 'Tillat Lam bruk?', 'E-post', 'Tillat E-Post filer?', 'SMTP server', 'SMTP port', 'Send E-Post til', 'Melding', 'Send', 'E-post sendt!', 'Aktiver opplasting', 'Opplastingsmappe', 'Aktiver mp3post', 'Last Opp', 'Fila er lasta opp!', 'Fila kunne ikkje lastast opp!', 'Du må bruke cookies for å logge inn', 'Periode', 'Nokon sinne', 'Denne veka', 'Denne månaden', 'Forrige månaden', 'Treff', 'LAME kommando', 'Vis album cover', 'Album filer', 'Endre størrelsen på album bileter', 'Høgde på album', 'Vidde på album', 'E-post metode', 'Led til', 'Pære', 'Vent', 'Vær vennleg skriv in gyldig e-post under instillingar', 'Spelelister innafor linja?', 'Vis album frå URL?', 'Album URL', 'Kunne ikkje sende', 'Brukar lagt til', 'Arkiv forfattar', 'Arkivet er sletta');
+
+$klang[27]  = array('Japanese', 'Shift_JIS', 'Japanese', '‚¨ƒXƒXƒ', 'V‹È', 'ŒŸõ', '‚½‚¾%1‚¾‚¯‚ªŒ©‚¹‚ç‚ê‚Ü‚·', '•b', 'ŒŸõŒ‹‰ÊF\'%1\'', 'Œ©‚Â‚©‚è‚Ü‚µ‚Ä', '‚ ‚è‚Ü‚¹‚ñ', 'ŒŸõƒf[ƒ^ƒx[ƒXƒIƒvƒVƒ‡ƒ“‚ğÅV', 'g‚í‚ê‚Ä‚¢‚È‚¢‹L˜^‚ğíœ‚µ‚Ü‚·‚©H', 'ID3‚ğÄŒš‚µ‚Ü‚·‚©H', 'ƒfƒoƒbƒOƒ‚[ƒh‚Ö•ÏX‚µ‚Ü‚·‚©H', 'ÅV', 'ƒLƒƒƒ“ƒZƒ‹', 'ŒŸõƒf[ƒ^ƒx[ƒX‚ğÅV', '%1ƒtƒ@ƒEƒ‹‚ğŒ©‚Â‚©‚è‚Ü‚µ‚½', '‚±‚Ìƒtƒ@ƒCƒ‹‚ğŒˆ’è‚·‚é–‚ªo—ˆ‚Ü‚¹‚ñ‚Å‚µ‚½F %1AÈ—ª‚³‚ê‚Ü‚µ‚½B', 'ƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚ç‚ê‚Ü‚µ‚½F %1 - XV‚³‚ê‚Ü‚µ‚½F%2AƒXƒLƒƒƒ“F', 'ƒXƒLƒƒƒ“F', '¸”s - ƒNƒGƒŠ[F%1', '‚±‚Ìƒtƒ@ƒCƒ‹‚ğ“Ç‚Ş–‚ªo—ˆ‚Ü‚¹‚ñ‚Å‚µ‚½F %1AÈ—ª‚³‚ê‚Ü‚µ‚½B', 'æ‚è‹‚ç‚ê‚Ü‚µ‚½F %1', '‘}“ü”‚³‚ê‚Ü‚µ‚½F %1AXV”‚³‚ê‚Ü‚µ‚½F %2A%3”‚ğíœ‚³‚ê‚½A%4”‚ğ¸”s‚µ‚Ü‚µ‚½A%6”ƒtƒ@ƒCƒ‹‚Ì’†‚Å%5”‚ğƒXƒLƒbƒv‚µ‚Ü‚µ‚½ - %7•b - %8”‚ªíœ‚³‚ê‚é‚½‚ß‚É‹L˜^‚³‚ê‚Ü‚·B', 'I—¹', '•Â‚¶‚Ä', '%1‚Åƒtƒ@ƒEƒ‹‚ğŒ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½B', 'kPlaylist‚ğƒƒOƒIƒ“', 'ƒA[ƒeƒBƒXƒg%1‚ÌƒAƒ‹ƒoƒ€ƒŠƒXƒgF', 'ƒzƒbƒgƒZƒŒƒNƒg%1', '‹È‚ğ‘I‚ñ‚Å‚È‚¢BƒvƒŒ[ƒŠƒXƒg‚ğƒAƒbƒvƒf[ƒg‚³‚ê‚Ü‚¹‚ñ‚Å‚µ‚½B', 'ƒvƒŒ[ƒŠƒXƒg‚ğƒAƒbƒvƒf[ƒg‚³‚ê‚Ü‚µ‚½I', '–ß‚é', 'ƒvƒŒ[ƒŠƒXƒg‚ğ‰Á‚¦‚Ä‚³‚ê‚Ü‚µ‚½I', 'ƒy[ƒW‚ğƒŠƒ[ƒh‚µ‚Ä–Y‚ê‚È‚¢‚Å‰º‚³‚¢B', 'ƒƒOƒCƒ“F', '”é–§F', '’ˆÓI‚±‚ê‚Í”ñ‘åO‚ÌƒEƒGƒuƒTƒCƒg‚Å‚·B ‚·‚×‚Ä‚Ì“®ì‚ÍƒƒOƒtƒ@ƒCƒ‹‚É‘‚©‚ê‚Ü‚·B', 'ƒƒOƒCƒ“F', 'ƒƒOƒIƒ“‚·‚é‚ÆASSL‚ª•K—v‚Å‚·B', 'Ä¶', 'íœ', '‹¤—L‚³‚ê‚Ä‚¢‚éF', '•Û‘¶', 'ƒRƒ“ƒgƒ[ƒ‹ƒvƒŒ[ƒŠƒXƒgF%1h - %2ƒ^ƒCƒgƒ‹', 'ƒGƒfƒBƒ^[', 'ƒrƒ…[ƒA[', '‘I‚Ô', '@', 'ƒXƒe[ƒ^ƒX', 'ƒCƒ“ƒtƒH', 'íœ', '–¼‘O', '‡ŒvF', 'ƒGƒ‰[', '@', '˜A‘±', 'ƒvƒŒ[ƒŠƒXƒg‚ğƒGƒfƒBƒbƒg', '‚±‚ÌƒGƒ“ƒgƒŠ‚ğíœ', 'ƒvƒŒ[ƒŠƒXƒg‚ğ‰Á‚¦‚Ä', '–¼‘OF', 'ì‚é', 'Ä¶F', 'ƒtƒ@ƒCƒ‹', 'ƒAƒ‹ƒoƒ€', '‘S•”', '‘I‘ğ‚µ‚Ä‚¢‚é', '‰Á‚¦‚Ä', 'Ä¶', 'ƒGƒfƒBƒbƒg', 'V', '‘I‘ğF', 'ƒvƒŒ[ƒRƒ“ƒgƒ[ƒ‹F', 'ƒvƒŒ[ƒŠƒXƒg', '@', '@', '@', 'ƒz[ƒ€ƒTƒCƒg', 'ID3‚¾‚¯', 'ƒAƒ‹ƒoƒ€', 'ƒ^ƒCƒgƒ‹', 'ƒA[ƒeƒBƒXƒg', '@', 'ƒrƒ…[', '‹¤—LƒvƒŒ[ƒŠƒXƒg', 'ƒ†[ƒU[ƒY', 'ƒAƒhƒ~ƒjƒXƒgƒŒ[ƒ^[ƒRƒ“ƒgƒ[ƒ‹', 'XV‹È', '‚¨ƒXƒXƒ‹È', 'ƒƒOƒAƒEƒg', 'ƒIƒvƒVƒ‡ƒ“', 'Šm”F', '©•ª‚Ì', 'ƒ†[ƒU[‚ğƒGƒfƒBƒbƒg', 'V‚µ‚¢ƒ†[ƒU[', '³®–¼Ì', 'ƒƒOƒCƒ“', 'ƒpƒXƒ[ƒh‚ğ•ÏX‚µ‚Ü‚·‚©H', 'ƒpƒXƒ[ƒh', 'ƒRƒƒ“ƒg', 'Œ ŒÀƒŒƒxƒ‹', 'ƒIƒ“', 'ƒIƒt', 'ƒ†[ƒU[‚ğíœ', 'ƒ†[ƒU[‚ğƒƒOƒAƒEƒg', 'XV', 'V‚µ‚¢ƒ†[ƒU[', 'íœ', 'ƒƒOƒAƒEƒg', '@', '@', '@', 'ƒŠƒZƒbƒg', 'ƒfƒBƒŒƒNƒgƒŠ[‚ğŠJ‚­', 'ƒfƒBƒŒƒNƒgƒŠ[%1‚Ö', 'ƒ_ƒEƒ“ƒ[ƒh', '@', 'ƒ‹[ƒgƒfƒBƒŒƒNƒgƒŠ[‚ÖB', 'ƒAƒbƒvƒOƒŒ[ƒh‚ğ’²‚é', 'ƒ†[ƒU[ƒY', '‘Œê', 'ƒIƒvƒVƒ‡ƒ“', '@', 'ƒVƒƒƒbƒtƒ‹F', 'İ’è', 'ƒx[ƒXƒfƒBƒŒƒNƒgƒŠ[', '@', '@', 'Windows‚ÌƒVƒXƒeƒ€', 'HTTPS‚ª•K—v', '@', '@', '@', '@', '@', '@', 'ƒAƒhƒ~ƒjƒXƒgƒŒ[ƒ^[', 'HTTPS‚ÅƒƒOƒCƒ“‚µ‚½‚ç•ÏXo—ˆ‚Ü‚·I', '@', 'ƒ^ƒCƒgƒ‹', 'ƒAƒeƒXƒg', 'ƒAƒ‹ƒoƒ€', 'ƒRƒƒ“ƒg', '”N', 'ƒgƒ‰ƒbƒN', 'ƒWƒƒƒ“ƒ‹', 'İ’è‚µ‚Ä‚È‚¢', '@', 'ƒ†[ƒU[', '%1•ª - %2ƒ^ƒCƒgƒ‹', '%1 kbit %2•ª', 'ƒWƒƒƒ“ƒ‹ƒŠƒXƒgF%1', '@', '%1d %2h %3m ƒvƒŒ[ƒ^ƒCƒ€ %4 ƒtƒ@ƒCƒ‹ %5 mb', '@', 'ƒpƒXƒ[ƒh‚ğ•ÏX‚µ‚Ü‚µ‚½', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '‚ ‚è‚»‚¤‚Èƒtƒ@ƒCƒ‹d•¡‚ªŒ©‚¢‚¾‚³‚ê‚Ü‚·F"%1" "%2"', '@', '@', '@', '@', '@', '@', '‚±‚Ìƒ†[ƒU[‚ğ–{“–‚Éíœ‚µ‚Ü‚·‚©H', '@', '@', '@', '@', '@', 'OK', '@', '@', '@', 'ƒtƒ@ƒCƒ‹', 'ƒAƒ‹ƒoƒ€', '%1d %2h %3m %4s', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '‚Í‚¢', '‚¢‚¢‚¦', '@', 'MIME', 'M3U‚ğŠÜ‚İ‚Ü‚·‚©H', '@', '–{“–H', '@', '@', 'ƒ‚[ƒh', 'ƒvƒŒ[ƒŠƒXƒg', '@', '@', '@', '@', '@', '@', '@', '@', '“dqƒ[ƒ‹ƒAƒhƒŒƒX', '@', '@', 'SMTPƒ|[ƒg', '@', '@', '@', '@', '@', '@', '@', 'ƒAƒbƒvƒ[ƒh', 'ƒtƒ@ƒCƒ‹‚ğƒAƒbƒvƒ[ƒh‚µ‚Ü‚µ‚½I', 'ƒtƒ@ƒCƒ‹‚ğƒAƒbƒvƒ[ƒho—ˆ‚Ü‚¹‚ñ‚Å‚µ‚½I', '@', '@', '@', '¡T', '¡Œ', 'æŒ', '@', '@', '@', '@', '@', '@', '@', '@', '@', 'Pear', '@', '@', '@', '@', 'ƒAƒ‹ƒoƒ€‚ÌURL', '@', 'ƒ†[ƒU[‚ğ‰Á‚¦‚Ä‚³‚ê‚Ü‚µ‚½I', '@', '@', 'ƒ†[ƒU[‚ğƒAƒbƒvƒf[ƒg‚µ‚Ü‚µ‚½I', '@');
+
 
 
 # please submit new languages, or grammar fixes directly to us for new builds. Se http://www.kplaylist.net/ for more information.
 
-$knrlangs = 27;
+$knrlangs = 28;
 
 function get_lang($n) 
 {
@@ -923,44 +755,53 @@ function get_lang_combo($userlang="", $fieldname="u_language")
 $dbtables = array(
 	TBL_PLAYLIST		=> array('u_id', 'name', 'public', 'status', 'listid'),
 	TBL_PLAYLIST_LIST	=> array('listid', 'id', 'sid', 'title', 'pdir', 'cnt', 'file', 'seq'),
-	TBL_SEARCH			=> array('id','title','free','album','artist','md5','hits','date','fsize','genre','bitrate', 'ratemode','lengths','tagid', 'drive', 											'mtime','dirname'),
+	TBL_SEARCH			=> array('id','title','free','album','artist','md5','hits','date','fsize','genre','bitrate', 'ratemode','lengths','tagid', 'drive', 											'mtime','dirname','f_stat'),
 	TBL_USERS			=> array('u_name','u_pass','u_login','u_ip','u_comment','u_id','u_sessionkey','u_booted',
 								'u_status','u_time','u_access','u_allowdownload','extm3u','defplaylist',
-								'defshplaylist','partymode','theme','lockedtime','hotrows','searchrows','lang','udlrate', 'defgenre', 'archer', 'hitsas', 'lameperm', 'lamerate', 'allowemail', 'email'),	
+								'defshplaylist','partymode','theme','lockedtime','hotrows','searchrows','lang','udlrate', 'defgenre', 'archer', 'hitsas', 'lameperm', 'lamerate', 'allowemail', 'email', 'plinline', 'hotmode', 'created'),	
 	TBL_KPLAYVERSION	=> array('app_ver','app_build'),
-	TBL_MHISTORY		=> array('tid')
+	TBL_MHISTORY		=> array('tid','dwritten','dpercent'),
+	TBL_FILETYPES		=> array('logaccess')
 );
 
-$dbtable = array(TBL_MHISTORY => 10, TBL_CONFIG => 12, TBL_FILETYPES => 14);
+$dbtable = array(TBL_MHISTORY => 10, TBL_CONFIG => 12, TBL_FILETYPES => 14, TBL_PLAYLIST => 2, TBL_PLAYLIST_LIST => 3, TBL_SEARCH => 4, TBL_USERS => 5, TBL_KPLAYVERSION => 6, TBL_BULLETIN => 15);
 
-// upgrade info
+$oldbuild = 0;
 
 $dbalter[TBL_USERS]['lang']					= 'ALTER TABLE '.TBL_USERS.' ADD `lang` TINYINT DEFAULT \'0\' NOT NULL';
 $dbalter[TBL_USERS]['u_allowdownload']		= 'ALTER TABLE '.TBL_USERS.' ADD u_allowdownload CHAR(1) DEFAULT \'0\' NOT NULL'; 
 $dbalter[TBL_USERS]['udlrate']				= 'ALTER TABLE '.TBL_USERS.' ADD udlrate INT(4) DEFAULT 0 NOT NULL';
 $dbalter[TBL_USERS]['defgenre']				= 'ALTER TABLE '.TBL_USERS.' ADD defgenre INT(4) DEFAULT 0 NOT NULL';
-$dbalter[TBL_USERS]['archer']					= 'ALTER TABLE '.TBL_USERS.' ADD archer CHAR(1) DEFAULT 0 NOT NULL';
-$dbalter[TBL_USERS]['hitsas']					= 'ALTER TABLE '.TBL_USERS.' ADD hitsas TINYINT NOT NULL default 0';
+$dbalter[TBL_USERS]['archer']				= 'ALTER TABLE '.TBL_USERS.' ADD archer CHAR(1) DEFAULT 0 NOT NULL';
+$dbalter[TBL_USERS]['hitsas']				= 'ALTER TABLE '.TBL_USERS.' ADD hitsas TINYINT NOT NULL default 0';
 $dbalter[TBL_USERS]['lameperm']				= 'ALTER TABLE '.TBL_USERS.' ADD lameperm CHAR(1) DEFAULT \'0\' NOT NULL';
 $dbalter[TBL_USERS]['lamerate']				= 'ALTER TABLE '.TBL_USERS.' ADD lamerate INT(4) DEFAULT \'0\' NOT NULL';
-$dbalter[TBL_USERS]['allowemail']				= 'ALTER TABLE '.TBL_USERS.' ADD allowemail CHAR(1) DEFAULT \'0\' NOT NULL';
+$dbalter[TBL_USERS]['allowemail']			= 'ALTER TABLE '.TBL_USERS.' ADD allowemail CHAR(1) DEFAULT \'0\' NOT NULL';
 $dbalter[TBL_USERS]['email']				= 'ALTER TABLE '.TBL_USERS.' ADD email VARCHAR(128) NOT NULL';
+$dbalter[TBL_USERS]['plinline']				= 'ALTER TABLE '.TBL_USERS.' ADD plinline CHAR(1) DEFAULT 1 NOT NULL';
+$dbalter[TBL_USERS]['hotmode']				= 'ALTER TABLE '.TBL_USERS.' ADD hotmode INT(4) DEFAULT 0 NOT NULL';
+$dbalter[TBL_USERS]['created']				= 'ALTER TABLE '.TBL_USERS.' ADD created INT(4) DEFAULT 0 NOT NULL';
 $dbalter[TBL_PLAYLIST_LIST]['file']			= 'ALTER TABLE '.TBL_PLAYLIST_LIST.' ADD `file` VARCHAR(255) NOT NULL';
 $dbalter[TBL_PLAYLIST_LIST]['seq']			= 'ALTER TABLE '.TBL_PLAYLIST_LIST.' ADD seq INT(4) NOT NULL';
 $dbalter[TBL_SEARCH]['md5']					= 'ALTER TABLE '.TBL_SEARCH.' ADD md5 VARCHAR(32) NOT NULL';
-$dbalter[TBL_SEARCH]['hits']					= 'ALTER TABLE '.TBL_SEARCH.' ADD hits INT(4) NOT NULL';
-$dbalter[TBL_SEARCH]['date']					= 'ALTER TABLE '.TBL_SEARCH.' ADD date INT(4) NOT NULL';
-$dbalter[TBL_SEARCH]['fsize']					= 'ALTER TABLE '.TBL_SEARCH.' ADD fsize INT(4) NOT NULL';
+$dbalter[TBL_SEARCH]['hits']				= 'ALTER TABLE '.TBL_SEARCH.' ADD hits INT(4) NOT NULL';
+$dbalter[TBL_SEARCH]['date']				= 'ALTER TABLE '.TBL_SEARCH.' ADD date INT(4) NOT NULL';
+$dbalter[TBL_SEARCH]['fsize']				= 'ALTER TABLE '.TBL_SEARCH.' ADD fsize INT(4) NOT NULL';
 $dbalter[TBL_SEARCH]['bitrate']				= 'ALTER TABLE '.TBL_SEARCH.' ADD bitrate INT(4) NOT NULL';
-$dbalter[TBL_SEARCH]['ratemode']				= 'ALTER TABLE '.TBL_SEARCH.' ADD ratemode TINYINT DEFAULT 0 NOT NULL';
-$dbalter[TBL_SEARCH]['genre']					= 'ALTER TABLE '.TBL_SEARCH.' ADD genre INT(4) DEFAULT 255 NOT NULL';
+$dbalter[TBL_SEARCH]['ratemode']			= 'ALTER TABLE '.TBL_SEARCH.' ADD ratemode TINYINT DEFAULT 0 NOT NULL';
+$dbalter[TBL_SEARCH]['genre']				= 'ALTER TABLE '.TBL_SEARCH.' ADD genre INT(4) DEFAULT 255 NOT NULL';
 $dbalter[TBL_SEARCH]['lengths']				= 'ALTER TABLE '.TBL_SEARCH.' ADD lengths INT(4) DEFAULT 0 NOT NULL';
-$dbalter[TBL_SEARCH]['tagid']					= 'ALTER TABLE '.TBL_SEARCH.' ADD tagid TINYINT DEFAULT 0 NOT NULL';
-$dbalter[TBL_SEARCH]['drive']					= 'ALTER TABLE '.TBL_SEARCH.' ADD drive TINYINT DEFAULT 0 NOT NULL';
-$dbalter[TBL_SEARCH]['mtime']					= 'ALTER TABLE '.TBL_SEARCH.' ADD mtime INT(4) DEFAULT 0 NOT NULL';
+$dbalter[TBL_SEARCH]['tagid']				= 'ALTER TABLE '.TBL_SEARCH.' ADD tagid TINYINT DEFAULT 0 NOT NULL';
+$dbalter[TBL_SEARCH]['drive']				= 'ALTER TABLE '.TBL_SEARCH.' ADD drive TINYINT DEFAULT 0 NOT NULL';
+$dbalter[TBL_SEARCH]['mtime']				= 'ALTER TABLE '.TBL_SEARCH.' ADD mtime INT(4) DEFAULT 0 NOT NULL';
 $dbalter[TBL_SEARCH]['dirname']				= 'ALTER TABLE '.TBL_SEARCH.' ADD dirname VARCHAR( 255 ) DEFAULT \'0\' NOT NULL AFTER free';
+$dbalter[TBL_SEARCH]['f_stat']				= 'ALTER TABLE '.TBL_SEARCH.' ADD f_stat INT(4) DEFAULT 0 NOT NULL';
 $dbalter[TBL_PLAYLIST_LIST]['sid']			= 'ALTER TABLE '.TBL_PLAYLIST_LIST.' ADD sid INT(4) DEFAULT 0 NOT NULL';
-$dbalter[TBL_MHISTORY]['tid']					= 'ALTER TABLE '.TBL_MHISTORY.' ADD tid TINYINT DEFAULT \'0\' NOT NULL AFTER s_id';
+$dbalter[TBL_MHISTORY]['tid']				= 'ALTER TABLE '.TBL_MHISTORY.' ADD tid TINYINT DEFAULT \'0\' NOT NULL AFTER s_id';
+$dbalter[TBL_MHISTORY]['dwritten']			= 'ALTER TABLE '.TBL_MHISTORY.' ADD dwritten INT(4) DEFAULT 0 NOT NULL';
+$dbalter[TBL_MHISTORY]['dpercent']			= 'ALTER TABLE '.TBL_MHISTORY.' ADD dpercent INT(4) DEFAULT 0 NOT NULL';
+$dbalter[TBL_FILETYPES]['logaccess']		= 'ALTER TABLE '.TBL_FILETYPES.' ADD logaccess INT(4) DEFAULT 1 NOT NULL';
+
 
 $installdb[0] = "DROP DATABASE IF EXISTS ".$db['name'];
 $installdb[1] = "CREATE DATABASE IF NOT EXISTS ".$db['name'];
@@ -986,11 +827,12 @@ $installdb[3] = "CREATE TABLE ".TBL_PLAYLIST_LIST." (
 ) TYPE=MyISAM";
 $installdb[4] = "CREATE TABLE ".TBL_SEARCH." (
   id int(11) NOT NULL auto_increment,
-  title varchar(75) NOT NULL default '',
+  f_stat int(4) NOT NULL default '0',
+  title varchar(255) NOT NULL default '',
   free varchar(255) NOT NULL default '',
   dirname varchar(255) NOT NULL default '0',
-  album varchar(50) NOT NULL default '',
-  artist varchar(200) NOT NULL default '',
+  album varchar(255) NOT NULL default '',
+  artist varchar(255) NOT NULL default '',
   md5 varchar(32) NOT NULL default '',
   hits int(4) NOT NULL default '0',
   mtime int(4) NOT NULL default '0',
@@ -1005,7 +847,7 @@ $installdb[4] = "CREATE TABLE ".TBL_SEARCH." (
   PRIMARY KEY (id), 
   KEY dirname (dirname),
   KEY free (free)
-) TYPE=MyISAM";
+) TYPE=MyISAM AUTO_INCREMENT=1";
 $installdb[5] ="CREATE TABLE ".TBL_USERS." (
   u_name varchar(32) NOT NULL default '',
   u_pass varchar(32) NOT NULL default '',
@@ -1038,6 +880,9 @@ $installdb[5] ="CREATE TABLE ".TBL_USERS." (
   lamerate INT(4) NOT NULL default '0',
   allowemail char(1) NOT NULL default '0',
   email varchar(128) NOT NULL default '',
+  plinline CHAR(1) not null default '1',
+  hotmode INT(4) NOT NULL default '0',
+  created INT(4) NOT NULL default '0',
   PRIMARY KEY  (u_id),
   UNIQUE KEY u_login (u_login),
   UNIQUE KEY u_id (u_id)
@@ -1049,34 +894,47 @@ $installdb[6] ="CREATE TABLE ".TBL_KPLAYVERSION." (
 ) TYPE=MyISAM";
 
 $installdb[7] = 'DELETE FROM '.TBL_KPLAYVERSION;
-$installdb[8] = 'INSERT INTO '.TBL_KPLAYVERSION.' (app_ver, app_build) VALUES ("'.$app_ver.'", "'.$app_build.'")';
-$installdb[9] = 'INSERT INTO '.TBL_USERS.' SET u_name = "admin", u_login = "admin", u_pass = "'.md5("admin").'",  u_comment = "admin", u_access = "0"';
+$installdb[8] = 'INSERT INTO '.TBL_KPLAYVERSION.' (app_ver, app_build) VALUES ("'.$app_ver.'", "0")';
+$installdb[9] = 'INSERT INTO '.TBL_USERS.' SET u_name = "admin", u_login = "admin", u_pass = "'.md5('admin').'",  u_comment = "admin", u_access = "0", created = '.time();
 
-$installdb[10] = 'CREATE TABLE '.TBL_MHISTORY.' (h_id int(4) NOT NULL auto_increment, u_id int(4) NOT NULL, s_id int(4) NOT NULL, tid tinyint(4) NOT NULL default \'0\', utime int(4) NOT NULL, PRIMARY KEY (h_id))';
+$installdb[10] = 'CREATE TABLE '.TBL_MHISTORY.' (h_id int(4) NOT NULL auto_increment, u_id int(4) NOT NULL, s_id int(4) NOT NULL, tid tinyint(4) NOT NULL default \'0\', utime int(4) NOT NULL, dwritten int(4) NOT NULL default 0, dpercent int(4) NOT NULL default 0, PRIMARY KEY (h_id))';
 
 $installdb[11] = 'ALTER TABLE '.TBL_MHISTORY.' ADD INDEX (u_id)';
 
 $installdb[12] = 'CREATE TABLE '.TBL_CONFIG.' (id INT( 4 ) NOT NULL, `key` VARCHAR( 255 ) NOT NULL, value text NOT NULL, vtype INT( 2 ) NOT NULL, UNIQUE (id, `key`), KEY `key` (`key`)) TYPE=MyISAM AUTO_INCREMENT=1';
 
+if (isset($_SERVER['SERVER_SOFTWARE'])) if (preg_match("/win/i", $_SERVER['SERVER_SOFTWARE'])) $win32 = 1; else $win32 = 0;
+
 $installdb[13] = 'INSERT INTO '.TBL_CONFIG.' set `key` = "windows", value = "'.$win32.'", vtype = 1'; 
 
-$installdb[14] = 'CREATE TABLE '.TBL_FILETYPES.' (`id` INT( 4 ) NOT NULL AUTO_INCREMENT,`extension` VARCHAR( 32 ) NOT NULL , `mime` VARCHAR( 128 ) NOT NULL ,`m3u` CHAR( 1 ) NOT NULL , `getid` INT( 4 ) NOT NULL , `search` CHAR( 1 ), enabled char(1) NOT NULL , PRIMARY KEY ( `id` ))';
+$installdb[14] = 'CREATE TABLE '.TBL_FILETYPES.' (`id` INT( 4 ) NOT NULL AUTO_INCREMENT,`extension` VARCHAR( 32 ) NOT NULL , `mime` VARCHAR( 128 ) NOT NULL ,`m3u` CHAR( 1 ) NOT NULL , `getid` INT( 4 ) NOT NULL , `search` CHAR( 1 ), logaccess CHAR(1), enabled char(1) NOT NULL , PRIMARY KEY ( `id` ))';
 
-$installdbuser[0] = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,ALTER,DROP ON ".$db['name'].".* TO ".$db['user']."@".$db['host']." IDENTIFIED BY '".$db['pass']."'";
-$installdbuser[1] = "FLUSH PRIVILEGES";
+$installdb[15] = 'CREATE TABLE '.TBL_BULLETIN.' (
+`bid` INT( 4 ) NOT NULL AUTO_INCREMENT,
+`u_id` INT( 4 ) NOT NULL,
+`utime` INT( 4 ) NOT NULL,
+`publish` INT(4) NOT NULL default 0,
+`mesg` TEXT NOT NULL,
+PRIMARY KEY (`bid`) 
+)';
 
-function check_all_tables($endlf='')
+
+$installdbuser[0] = 'GRANT ALL ON '.$db['name'].'.* TO '.$db['user'].'@'.$db['host']." IDENTIFIED BY '".$db['pass']."'";
+$installdbuser[1] = 'FLUSH PRIVILEGES';
+
+function check_all_tables()
 {
 	global $dbtables, $dbtable, $dbalter, $installdb;
 	$ignore = array();
 	if (db_gconnect())
 	{
-		$sql = false;
+		$sql = array();
 
 		foreach ($dbtable AS $name => $val)  
 		if (db_execquery('DESC '.$name) == false) 
 		{
-			$sql .= $installdb[$val].$endlf;
+			$sql[] = $installdb[$val];
+			if ($val == 5) $sql[] = $installdb[9];
 			$ignore[$name] = true;
 		}
 		
@@ -1085,7 +943,7 @@ function check_all_tables($endlf='')
 			if (!isset($ignore[$name]))
 			{
 				for ($i=0,$c=count($dbtables[$name]);$i<$c;$i++)
-					if (db_execquery('SELECT '.$dbtables[$name][$i].' FROM '.$name.' LIMIT 1') == false) $sql .= $dbalter[$name][$dbtables[$name][$i]].$endlf;
+					if (db_execquery('SELECT '.$dbtables[$name][$i].' FROM '.$name.' LIMIT 1') == false) $sql[] = $dbalter[$name][$dbtables[$name][$i]];
 			}
 		}
 		return $sql;
@@ -2555,6 +2413,7 @@ class kprandomizer
 	var $sids;
 	var $ssort;
 	var $order;
+	var $users;
 
 	function kprandomizer()
 	{
@@ -2565,6 +2424,12 @@ class kprandomizer
 		$this->sids = array();
 		$this->ssort = 'DESC';
 		$this->order = 0;		
+		$this->users = array();
+	}
+
+	function setusers($users)
+	{
+		$this->users = $users;
 	}
 
 	function setorder($order)
@@ -2575,6 +2440,7 @@ class kprandomizer
 	function setgenre($genre)
 	{
 		$this->genre = $genre;
+		if (is_array($this->genre) && count($this->genre) == 1 && $this->genre[0] == -1) $this->genre = -1;
 	}
 	
 	function setmode($mode)
@@ -2591,14 +2457,24 @@ class kprandomizer
 	{
 		$this->limit = $limit;
 	}
+
+	function getgenreor($name)
+	{
+		if (is_array($this->genre))
+		{
+			$sql = $name;
+			foreach($this->genre as $g) $sql .= ' = '.$g.' or '.$name;
+			return substr($sql, 0, strlen($sql) - (strlen($name) + 4));
+		}
+	}
 	
 	function getfavourites()
 	{
 		global $u_id;
-		$sql = 'SELECT h.s_id,count(*) as cnt from '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s where s.id = h.s_id AND u_id = '.$u_id;
-		if ($this->genre != -1) $sql .= ' AND s.genre = '.$this->genre;
-		$sql .= ' GROUP by h.s_id order by cnt '.$this->ssort.' limit '.$this->limit;
-		$res = db_execquery($sql);
+		$sql = 'SELECT h.s_id,count(*) as cnt, sum(h.dpercent) as rate from '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s where s.id = h.s_id AND u_id = '.$u_id;
+		if (is_array($this->genre))  $sql .= ' AND ('.$this->getgenreor('s.genre').')';
+		$sql .= ' GROUP by h.s_id ORDER by rate '.$this->ssort.', cnt '.$this->ssort.' limit '.$this->limit;
+		$res = db_execquery($sql, true);
 		if ($res !== false) while ($row = mysql_fetch_row($res))$this->sids[] = $row[0];
 	}
 
@@ -2606,9 +2482,9 @@ class kprandomizer
 	{
 		global $u_id;
 		$sql = 'SELECT id from '.TBL_SEARCH.' where hits > 0';
-		if ($this->genre != -1) $sql .= ' AND genre = '.$this->genre;
+		if (is_array($this->genre))  $sql .= ' AND ('.$this->getgenreor('genre').')';
 		$sql .= ' ORDER by hits '.$this->ssort.' LIMIT '.$this->limit;
-		$res = db_execquery($sql);
+		$res = db_execquery($sql, true);
 		if ($res !== false) while ($row = mysql_fetch_row($res))$this->sids[] = $row[0];
 	}
 
@@ -2616,8 +2492,8 @@ class kprandomizer
 	{
 		global $u_id;
 		$sql = 'SELECT id from '.TBL_SEARCH.' ';
-		if ($this->genre != -1) $sql .= ' WHERE genre = '.$this->genre;
-		$res = db_execquery($sql);
+		if (is_array($this->genre))  $sql .= ' WHERE ('.$this->getgenreor('genre').')';
+		$res = db_execquery($sql, true);
 		srand(make_seed());
 		if ($res !== false) while ($row = mysql_fetch_row($res)) $this->sids[$row[0]] = getrand();
 		arsort($this->sids, SORT_DESC);
@@ -2634,6 +2510,51 @@ class kprandomizer
 		$this->sids = $nlist;	
 	}
 
+	function getmusicmatch()
+	{	
+		global $u_id;
+		$master = array();
+		$users = array();
+		
+		$sql = 'SELECT h.s_id, sum(h.dpercent) as rate, count(*) as cnt FROM '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s WHERE h.s_id = s.id AND h.u_id = '.$u_id;
+		if (is_array($this->genre)) $sql .= ' AND ('.$this->getgenreor('s.genre').')';
+		$sql .= ' GROUP BY h.s_id ORDER BY rate DESC,cnt DESC';
+
+		$res = db_execquery($sql, true);	
+		while ($row = mysql_fetch_row($res)) $master[] = array($row[0], $row[1]+$row[2]);
+		
+		for ($i=0,$c=count($this->users);$i<$c;$i++)
+		{
+			$res = db_execquery('SELECT s_id, sum(dpercent) as rate, count(*) AS cnt FROM '.TBL_MHISTORY.' WHERE u_id = '.$this->users[$i].' GROUP BY s_id ORDER BY rate DESC,cnt DESC', true);
+			while ($row = mysql_fetch_row($res)) $users[$this->users[$i]][$row[0]] = $row[1] + $row[2];
+		}		
+		
+		$musicm = array();
+
+		for ($i=0,$c=count($master);$i<$c;$i++)
+		{
+			$add = true;
+			for ($i2=0,$c2=count($this->users);$i2<$c2;$i2++) if (!isset($users[$this->users[$i2]][$master[$i][0]])) $add = false;
+		
+			if ($add)
+			{
+				$hits = $master[$i][1];
+				for ($i2=0,$c2=count($this->users);$i2<$c2;$i2++) $hits += $users[$this->users[$i2]][$master[$i][0]];
+				$musicm[$master[$i][0]] = $hits;
+			}		
+		}
+
+		arsort($musicm, SORT_NUMERIC);
+		
+		$cnt = 0;
+		foreach ($musicm as $sid => $hits)
+		{			
+			$cnt++;
+			$this->sids[] = $sid;
+			if ($cnt > $this->limit) break;
+		}
+	}
+
 	function execute()
 	{
 		switch ($this->mode)
@@ -2647,10 +2568,14 @@ class kprandomizer
 			case 2:
 				$this->getrandom();
 				break;
+			case 3:
+				$this->getmusicmatch();
+				break;
 				
 			default: break;
 		
 		}
+		
 		if (count($this->sids) > 0)
 		{
 			if ($this->order == 1)
@@ -2671,45 +2596,78 @@ class kprandomizer
 		} else $this->view(get_lang(217));
 	}
 
+	function getusers($selected)
+	{
+		$out = '';
+		global $u_id;
+
+		
+		$res = db_execquery('SELECT * FROM '.TBL_USERS, true);
+		while ($row = mysql_fetch_assoc($res))
+		{
+			if ($row['u_id'] != $u_id) 
+			{
+				$found = false;
+				for ($i=0,$c=count($this->users);$i<$c;$i++)
+				if ($row['u_id'] == $this->users[$i]) 
+				{
+					$out .= '<option selected="selected" value="'.$row['u_id'].'">'.$row['u_login'].'</option>';
+					$found = true;
+				}
+				if (!$found) $out .= '<option value="'.$row['u_id'].'">'.$row['u_login'].'</option>';
+			}
+		}
+		return $out;
+	}
+
 	function view($message = '')
 	{
 		global $userauth, $PHP_SELF, $setctl, $u_id;
 		kprintheader(get_lang(212),1);
 		?>
-		<form name="useroptions" method="post" action="<?php echo $PHP_SELF; ?>">
-		<input type="hidden" name="randomizer" value="post"/>
-		<table width="100%" border="0" cellspacing="0" cellpadding="0">
+		<form name="randomizer" method="POST" action="<?php echo $PHP_SELF; ?>">
+		<input type="hidden" name="action" value="randomizer"/>
+		<table width="95%" align="center" border="0" cellspacing="1" cellpadding="0">
 		<tr>
 			<td class="importnant" colspan="2"><?php echo $message; ?></td>
 		</tr>
 		<tr>
-			<td colspan="2" height="5"></td>
+			<td height="5"></td>
 		</tr>
 		<tr>
-			<td class="wtext"><?php echo get_lang(213); ?></td>
-			<td>
+			<td valign="top" class="wtext"><?php echo get_lang(213); ?></td>
+			<td valign="top">
 				<select name="mode" class="fatbuttom">
 					<option value="0"<?php if ($this->mode == 0) echo ' selected="selected"'; ?>><?php echo get_lang(216); ?></option>
 					<option value="1"<?php if ($this->mode == 1) echo ' selected="selected"'; ?>><?php echo get_lang(218); ?></option>
 					<option value="2"<?php if ($this->mode == 2) echo ' selected="selected"'; ?>><?php echo get_lang(171); ?></option>
+					<option value="3"<?php if ($this->mode == 3) echo ' selected="selected"'; ?>><?php echo get_lang(263); ?></option>
 				</select>
 			</td>
+			<td valign="top" class="wtext"><?php echo helplink('randmode'); ?></td>
 		</tr>
 		<tr>
-			<td class="wtext"><?php echo get_lang(178); ?></td>
-			<td><input type="text" size="8" maxlength="6" name="limit" value="<?php echo $this->limit; ?>" class="fatbuttom"/></td>
+			<td valign="top" valign="top" class="wtext"><?php echo get_lang(87); ?></td>
+			<td valign="top"><select class="fatbuttom" style="width:150px" multiple="multiple" size="6" name="usersfilter[]"><?php echo $this->getusers($this->users); ?></select></td>
+			<td valign="top" class="wtext"><?php echo helplink('randusers'); ?></td>
 		</tr>
 		<tr>
-			<td class="wtext"><?php echo get_lang(147); ?></td>
-			<td>
-				<select name="genre" class="fatbuttom">
+			<td valign="top" class="wtext"><?php echo get_lang(178); ?></td>
+			<td valign="top"><input type="text" size="5" maxlength="6" name="limit" value="<?php echo $this->limit; ?>" class="fatbuttom"/></td>
+			<td class="wtext"><?php echo helplink('randlimit'); ?></td>
+		</tr>
+		<tr>
+			<td valign="top" class="wtext"><?php echo get_lang(147); ?></td>
+			<td valign="top">
+				<select name="genres[]" size="6" style="width:200px" multiple="multiple" class="fatbuttom">
 				<option value="-1"<?php if ($this->genre == -1) echo ' selected="selected"'; ?>><?php echo get_lang(67); ?></option>
 				<?php if (class_exists('id3')) echo genre_select(false,$this->genre); ?></select>
 			</td>
+			<td valign="top" class="wtext"><?php echo helplink('randgenre'); ?></td>
 		</tr>
 		<tr>
-			<td class="wtext"><?php echo get_lang(214); ?></td>			
-			<td>
+			<td valign="top" class="wtext"><?php echo get_lang(214); ?></td>			
+			<td valign="top">
 				<select name="playlist" class="fatbuttom">
 				<option value="-1"<?php if ($this->playlist == -1) echo ' selected="selected"'; ?>><?php echo get_lang(215); ?></option>
 				<?php				
@@ -2722,24 +2680,26 @@ class kprandomizer
 				?>
 				</select>		
 			</td>
+			<td valign="top" class="wtext"><?php echo helplink('randplaylist'); ?></td>
 		</tr>
 		<tr>
-			<td class="wtext"><?php echo get_lang(219); ?></td>			
-			<td>
+			<td valign="top" class="wtext"><?php echo get_lang(219); ?></td>			
+			<td valign="top">
 				<select name="order" class="fatbuttom">
 				<option value="0">+</option>
 				<option value="1">-</option>
 				</select>
 			</td>
+			<td valign="top" class="wtext"><?php echo helplink('randorder'); ?></td>
 		</tr>
 		<tr>
-			<td colspan="2" height="5"></td>
+			<td colspan="3" height="5"></td>
 		</tr>
 		<tr>
-			<td></td>
-			<td><input class="fatbuttom" type="submit" name="execute" value="<?php echo get_lang(154); ?>"/>
+			<td valign="top"><input class="fatbuttom" type="submit" name="execute" value="<?php echo get_lang(154); ?>"/>
 			<input class="fatbuttom" type="button" name="closeme" value="<?php echo get_lang(27); ?>" onclick="javascript: window.close();"/>
 			</td>
+			<td colspan="2" class="wtext" align="right"><?php echo get_lang(191); ?>&nbsp;</td>
 		</tr>
 		</table>
 		</form>
@@ -2749,19 +2709,228 @@ class kprandomizer
 }
 
 
-// for the mailing stuff, you'll need this pear package: http://pear.php.net/get/Mail_Mime-1.2.1.tgz
+class kbulletin
+{
+	function getlatest()
+	{
+		$res = db_execquery('SELECT b.*,u.u_login FROM '.TBL_BULLETIN.' b, '.TBL_USERS.' u WHERE b.u_id = u.u_id AND b.publish = 1 ORDER BY bid DESC LIMIT 1');
+		if (mysql_num_rows($res) == 1)
+		{
+			$row = mysql_fetch_assoc($res);
+			return $this->formatted($row);
+		} else
+		{
+			$row['u_login'] = 'none';
+			$row['utime'] = time();
+			$row['mesg'] = 'Welcome to kPlaylist! This is a autogenerated bulletin. Click on \'more\' to add a real one.';
+			return $this->formatted($row);
+		}
+	}
+
+	function getlink($msg)
+	{
+		global $PHP_SELF;
+		return '<a href="'.$PHP_SELF.'?action=bulletin&amp;m=read">'.$msg.'</a>';
+	}
+
+	function savebulletin($bid, $publish, $mesg)
+	{
+		global $u_id;
+		$mesg = stripcslashes($mesg);
+		$mesg = str_replace("\r\n", "\n", $mesg);
+		if ($bid == 0)
+		{
+			$sql = 'INSERT INTO '.TBL_BULLETIN.' SET publish = '.$publish.', mesg = "'.mysql_escape_string($mesg).'", utime = '.time().', u_id = '.$u_id;		
+			$res = db_execquery($sql);
+			return mysql_insert_id();
+		} else
+		{
+			$sql = 'UPDATE '.TBL_BULLETIN.' SET publish = '.$publish.', mesg = "'.mysql_escape_string($mesg).'" WHERE bid = '.$bid;
+			$res = db_execquery($sql);
+			return $bid;
+		}
+	}
+
+	function editbulletin($bid, $reload=false)
+	{
+		global $PHP_SELF;
+		
+		if ($bid)
+		{
+			$res = db_execquery('SELECT * FROM '.TBL_BULLETIN.' WHERE bid = '.$bid);
+			$row = mysql_fetch_assoc($res);
+		} else
+		{
+			$row['publish'] = 0;
+			$row['mesg'] = '';
+		}
+		
+		kprintheader(get_lang(268),1);
+		?>
+		<form method="post" action="<?php echo $PHP_SELF; ?>">
+		<input type="hidden" name="action" value="savebulletin"/>
+		<input type="hidden" name="bid" value="<?php echo $bid; ?>"/>
+		<table width="100%" border="0" cellspacing="5" cellpadding="0">
+		<?php if (db_guinfo('u_access') == 0)
+		{
+		?>
+			<tr>
+				<td class="wtext"><?php echo get_lang(271); ?></td>
+				<td><input type="checkbox" class="fatbuttom" name="publish" value="1"<?php if ($row['publish']) echo ' checked="checked"'; ?>/></td>
+				<td class="wtext"><?php echo helplink('btpublish'); ?></td>
+			</tr>			
+		<?php
+		}
+		?>
+			<tr>
+				<td class="wtext"><?php echo get_lang(228); ?></td>
+				<td><textarea class="fatbuttom" rows="10" cols="70" name="mesg"><?php echo $row['mesg']; ?></textarea></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<input class="fatbuttom" type="submit" name="store" value="<?php echo get_lang(45); ?>"/>
+					<input class="fatbuttom" type="button" name="closeme" value="<?php echo get_lang(27); ?>" onclick="javascript: window.close();<?php 
+					if ($reload) echo ' window.opener.location.reload();'; ?>"/>	
+				</td>
+				<td></td>
+			</tr>
+		
+		</table>
+		</form>
+		<?php
+		kprintend();
+	}
+
+	function delbulletin($bid, $u_id)
+	{
+		if (db_guinfo('u_access') == 0) db_execquery('DELETE FROM '.TBL_BULLETIN.' WHERE bid = '.$bid); else
+					db_execquery('DELETE FROM '.TBL_BULLETIN.' WHERE bid = '.$bid.' AND u_id = '.$u_id);
+	}
+
+	function showall()
+	{
+		global $PHP_SELF, $u_id;
+		
+		kprintheader(get_lang(268), 1);
+		mp3table('');
+		showdir('',get_lang(268),0);
+		echo '</td></tr>';
+		
+		$res = db_execquery('SELECT b.*,u.u_login FROM '.TBL_BULLETIN.' b, '.TBL_USERS.' u WHERE b.u_id = u.u_id ORDER BY bid DESC');
+		?>
+		<tr><td height="15"></td></tr>
+		<tr>
+		<td>
+		<table width="35%" align="left" cellpadding="0" cellspacing="0" border="0">
+		<?php
+		while ($row = mysql_fetch_assoc($res))
+		{
+			echo $this->formatted($row, false);
+			
+			if (db_guinfo('u_access') == 0 || $row['u_id'] == $u_id) echo '<tr><td><a href="#" onclick="javascript: newwin(\'editbulletin\', \''.$PHP_SELF.'?action=editbulletin&amp;bid='.$row['bid'].'\',300,550);">'.get_lang(71).'</a>&nbsp;<a onclick="javascript: if (!confirm(\''.get_lang(210).'\')) return false;" href="'.$PHP_SELF.'?action=delbulletin&amp;bid='.$row['bid'].'">'.get_lang(109).'</a></td></tr>';
+			?>
+			<tr><td height="10"></td></tr>
+			<?php
+		}
+		echo '<tr><td><a href="#" onclick="javascript: newwin(\'newbulletin\', \''.$PHP_SELF.'?action=newbulletin\',300,550);">'.get_lang(72).'</a></td></tr>';
+		?>
+		</table>
+		</td>
+		</tr>
+		<?php
+		echo '</table></form></td>';
+		infobox();
+		echo '</tr></table>';
+		kprintend();
+	}
+
+	function formatted($row, $single =true)
+	{
+		global $cfg;
+		$out = '';
+		$moreset = false;
+		if ($single) $out .= '<table width="95%" align="center" cellpadding="0" cellspacing="0" border="0">';
+		$out .= '<tr><td height="4"></td></tr><tr>';
+		$msg = $row['mesg'];
+		$msg = str_replace("\n", '<br/>', $msg);
+		if (strlen($msg) > $cfg['frontbulletinchars'] && $single) 
+		{
+			$msg = substr($msg, 0, 120).'&nbsp; ... '.$this->getlink(get_lang(270));
+			$moreset = true;
+		}
+		$out .= '<td class="wtext">'.$msg.'</td>';
+		$out .= '</tr><tr><td height="4"></td></tr><tr>';
+		$out .= '<td class="loginkplaylist">'.get_lang(269, date($cfg['smalldateformat'],$row['utime']), $row['u_login']);
+		if (!$moreset && $single) $out .= ' '.$this->getlink(get_lang(270));
+		$out .= '</td>';
+		$out .= '</tr>';
+		if ($single) $out .= '</table>';
+		return $out;
+	}
+}
+
+
+// for the mailing stuff, you'll need this package: http://pear.php.net/get/Mail_Mime-1.2.1.tgz if you intend to use pear.
 
 class mailmp3
 {
 	var $sid;
 	var $tomail;
 	var $message;
+	var $crlf;
 
 	function mailmp3()
 	{
 		$this->sid = -1;
 		$this->tomail = '';
 		$this->message = '';
+		$this->crlf = "\r\n";
+	}
+
+	function generatemailheader($subject, $from, $to, $html, $mimetype, $f2)
+	{
+		$data  = 'From: '.$from.$this->crlf;
+		$data .= 'To: '.$to.$this->crlf;
+		$data .= 'MIME-Version: 1.0'.$this->crlf;
+		$data .= 'Content-Type: multipart/mixed;boundary="----=_20041023160256_48355"'.$this->crlf;
+		$data .= $this->crlf;
+		$data .= '------=_20041023160256_48355'.$this->crlf;
+		$data .= 'Content-Type: text/html; charset="ISO-8859-1"'.$this->crlf;
+		$data .= 'Content-Transfer-Encoding: 8bit'.$this->crlf;
+		$data .= $this->crlf;
+		$data .= $html.$this->crlf; 
+		$data .= $this->crlf;
+		$data .= '------=_20041023160256_48355'.$this->crlf;
+		$data .= 'Content-Type: '.$mimetype.$this->crlf;
+		$data .= '      name="'.$f2->fname.'"'.$this->crlf;
+		$data .= 'Content-Transfer-Encoding: base64'.$this->crlf;
+		$data .= 'Content-Disposition: attachment;'.$this->crlf;
+		$data .= '      filename="'.$f2->fname.'"'.$this->crlf;
+		$data .= $this->crlf;
+	
+		$fp = fopen($f2->fullpath, 'rb');
+		$data .= chunk_split(base64_encode(fread($fp, $f2->fsize)), 76, $this->crlf);
+		fclose($fp);
+
+		$data .= '------=_20041021175925_81962--'.$this->crlf.$this->crlf;
+
+		return $data;
+	}
+	
+	function senddirect($from, $subject, $html, $mimetype, $mailaddr, $f2)
+	{
+		global $win32, $setctl;
+
+		$data = $this->generatemailheader($subject, $from, $mailaddr, $html, $mimetype, $f2);
+		
+		if ($win32)
+		{
+			ini_set('SMTP', $setctl->get('smtphost'));
+			ini_set('smtp_port', $setctl->get('smtpport'));
+		}		
+		return mail ($mailaddr, $subject, '', $data, '');
 	}
 
 	function setsid($sid)
@@ -2796,7 +2965,7 @@ class mailmp3
 		}
 		</style>
 		</head>
-		<body>
+		<body bgcolor="#ffffff">
 		<table width="50%" border="0" align="center" cellspacing="0">
 		<tr>
 		<td colspan="2">Your requested file: <b>'.$finfo.'</b></td>
@@ -2811,47 +2980,61 @@ class mailmp3
 		</body>
 		</html>';
 	}
+
+	function sendpear($from, $subject, $html, $mimetype, $mailaddr, $f2)
+	{
+		global $setctl;
+
+		include('Mail.php');
+		include('Mail/mime.php');
+		include('Mail/mimeDecode.php');
+		
+		$hdrs = array(	'From' => $from, 'To' => $mailaddr, 'Subject' => $subject);
+
+		$mime = new Mail_mime($this->crlf);
+		$mime->setHTMLBody($html);
+
+		$mime->addAttachment($f2->fullpath, $mimetype);
+		$body = $mime->get();
+		$hdrs = $mime->headers($hdrs);		
+
+		$params['host'] = $setctl->get('smtphost');
+		$params['port'] = $setctl->get('smtpport');
+		$params['include_bodies'] = true;
+		$params['decode_bodies'] = true;
+		$params['decode_headers'] = true;
+		$params['auth'] = false;
+		$mail =& Mail::factory('smtp', $params);
+		$result = $mail->send($mailaddr, $hdrs, $body);
+		if (is_object($result)) return false;
+		return $result;
+	}
 	
-	function sendmail($sid, $mailaddr, $message)
+	function sendmail($from, $sid, $mailaddr, $message)
 	{
 		global $u_id, $setctl, $streamtypes;
 		if (MAILMP3 && db_guinfo('allowemail'))
 		{
 			$f2 = new file2($sid, true);
 			if ($f2->fexists)
-			{
-				addhistory($u_id, $sid, 2);
-				
-				include('Mail.php');
-				include('Mail/mime.php');
-				include('Mail/mimeDecode.php');
-	
-				$crlf = "\r\n";
-
+			{				
 				if (empty($f2->id3['artist'])) $title = $f2->fname; else $title = $f2->id3['artist'].' '.$f2->id3['title'];
 				$html = $this->message($title, str_replace("\n", '<br/>', $message));
-
-				$hdrs = array(	'From' => db_guinfo('email'), 'Subject' => 'Requested MP3: '.$title);
-
-				$mime = new Mail_mime($crlf);
-				$mime->setHTMLBody($html);
-
+				$html = str_replace("\n", $this->crlf, $html);
+				$subject = 'Requested: '.$title;
 				$ftype = file_type($f2->fname);
 				if ($ftype != -1) $mimetype = $streamtypes[$ftype][1]; else $mimetype = 'application/octet-stream';
 
-				$mime->addAttachment($f2->fullpath, $mimetype);
-				$body = $mime->get();
-				$hdrs = $mime->headers($hdrs);
-						
-				$params['host'] = $setctl->get('smtphost');
-				$params['port'] = $setctl->get('smtpport');
-
-				$params['include_bodies'] = true;
-				$params['decode_bodies'] = true;
-				$params['decode_headers'] = true;
-				$params['auth'] = false;
-				$mail =& Mail::factory('smtp', $params);
-				$mail->send($mailaddr, $hdrs, $body);			
+				switch (MAILMETHOD)
+				{
+					case 2: $status = $this->sendpear($from, $subject, $html, $mimetype, $mailaddr, $f2);
+							break;
+					case 1: $status = $this->senddirect($from, $subject, $html, $mimetype, $mailaddr, $f2);
+							break;
+					default: $status = 0; break;
+				}
+				if ($status) addhistory($u_id, $sid, 2);
+				return $status;
 			}
 		}
 	}
@@ -2864,8 +3047,12 @@ class mailmp3
 		$msg = '';
 		if (!empty($this->tomail))
 		{
-			$this->sendmail($this->sid, $this->tomail, $this->message);
-			$msg = get_lang(230);
+			$from = db_guinfo('email');
+			if (empty($from)) $msg = get_lang(254); 
+			else
+			{
+				if ($this->sendmail($from, $this->sid, $this->tomail, $this->message)) $msg = get_lang(230); else $msg = get_lang(258);
+			}
 		}		
 		$this->gui($msg);
 	}
@@ -2879,8 +3066,8 @@ class mailmp3
 		
 		kprintheader(get_lang(223), 1);
 		?>
-		<form method="post" action="<?php echo $PHP_SELF; ?>">
-		<input type="hidden" name="sendmail" value="true"/>
+		<form name="mail" method="post" action="<?php echo $PHP_SELF; ?>">
+		<input type="hidden" name="action" value="sendmail"/>
 		<input type="hidden" name="sid" value="<?php echo $this->sid; ?>"/>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
 
@@ -2916,7 +3103,7 @@ class mailmp3
 		<tr>
 			<td></td>
 			<td>
-				<input type="submit" class="fatbuttom" name="send" value="<?php echo get_lang(229); ?>"/>
+				<input type="button" onclick="javascript: document.mail.send.disabled = true; document.mail.send.value = '<?php echo get_lang(253); ?>'; document.mail.submit();" class="fatbuttom" name="send" value="<?php echo get_lang(229); ?>"/>
 				<input type="button" name="Close" value="<?php echo get_lang(27); ?>" onclick="javascript: window.close();" class="fatbuttom" />
 			</td>
 		</tr>
@@ -2959,8 +3146,9 @@ class fupload
 		global $PHP_SELF;
 		kprintheader(get_lang(234), 1);
 		?>
-		<form method="post" enctype="multipart/form-data" action="<?php echo $PHP_SELF; ?>">
-		<input type="hidden" name="fupload" value="true"/>
+		<form method="post" name="fupload" enctype="multipart/form-data" action="<?php echo $PHP_SELF; ?>">
+		<input type="hidden" name="action" value="fupload"/>
+		<input type="hidden" name="fuploader" value="true"/>
 		<table width="100%" border="0" cellspacing="0" cellpadding="0">
 		<?php if (!empty($msg)) echo '<tr><td class="notice" colspan="2">'.$msg.'</td></tr>'; ?>
 		<tr> 
@@ -2973,7 +3161,7 @@ class fupload
 		</tr>
 		<tr>
 			<td align="center" colspan="2">
-				<input type="submit" value="<?php echo get_lang(234); ?>" class="fatbuttom"/>&nbsp; 
+				<input type="button" name="sbutton" onclick="javascript: document.fupload.sbutton.disabled = true; document.fupload.sbutton.value = '<?php echo get_lang(253); ?>'; document.fupload.submit();" value="<?php echo get_lang(234); ?>" class="fatbuttom"/>&nbsp; 
 				<input type="button" name="Close" value="<?php echo get_lang(27); ?>" onclick="javascript: window.close();" class="fatbuttom"/>
 			</td>
 		</tr>
@@ -3431,7 +3619,7 @@ class id3 {
 
 	    $r = fread($f, 4);
 	    // Binary to Hex to a binary sting. ugly but best I can think of.
-	    $bits = unpack('H*bits', $r);
+	    $bits = @unpack('H*bits', $r);
 	    $bits =  base_convert($bits['bits'],16,2);
 	} while (!$bits[8] and !$bits[9] and !$bits[10]); // 1st 8 bits true from the while
 	if ($this->debug) print('Bits: ' . $bits . "\n");
@@ -4133,17 +4321,327 @@ function klogon($msg = '')
 	die();
 }
 
-function errormessage($msg)
+function errormessage($msg, $back = true)
 {
 	kprintheader(get_lang(56),0);
-	blackbox(get_lang(56),'<br/>'.$msg.'<br/><br/><a href="javascript:history.go(-1)" class="fatbuttom">&nbsp;'.get_lang(34).'&nbsp;</a><br/><br/>',0);
+	if ($back) $code = '<a href="javascript:history.go(-1)" class="fatbuttom">&nbsp;'.get_lang(34).'&nbsp;</a>'; else $code = '';
+	blackbox(get_lang(56),'<br/>'.$msg.'<br/><br/>'.$code.'<br/><br/>',0);
 	kprintend();
 	die();
 }
 
+function mp3table($pdir="")
+{
+	global $PHP_SELF, $pdir64;
+	$pdir64 = base64_encode($pdir);
+	?>
+	<table width="100%" border="0" align="left" cellspacing="0" cellpadding="0">
+	<tr>
+	<td align="left" width="70%" valign="top">
+	<form name="psongs" action="<?php echo $PHP_SELF?>" method="post">
+	<input type="hidden" name="action" value="listedres"/>
+	<input type="hidden" name="previous" value="<?php echo $pdir64; ?>"/>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+	<td>
+	<?php
+}
+
+function compute_statistics()
+{
+	$row = mysql_fetch_array(db_execquery('SELECT SUM(lengths) AS ls, COUNT(*) AS nr, SUM(fsize) AS fs FROM '.TBL_SEARCH), true);
+	if ($row)
+	{
+		$secs = (int)$row['ls'];
+		$days = floor($secs/86400);
+		$secs = $secs % 86400;
+		$hours = floor($secs/3600);
+		$secs = $secs % 3600;
+		$min = floor($secs/60);
+		$mb = floor($row['fs'] / 1048576);
+		return get_lang(155,$days, $hours, $min, $row['nr'],$mb);
+	}
+}
+
+function endmp3table($showalbum=1, $dirs=0, $files=0) 
+{ 
+	global $u_id, $PHP_SELF, $curdrive, $cfg, $pdir64;
+	echo '<tr><td>&nbsp;</td></tr>';	
+	$crstr = '';
+	$crstr_dl = null;
+	$text = '';
+	if ($showalbum)
+	{
+		$crstr .= '<input type="submit" name="psongsall" value="'; 
+		if ($files == 1 && $dirs == 0) $text = get_lang(65); else
+		if ($files > 0 && $dirs == 0) $text = get_lang(66); else
+		if ($files > 0 && $dirs > 0) $text = get_lang(67);
+		$crstr .= $text.'" class="fatbuttom"/>&nbsp;&nbsp;';
+		$crstr_dl = '<input type="button" name="pdlall" value="'.$text.'" onclick="javascript: newwin(\'dlall\', \''.$PHP_SELF.'?action=dlall&amp;p='.$pdir64.'&amp;d='.$curdrive.'\', 130, 450);" class="fatbuttom"/>&nbsp;&nbsp;'; 
+	} 	
+	
+	$crstr .= '<input type="submit" onclick="javascript: if (!anyselected()) { alert(\''.get_lang(159).'\'); return false; }" name="psongsselected" value="'.get_lang(68).'" class="fatbuttom"'."/>";
+	$crstr_dl .= '<input type="button" onclick="javascript: if (!anyselected()) alert(\''.get_lang(159).'\'); else newwin(\'dlselected\', \''.$PHP_SELF.'?action=dlselectedjs\', 130, 450);" name="pdlselected" value="'.get_lang(68).'" class="fatbuttom"'."/>";
+
+	$playlists = db_getplaylist($u_id);
+	$ploutput = "";
+	if (count($playlists)>0)
+	{
+		if ($files > 0) $ploutput .= '<input type="submit" name="addplaylist" onclick="javascript: if (!anyselected()) { alert(\''.get_lang(32).'\'); return false; }" value="'.get_lang(69).'" class="fatbuttom"/>&nbsp;';
+		$ploutput .= '<select name="sel_playlist" class="file">';
+		
+		$playid = db_guinfo("defplaylist");
+		for ($c=0,$cnt=count($playlists);$c<$cnt;$c++) 
+		{		
+			if ($playlists[$c][1] == $playid) $sel=' selected="selected" '; else $sel='';
+			$ploutput .= '<option value="'. $playlists[$c][1].'"'.$sel.'>'.$playlists[$c][0].'</option>';
+		}
+		$ploutput .= '</select>';
+	}
+	$ploutput .= '<input type="hidden" name="drive" value="'.$curdrive.'"/>';
+	if (count($playlists)>0)
+	{
+		$ploutput .= '<input type="submit" name="playplaylist" value="'.get_lang(70).'" class="fatbuttom"/>&nbsp;';
+		$ploutput .= '<input type="submit" name="editplaylist" value="'.get_lang(71).'" class="fatbuttom"/>&nbsp;';
+	}
+	
+	$upload = '<input type="button" name="upload" onclick="javascript: newwin(\'upload\', \''.$PHP_SELF.'?action=fupload\', 120, 450);" value="'.get_lang(69).'" class="fatbuttom"/>';
+
+	$ploutput .= "<input type=\"button\" name=\"newplaylist\" onclick=\"javascript: newwin('playlist', '$PHP_SELF?action=playlist_new', 100, 350);\" value=\"".get_lang(72)."\" class=\"fatbuttom\"".'/>';
+	$selectallcode='<input type="button" value="+" class="fatbuttom" onclick="javascript: SelectAll();"'."/>".'&nbsp;&nbsp;<input type="button" value="-" class="fatbuttom" onclick="javascript: SelectAll();"'."/>";
+	
+	?>	
+	<tr>
+	<td>
+	<table border="0" cellspacing="5" cellpadding="0">	
+		<tr>
+		<?php
+		if ($files > 0)
+		{
+			echo '<td align="left"> '.blackbox(get_lang(73), $selectallcode).'</td>';
+			echo '<td align="left"> '.blackbox(get_lang(74), $crstr).'</td>';
+			if (ALLOWDOWNLOAD && db_guinfo('u_allowdownload') && $cfg['archivemode']) echo '<td align="left"> '.blackbox(get_lang(117), $crstr_dl).'</td>';
+		}
+		echo '<td align="left">'.blackbox(get_lang(75), $ploutput).'</td>';
+		if (ENABLEUPLOAD) echo '<td align="left">'.blackbox(get_lang(234), $upload).'</td>';
+		?>
+		</tr>
+	</table>
+	</td></tr>
+	</table>
+	</form>
+	</td>
+	<?php		
+}
+
+function infobox()
+{
+ 	global $PHP_SELF, $u_cookieid, $u_id, $app_ver, $setctl, $u_id, $u_playlist, $u_playlistid, $pdir64, $app_build, $homepage;
+
+	$homepage = str_replace('KBUILD', $app_build, str_replace('KVER', $app_ver, $setctl->get('homepage')));
+
+	?>
+	<td valign="top" align="left" width="30%">
+	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<tr>
+		<td colspan="2">		
+		<?php if ($setctl->get('showkeyteq')) 
+		{
+			?><span class="notice"><?php echo '<a href="http://keyteq.no" target="_blank">'.substr(get_lang(77),0,3).'</a>'.substr(get_lang(77),3); ?></span><?php
+		}
+		?>		
+		<?php if ($setctl->get('showupgrade')) 
+		{
+			?><a title="<?php echo get_lang(120); ?>" href="http://www.kplaylist.net/?ver=<?php echo $app_ver; ?>&amp;build=<?php echo $app_build; ?>" target="_blank">
+			<font color="#CCCCCC"><?php echo get_lang(78); ?></font></a><br/><?php
+		} else if ($setctl->get('showkeyteq')) echo "<br/>"; ?>
+		<a title="<?php echo get_lang(79); ?>" href="<?php echo $homepage; ?>" target="_blank">
+		<img alt="<?php echo get_lang(79); ?>" src="<?php echo getimagelink('kplaylist.gif'); ?>" border="0"/><span class="notice">v<?php echo $app_ver.' '.$app_build; ?></span></a>
+		</td>    
+	</tr>	
+	</table>	
+	<form name="search" action="<?php echo $PHP_SELF; ?>" method="post">
+	<input type="hidden" name="action" value="search"/>
+	<table width="100%" border="0" cellspacing="0" cellpadding="0">		
+	<?php
+	if ($setctl->get('showstatistics'))
+	{
+		?>
+		<tr>
+		<td colspan="4">
+		<font class="statistics">&nbsp;<?php echo compute_statistics(); ?></font>
+		</td>
+		</tr>
+		<?php
+	}
+	?>		
+	<tr>
+		<td colspan="4">&nbsp;<input type="text" name="searchfor" value='<?php if (isset($_POST['searchfor'])) echo stripslashes(checkchs($_POST['searchfor'])); ?>' maxlength="150" size="35" class="fatbuttom"/></td>		
+	</tr>
+	<tr>
+		<td colspan="4">
+			<input type="radio" name="search" value="0" <?php if (db_guinfo('defaultsearch')=='0') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(81); ?>&nbsp;</font>
+			<input type="radio" name="search" value="1" <?php if (db_guinfo('defaultsearch')=='1') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(82); ?>&nbsp;</font>
+			<input type="radio" name="search" value="2" <?php if (db_guinfo('defaultsearch')=='2') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(83); ?></font>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="5" colspan="4"></td>
+	</tr>
+	<tr>
+		<td colspan="4" align="left">
+			<input type="checkbox" name="onlyid3" value="1" <?php if (db_guinfo('defaultid3')) echo ' checked="checked"'; ?>/>
+			<font class="notice"><?php echo get_lang(80); ?></font>			
+			&nbsp;
+			<select class="fatbuttom" name="hitsas">
+			<option value="0"<?php if (db_guinfo('hitsas') == 0) echo 'selected="selected"'; ?>><?php echo get_lang(185); ?></option>
+			<option value="1"<?php if (db_guinfo('hitsas') == 1) echo 'selected="selected"'; ?>><?php echo get_lang(186); ?></option>
+			</select>
+			<font class="notice"><?php echo get_lang(184); ?></font>
+		</td>		
+	</tr>
+	<tr>
+		<td height="5" colspan="4"></td>
+	</tr>
+	<tr>
+		<td colspan="4" align="left">&nbsp;<input type="submit" name="startsearch" value="<?php echo get_lang(5); ?>" class="fatbuttom"/></td>
+	</tr>
+	<tr>		
+		<td colspan="4"></td>  
+	</tr>	
+	<tr><td colspan="4">&nbsp;</td></tr>
+	
+	<tr>
+		<td class="finfo" colspan="4" align="left">
+
+		<script type="text/javascript">
+			<!--
+			document.search.searchfor.focus();
+			// -->
+		</script>
+		<?php blackbox(get_lang(84), album_hotlist('artist'), 0, 'boxhotlist'); ?>
+		</td>
+	</tr>
+	<?php if (class_exists('kbulletin') && BULLETIN)
+	{
+	?>
+	<tr>
+		<td height="15"></td>
+	</tr>
+	<tr>
+		<td><?php 
+				$kb = new kbulletin();
+				blackbox(get_lang(268), $kb->getlatest(), 0, 'box','','60%'); ?>
+			</td>
+	</tr>
+	<?php
+	}
+	?>
+	</table>
+	</form>
+	<?php		
+		db_sharedplaylist($u_id);
+		$ploutput = '';
+		if (count($u_playlist)>0)
+		{
+			$ploutput .= '&nbsp;<input type="hidden" name="action" value="playlist"/>';
+			$ploutput .= '<input type="hidden" name="previous" value="'.$pdir64.'"/>';
+			$ploutput .= '<select name="sel_shplaylist" class="file">';
+
+			$playid = db_guinfo('defshplaylist');
+			for ($c=0;$c<count($u_playlist);$c++) 
+			{
+				if ($u_playlistid[$c] == $playid) $sel=' selected="selected" '; else $sel='';
+				$ploutput .= '<option value="'. $u_playlistid[$c] . '"'.$sel.'>'.$u_playlist[$c].'</option>';
+			}
+			$ploutput .= '</select>';
+			$ploutput .= '<input type="submit" name="playplaylist" value="'.get_lang(70).'" class="fatbuttom"/>&nbsp;';
+			$ploutput .= '<input type="submit" name="viewplaylist" value="'.get_lang(85).'" class="fatbuttom"/>&nbsp;';
+		}
+
+		if (!empty($ploutput))
+		{
+			?>
+			<form name="sharedplaylist" action="<?php echo $PHP_SELF?>" method="post">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+			<tr>
+				<td colspan="2"><?php echo blackbox(get_lang(86), $ploutput); ?></td>
+			</tr>
+			</table>
+			</form>
+			<?php 
+		}
+		?>
+
+	<form name="misc" action="<?php echo $PHP_SELF?>" method="post">
+	<input type="hidden" name="action" value="misc"/>
+	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<?php
+		
+		if (db_guinfo('u_access') == 0)
+		{
+			?>
+			<tr>
+				<td align="left" colspan="2">
+			<?php
+			$admincode='&nbsp;<input type="button" name="action" value="'.get_lang(87).'" class="fatbuttom" onclick="javascript: openwin(\'Users\', \''.$PHP_SELF.'?action=showusers\');"/>
+			<input type="button" name="updatesearch" value="'.get_lang(15).'" class="fatbuttom" onclick="javascript: openwin(\'Update\', \''. $PHP_SELF.'?action=updateoptions\');"/>&nbsp;'.
+			'<input type="button" name="settings" value="'.get_lang(126).'" class="fatbuttom" onclick="javascript: newwin(\'Settings\',\''.
+			$PHP_SELF.'?action=settingsview\',395,675);"/>&nbsp;';
+			
+			echo blackbox(get_lang(88),$admincode); ?>
+			</td></tr>
+			<tr><td colspan="2" height="12"></td></tr>
+		<?php } 
+
+		$genres = '';
+		
+		if (class_exists('id3'))
+		{
+			$genres = genre_select(true,db_guinfo('defgenre'));
+			$genres .= '&nbsp;<input type="submit" class="fatbuttom" name="genrelist" value="'.get_lang(154).'"/>';
+		}
+		
+		$othercode = '&nbsp;<input type="submit" name="whatsnew" value="'.get_lang(89).'" class="fatbuttom"/>&nbsp;';
+
+		$othercode .= '<input type="submit" name="whatshot" value="'.get_lang(90).'" class="fatbuttom"/>&nbsp;';
+
+
+		$usermisc = '&nbsp;<input type="submit" name="logmeout" value="'.get_lang(91).'" class="fatbuttom"/>&nbsp;'.
+					'<input type="button" name="editoptions" value="'.get_lang(92).'" class="fatbuttom" '. 'onclick="javascript: newwin(\'Options\', \''.$PHP_SELF.'?action=editoptions\',285,550);"/>&nbsp;';
+		$usermisc .=  '<input type="button" name="randomizer" value="'.get_lang(212).'" class="fatbuttom" '. 'onclick="javascript: newwin(\'Randomizer\', \''.$PHP_SELF.'?action=showrandomizer\',350,550);"/>&nbsp;';
+
+		?>
+		<tr>
+		<td colspan="2"><?php echo blackbox(get_lang(93), $othercode); ?></td>
+		</tr>
+
+		<tr><td colspan="2" height="12"></td></tr>
+		
+		<?php
+		if (!empty($genres))
+		{
+			?>
+			<tr>
+			<td colspan="2"><?php echo blackbox(get_lang(147), $genres,1); ?></td>
+			</tr>
+			<?php
+		}
+		?>
+		<tr><td colspan="2" height="12"></td></tr>
+		<tr>
+			<td colspan="2"><?php echo blackbox(get_lang(94), $usermisc,1); ?></td>
+		</tr>
+		</table>
+		</form>
+		</td>
+<?php
+}
+
 function kprintheader($title='',$js_out=0)
 {
-	global $deflanguage, $klang, $setctl;
+	global $deflanguage, $klang, $setctl, $app_build;
 	if (empty($title)) $title = '| kPlaylist'; else $title = '| '.$title;	
 	if ($setctl->get('includeheaders', 1, 1)) 
 	{
@@ -4152,6 +4650,7 @@ function kprintheader($title='',$js_out=0)
 		<html>
 		<head>
 		<title><?php echo $title; ?></title>
+		<!-- kp build <?php echo $app_build; ?> -->
 		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo get_lang(1); ?>"/>
 		<?php echo kprintcss(); 
 	}
@@ -4205,9 +4704,22 @@ function blackbox($title,$code,$returncode=1,$class='box',$textalign='center',$w
 	$mix .= 
 	'><tr><td class="bbox"><b>&nbsp;'.$title.'&nbsp;</b></td></tr><tr><td class="notice">'.
 	'<table class="bboxtable" border="0" cellspacing="0" width="100%">'.
-	'<tr><td width="100%" align="'.$textalign.'">'.$code.'</td></tr></table>'.
+	'<tr><td width="100%"';
+	if ($textalign != '') $mix .= ' align="'.$textalign.'"';
+	$mix .= '>'.$code.'</td></tr></table>'.
 	'</td></tr></table>';
 	if (!$returncode) echo $mix; else return($mix);
+}
+
+function blackboxpart($title, $pos)
+{
+	$data = blackbox($title, '%code');
+	$p = strpos($data, '%code');
+	if ($p !== false)
+	{
+		if ($pos == 1) return substr($data, 0, $p);
+			else return substr($data, $p+5);
+	}
 }
 
 function outjavascripts()
@@ -4238,7 +4750,7 @@ function outjavascripts()
 				if (document.psongs.elements[i].checked == true) document.psongs.elements[i].checked = false;
 			}
 		}
-	}
+	}	
 
 	function anyselected()
 	{
@@ -4275,7 +4787,7 @@ function GetDirArray($sPath)
 					if (is_dir($sPath.$val)) 
 						GetDirArray($sPath.$val."/");
 					else 
-						if (file_type($val, 1) != -1) $gData[$gCnt++] = $sPath.$val;
+						if (file_type($val) != -1) $gData[$gCnt++] = $sPath.$val;
 				}
 			}
 		}
@@ -4286,48 +4798,55 @@ function GetDirArray($sPath)
 $enable_tablecheck = false;
 $install_debug=1;
 
-$dbi = array("user,host,name,pass");
-$dbi['host'] = $db['host'];
-// dynamic from webpage.
-$dbi['pass'] = $db['pass'];
-$dbi['user'] = $db['user'];
-$dbi['name'] = $db['name'];
+$dbi = array('user' => $db['user'], 'host' => $db['host'], 'name' => $db['name'], 'pass' => $db['pass']);
 
-$error = "";
-$err   = "";
-$dropdatabase = 0;
+$mysqlserverv = '';
 
 function check_version()
 {
-	global $enable_tablecheck, $app_build;
+	global $enable_tablecheck, $app_build, $oldbuild;
 	$result = db_execcheck('SELECT * from '.TBL_KPLAYVERSION);
 	if ($result)
 	{
-		$data = mysql_fetch_array($result);	
+		$data = mysql_fetch_array($result);
 		if (isset($data['app_build']))
 		{
-			$dbver = (int)$data['app_build'];						
-			if ($dbver != $app_build) $enable_tablecheck = true; 
+			$oldbuild = (int)$data['app_build'];
+			if ($oldbuild != $app_build) $enable_tablecheck = true;
 		}
-	}
+	} else $enable_tablecheck = true;
 }
 
-function Kinstall_logo($height="64", $width="208") 
+function Kinstall_logo($height='64', $width='208')
 {
-	global $app_ver,$app_build,$PHP_SELF;
-	echo "\n".'<a href="http://www.kplaylist.net" title="Visit homepage"><img width="'.$width.'" height="'.$height.'" src="'.getimagelink('kplaylist.gif').'" alt="kPlaylist" border="0" /></a>';
+	return '<a href="http://www.kplaylist.net" title="Visit homepage"><img width="'.$width.'" height="'.$height.'" src="'.getimagelink('kplaylist.gif').'" alt="kPlaylist" border="0"/></a>';
 }
 
-function Kinstall_error($errorno,$i="",$whyinstall="",$isupgrading = 0)
-{
-	echo "An error occured.<br/>";
-	die();
-}
-
-function kInstall_check_default()
+function kcheckaccess($user, $pass, &$errmsg, &$errno)
 {
 	global $db;
-	if (@mysql_connect($db['host'], $db['user'], $db['pass'])) return 1; else return 0;
+	$status = 0;
+	$link = @mysql_connect($db['host'], $user, $pass, true);
+	if ($link)
+	{
+		if (@mysql_select_db($db['name'], $link)) $status = 1;
+		else
+		{
+			$errmsg = mysql_error($link);
+			$errno = mysql_errno($link);
+			switch ($errno)
+			{
+				case 1049: $status = 1; break; // database not exist. OK.
+				default: $status = 0; break;
+			}
+		}
+		@mysql_close($link);
+	} else 
+	{
+		$errno = mysql_errno();
+		$errmsg = mysql_error();
+	}
+	return $status;
 }
 
 function showsql()
@@ -4361,261 +4880,310 @@ function showsql()
 	echo '</table>';
 }
 
-function kInstall_clean($pos=0,$link)
+function show_feedback($upgrade = false)
 {
-	global $db, $dbi, $installdb, $initdb, $dropdatabase, $installdbuser, $win32;
-	// fresh install
+	global $app_ver, $app_build, $oldbuild, $mysqlserverv;
 	?>
-	<table width="600" border="0" align="center">  
-	<tr> 
-      <td colspan="4" class="wtext"><font size="4">Installing database.</font></td>
-	 </tr>
+	<?php				
+	if (isset($_SERVER['SERVER_SOFTWARE'])) $os = $_SERVER['SERVER_SOFTWARE']; else $os = 'Unknown';
+	?>
+	
+	<form method="get" action="http://kplaylist.net/success.php">
+	<?php if ($upgrade)
+	{
+		echo '<input type="hidden" name="upgrade" value="1"/>'; 
+		echo '<input type="hidden" name="upgradefrom" value="'.$oldbuild.'"/>'; 
+	}
+	?>
+	<table width="100%" cellpadding="0" cellspacing="2" border="0">
+		<tr>
+			<td>Software</td>
+			<td><input class="fatbuttom" type="text" name="os" size="45" value="<?php echo $os; ?>"/></td>
+		</tr>
+		<tr>
+			<td>MySQL</td>
+			<td><input class="fatbuttom" type="text" name="mysql" size="45" value="<?php echo $mysqlserverv; ?>"/></td>
+		</tr>
+		<tr>
+			<td>Version</td>
+			<td><input class="fatbuttom" type="text" name="version" size="4" value="<?php echo $app_ver; ?>"/></td>
+		</tr>
+		<tr>
+			<td>Build</td>
+			<td><input class="fatbuttom" type="text" name="build" size="4" value="<?php echo $app_build; ?>"/></td>
+		</tr>
+		<tr>
+			<td>Have a comment?</td>
+			<td><input class="fatbuttom" type="text" name="comment" size="45" value=""/></td>
+		</tr>		
+		<tr>
+			<td></td>
+			<td><input class="fatbuttom" name="send" type="submit" value="Send!"/></td>
+		</tr>
+	</table>
+	</form>
 	<?php
-	if ($dropdatabase) $result = mysql_query($installdb[0],$link);
-	$error=0;
-	// create database first.
-	$result = mysql_query($installdb[1],$link);
-	if ($result)
-	{
-		if (mysql_select_db($db['name']))
-		{
-			for ($i=2;$i<count($installdb);$i++)
-			{
-				
-				$querytext = str_replace("\n", "<br />", $installdb[$i]);
-				$result = mysql_query($installdb[$i]);
-				if (!$result) 
-				{ 
-					echo '<tr><td class="wtext">';
-					echo ' <font color="FF0000">Failed query ['.$i.']: </font>'.$querytext.";";
-					echo '</td></tr>';
-					$error=$i;
-				}				
-			}
-		}
-	}
-	// check the user...
-	if (kInstall_check_default() == 0) 
-	{
-		for ($i=0;$i<count($installdbuser);$i++)
-		{
-			echo '<tr><td class="wtext">';
-			$querytext = str_replace("\n", "<br />", $installdbuser[$i]);
-			$result = mysql_query($installdbuser[$i]);
-			if (!$result)
-			{
-				echo ' <font color="FF0000">Failed query ['.$i.']: </font>'.$querytext.";";
-				$error=1;
-			}
-			echo '</td></tr>';
-		}
-	}
-	if ($error) {
-		echo '<tr><td class="dir"><br /><b>Installation may have failed!</b>'."\n";
-		echo "\n".'</td></tr>';
-	} else {
-		echo "\n".'<tr><td class="dir">'."\n";
-		$code = '<br /><h2>Installation is now completed.</h2>';		
-		$code .= "\n".'<ul><li>To log in to kPlaylist, reload this page (firm reload) and you should be able to log in.</li>'."\n";
-
-		$code .= "<li>All settings and configuration is available via WEB, click the 'Settings' button to the right when you've ".
-				'logged in as a administrator.</li>'."\n";
-
-		$code .= '<li>The default kPlaylist login is admin with admin as the password.</li></ul>'.
-				'<br />Remember to visit <a href="http://www.kplaylist.net" target="_blank">http://www.kplaylist.net</a> for updates and help.'."\n";
-			
-		echo $code;
-		echo "\n".'</td></tr>'."\n";
-	}
-	echo "</table>";
 }
 
-function kInstall_start()
+function insterror($msg)
 {
-	global $db, $dbi, $installdb, $initdb;
-	$dbexist=false;
-	$header = "";
-
-	$link = @mysql_connect($db['host'], $dbi['user'], $dbi['pass']);
-	if (!$link) { echo "Could not establish a connection to MySQL!"; die(); }
-
-	if (mysql_select_db($db['name'],$link)) $dbexist = true;
-
-	$header = "Installing MySQL database";
-	kprintheader($header, 1);
-
-	kInstall_clean(0,$link);
-	kprintend();
-}
-
-function kInstall_show_form($text="")
-{
-	global $dbi, $db, $PHP_SELF;
-
-	$drop=' checked="checked" ';
-
-	if (!function_exists("kprintheader"))
-	{
-		echo "Error! Seems like we're not able to declare functions. Can't go further. Please either upgrade PHP ".
-		"or tune your settings if possible.";
-		die();
-	}
-
-	kprintheader("Install", 1);
-
-	if (kInstall_check_default() == 0) 
-	{
-		$dbi['user'] = "root";
-		$dbi['pass'] = "";
-	} 
+	kprintheader('Error during install', 1);
 	?>
-
-<form name="installform" method="post" action="<?php echo $PHP_SELF; ?>">
-  <table width="680" border="0" align="center">
-    <tr> 
-      <td>	<?php Kinstall_logo("43","136"); ?>
-</td>
-    </tr>
-  </table>
-	<table width="600" border="0" align="center" class="tdborder">  
-
-	<tr> 
-      <td colspan="4" class="wtext"><font size="4">Welcome to the kPlaylist installer.</font></td>
-	 </tr>
-	 <tr>
-	  <td class="wtext" colspan="4">
-        To install kPlaylist, you'll need a working and running copy of MySQL. This is a GPL product, 
-        please read the <a href="<?php echo $PHP_SELF ?>?showgpl=1" target="_blank"><font color="#0000FF">disclaimer of liability</font></a> 
-        before you continue. If you do not agree with the disclaimer <u>you 
-        must abort</u> the installation and use of this product.
-	 </td>
-    </tr>
-    <tr> 
-      <td height="22" colspan="4">
-        <hr size="1"/>
-      </td>
-    </tr>
-    <tr> 
-      <td height="22" class="wtext" colspan="4">
-	  If you are installing kPlaylist for the FIRST time, you must enter a user and password to MySQL 
-	  which has access to create a new database and a new users for kPlaylist. 
-	  In most cases, the root user of MySQL should be used.<br />
-	  <a href="<?php echo $PHP_SELF ?>?showsql=1" target="_blank"><font color="#0000FF">Click here</font></a> to verify what this installer is going to do. Click 'Continue' when ready to install ! <br /><br />
-
-	  <?php 
-
-		  if ($db['name'] != "kplaylist")
-		{
-		?>
-	  <b>NB!</b><font color="red">&nbsp;You have changed the database name. Make sure it is empty, and do not continue
-	  unless you know EXACTLY what you're doing. Also, take a note to the 'drop database' option in the bottom!</font><br />
-		
-		<?php } ?>
-
-		<?php if ($dbi['user'] == "root")
-		{
-			?><br><br>Note! The root password will only be used to create
-		the tables, a new user called <?php echo $db['user']; ?> with password <?php echo $db['pass']; ?> will be created for the operation of kPlaylist. If you like to change the name and password for this user, please edit the script, and click Reload.<br> 
-		<?php }
-		if (!empty($text)) echo "<br><br>".$text."<br>"; ?>
-		
-		</td>
-    </tr>
-    <tr><td colspan="4">&nbsp;</td></tr>
-	
-	
-	<tr> 
-      <td height="22" class="wtext" width="121">MySQL user:</td>
-      <td height="22" width="221"> 
-        <input type="text" name="mysqluser" size="25" value="<?php echo $dbi['user']; ?>" class="fatbuttom"/>
-      </td>
-      <td height="22" colspan="2" class="wtext">default: <font color="green"><?php echo $db['user']; ?></font></td>
-    </tr>
-    <tr> 
-      <td height="22" class="wtext" width="121">MySQL password:</td>
-      <td height="22" width="221"> 
-        <input type="password" name="mysqlpass" size="25" value="<?php echo $dbi['pass']; ?>" class="fatbuttom"/>
-      </td>
-      <td height="22" colspan="2" class="wtext">default: <font color="green"><?php echo $db['pass']; ?></font></td>
-    </tr>
-    
-    <tr>
-	<td colspan="4" class="wtext"><font color="gray">If you need to change the settings below, please edit them in the script and click Reload.</font></td>
-	</tr>
-	
-	<tr> 
-      <td height="22" class="wtext" width="121">MySQL host:</td>
-      <td height="22" width="221"> 
-        <input type="text" name="mysqlhost" size="25" value="<?php echo $db['host']; ?>" disabled="disabled" class="fatbuttom"/>
-      </td>
-      <td colspan="2" class="wtext" height="22">&nbsp;</td>
-    </tr>
-    <tr> 
-      <td height="22" class="warning" width="121">MySQL database:</td>
-      <td height="22" width="221"> 
-        <input type="text" name="mysqldatabase" size="25" value="<?php echo $db['name']; ?>" disabled="disabled" class="fatbuttom"/>
-      </td>
-      <td colspan="4" class="wtext" height="22">&nbsp;</td>
-    </tr>
-	<tr>
-	<td colspan="4" class="wtext"><br /><input type="checkbox" name="dropdatabase" value="on" <?php 
-	if ($db['name'] == "kplaylist") echo 'checked="checked"'; ?>/> Drop database '<?php echo $db['name']; ?>' (for full reinstallation: deletes all tables in the database)&nbsp;</td></tr>
-	<tr> 
-      <td colspan="4">
-        <input type="submit" name="reload" value="Reload" class="fatbuttom"/>      
-		&nbsp;
-		<input type="submit" name="continue" value="Continue" class="fatbuttom"/>
-	  </td>
-    </tr>
-    <tr> 
-      <td colspan="4" align="right"><font class="wtext">You'll find documentation here:</font>&nbsp;<a href="http://www.kplaylist.net" target="_blank"><font color="#0000FF">kPlaylist Homepage&nbsp;&nbsp;</font></a></td>
-    </tr>
-  
-  </table>
-</form><?php
-
+		<table width="600" border="0" align="center">
+			<tr> 
+				<td><?php echo Kinstall_logo(); ?></td>
+			</tr>
+			<tr>
+				<td height="15"></td>
+			</tr>
+			<tr>
+				<td class="importnant">An error occured during install.</td>
+			</tr>
+			<tr>
+				<td height="15"></td>
+			</tr>
+			<tr> 
+				<td class="importnant">Error: <font size="2"><?php echo $msg ?></font></td>
+			</tr>
+			<tr>
+				<td height="15"></td>
+			</tr>
+			<tr>
+				<td class="importnant">You could restart the installation process by opening up a new window and enter the same URL.</td>
+			</tr>
+			<tr>
+				<td class="importnant">Look also for help in the kPlaylist documentation pages. Click <a href="http://kplaylist.net/index.php?showinstall=1" target="_blank">here</a> for reading the INSTALL document.</td>
+			</tr>
+		</table>
+	<?php
 	kprintend();
 	die();
 }
 
-if ($enable_install) 
+function kpinstall($dropdatabase=false)
 {
-	if (!function_exists("mysql_connect")) 
-	{	
-		kprintheader("Error - function 'mysql_connect()' does not exist", 1);
-		Kinstall_logo();
-		echo '<br /><blockquote><font color="red" face="Verdana, Arial, Courier" size="2">Your PHP implementation does not support MySQL. Please visit <a href="http://www.php.net"><font color="red" face="Verdana, Arial, Courier" size="2"><u>www.php.net</u></font></a> for information on how you can enable it.<br /></blockquote>';
-		kprintend();
-	} 
+	global $db, $dbi, $installdb, $initdb, $installdbuser, $mysqlserverv;
+
+	$link = @mysql_connect($db['host'], $dbi['user'], $dbi['pass'], true);
+	
+	if (!$link) insterror('Could not establish connection to MySQL!');
+
+	$mysqlserverv = mysql_get_server_info($link);
+
+	kprintheader('Installing MySQL database', 1);
+	?>
+	<table width="600" border="0" align="center">
+	<tr> 
+      <td colspan="4" class="wtext"><font size="4"></font></td>
+	 </tr>
+	<?php
+	if ($dropdatabase) $result = mysql_query($installdb[0],$link);
+	$error=0;
+
+	$result = mysql_query($installdb[1],$link);
+	if ($result)
+	{
+		if (mysql_select_db($db['name'], $link))
+		{
+			$sqltorun = array();
+			for ($i=2,$c=count($installdb);$i<$c;$i++) $sqltorun[] = $installdb[$i];
+			$err = '';
+			$errno = 0;
+			if (kcheckaccess($db['user'], $db['pass'], $err, $errno) == 0) for ($i=0,$c=count($installdbuser);$i<$c;$i++) $sqltorun[] = $installdbuser[$i];
+
+			for ($i=0,$c=count($sqltorun);$i<$c;$i++)
+			{				
+				$querytext = str_replace("\n", '<br/>', $sqltorun[$i]);
+				$result = mysql_query($sqltorun[$i], $link);
+				if (!$result) 
+				{ 
+					echo '<tr><td class="wtext"><font color="FF0000">Failed query ['.$i.']: </font>'.$querytext.';</td></tr>';
+					echo '<tr><td class="wtext">'.mysql_error($link).'</td></tr>';
+					$error=$i;
+				}
+			}
+		}
+	}
+
+	if ($error)
+	{
+		echo '<tr><td class="dir"><br/><b>Installation may have failed!</b>';
+		echo '</td></tr>';
+	}
 	else
-	if (!empty($_POST['continue']))
+	{
+		?>
+			<tr>
+			<td class="dir">
+			<br/>
+				<h2>Installation is now completed.</h2>
+				<ul>
+					<li>To log in to kPlaylist, reload this page (firm reload) and you should be able to log in.</li>
+					<li>All settings and configuration is available via WEB, click the 'Settings' button to the right.</li>
+					<li>The default kPlaylist login is admin with admin as the password.</li>
+				</ul>				
+				<br/>
+
+				<b>Would</b> you like to send the following information about this successful installation? This would
+				give the kPlaylist site valuable information about supported systems, but also to increase the motivation knowing
+				that this script actually is used. Thank you!
+				<br/><br/>
+
+ 				<?php show_feedback(false); ?>
+				
+				Remember to visit <a href="http://www.kplaylist.net" target="_blank">http://www.kplaylist.net</a> for updates and help.
+			</td>
+			</tr>
+			<?php
+	}
+	echo '</table>';
+	kprintend();
+}
+
+function kInstall_show_form($text='')
+{
+	global $dbi, $db, $PHP_SELF;
+
+	if (!function_exists('kprintheader')) insterror('Seems like we\'re not able to declare functions. Can\'t go further. Please upgrade PHP!');
+
+	kprintheader("Install", 1);
+
+	$err = '';
+	$errno = 0;
+	if (kcheckaccess($db['user'], $db['pass'], $err, $errno) == 0) 
+	{
+		$dbi['user'] = 'root';
+		$dbi['pass'] = '';
+	}
+	?>
+	<form name="installform" method="post" action="<?php echo $PHP_SELF; ?>">
+	<table width="680" border="0" align="center">
+		<tr>
+			<td><?php echo Kinstall_logo(); ?></td>
+		</tr>
+	</table>
+	<table width="600" border="0" align="center" class="tdborder">
+	<tr>
+		<td colspan="4" class="wtext"><font size="4">Welcome to the kPlaylist installer!</font></td>
+	</tr>
+	<tr>
+		<td height="6"></td>
+	</tr>
+	<tr>
+		<td class="importnant" colspan="4">
+        To install kPlaylist, you'll need a working and running copy of MySQL. This is a GPL product, 
+        please read the <a href="<?php echo $PHP_SELF ?>?showgpl=1" target="_blank"><font color="#0000FF">disclaimer of liability</font></a>
+        before you continue. If you do not agree with the disclaimer <u>you 
+        must abort</u> the installation and use of this product.
+		</td>
+	</tr>
+	<tr> 
+		<td height="22" colspan="4"><hr size="1"/></td>
+	</tr>
+	<tr>
+		<td height="22" class="wtext" colspan="4">
+	  If you are installing kPlaylist for the FIRST time, you must enter a user and password to MySQL 
+	  which has access to create a new database and a new users for kPlaylist. 
+	  In most cases, the root user of MySQL should be used.<br/><br/>
+	  <a href="<?php echo $PHP_SELF ?>?showsql=1" target="_blank"><font color="#0000FF">Click here</font></a> to view what the installer is going to do. Click 'Continue' when ready to install ! <br/>
+	  <?php
+		if ($dbi['user'] == 'root')
+		{
+			?><br/>Note! The root password will only be used to create
+		the tables, a new user called <?php echo $db['user']; ?> with password <?php echo $db['pass']; ?> will be created for the operation of kPlaylist. If you like to change the name and password for this user, please edit the script, and click Reload.<br/> 
+		<?php }
+		if (!empty($text)) echo '<br/>'.$text.'<br/>'; ?>
+		
+		</td>
+    </tr>
+	<tr><td height="10"></td></tr>	
+	<tr> 
+		<td height="22" class="wtext" width="121">MySQL user:</td>
+		<td height="22" width="221"> 
+		<input type="text" name="mysqluser" size="25" value="<?php echo $dbi['user']; ?>" class="fatbuttom"/>
+		</td>
+		<td height="22" colspan="2" class="wtext">default: <font color="green"><?php echo $db['user']; ?></font></td>
+	</tr>
+	<tr> 
+		<td height="22" class="wtext" width="121">MySQL password:</td>
+		<td height="22" width="221"> 
+		<input type="password" name="mysqlpass" size="25" value="<?php echo $dbi['pass']; ?>" class="fatbuttom"/>
+		</td>
+		<td height="22" colspan="2" class="wtext">default: <font color="green"><?php echo $db['pass']; ?></font></td>
+	</tr>
+	<tr>
+		<td colspan="4" class="wtext"><font color="gray">If you need to change the settings below, please edit them in the script and click Reload.</font></td>
+	</tr>	
+	<tr> 
+		<td height="22" class="wtext" width="121">MySQL host:</td>
+		<td height="22" width="221"> 
+		<input type="text" name="mysqlhost" size="25" value="<?php echo $dbi['host']; ?>" disabled="disabled" class="fatbuttom"/>
+		</td>
+		<td colspan="2" class="wtext" height="22">&nbsp;</td>
+	</tr>
+	<tr> 
+		<td height="22" class="warning" width="121">MySQL database:</td>
+		<td height="22" width="221"> 
+		<input type="text" name="mysqldatabase" size="25" value="<?php echo $dbi['name']; ?>" disabled="disabled" class="fatbuttom"/>
+		</td>
+		<td colspan="4" class="wtext" height="22">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="4" class="wtext"><br/><input type="checkbox" name="dropdatabase" value="1"/> Drop database '<?php echo $db['name']; ?>' (for full reinstallation; deletes all data in the database)</td>
+	</tr>
+	<tr>
+      <td colspan="4">
+		<input type="submit" name="reload" value="Reload" class="fatbuttom"/>&nbsp;
+		<input type="submit" name="continue" value="Continue" class="fatbuttom"/>
+		</td>
+	</tr>
+	<tr> 
+		<td colspan="4" align="right"><font class="wtext">You'll find documentation here:</font>&nbsp;<a href="http://www.kplaylist.net" target="_blank"><font color="#0000FF">kPlaylist Homepage</font></a></td>
+	</tr>  
+	</table>
+	</form>
+	<?php
+	kprintend();
+	die();
+}
+
+if ($enable_install)
+{
+	if (!function_exists('mysql_connect')) insterror('Function \'mysql_connect()\' does not exist! You need to compile PHP with MySQL support or enable MySQL support in your php configuration.');
+
+	if (isset($_POST['continue']))
 	{
 		$user = $_POST['mysqluser'];
 		$pass = $_POST['mysqlpass'];
-		if (@$_POST['dropdatabase'] == 'on') $dropdatabase = 1; else $dropdatabase = 0;
-
-		if (@mysql_connect($db['host'], $user, $pass))
+		if (isset($_POST['dropdatabase'])) $dropdatabase = 1; else $dropdatabase = 0;
+		
+		$err = '';
+		$errno = 0;
+		if (kcheckaccess($user, $pass, $err, $errno))
 		{
-			// continue!
 			$dbi['user'] = $user;
 			$dbi['pass'] = $pass;
-			kInstall_start();
-		} else { kInstall_show_form('<font color="red">Could not login with the supplied user name and password!</font>'); die(); }
-	} 
-	else	
-	if (@$_GET['showgpl']) 
-	{ 
+			kpinstall($dropdatabase);
+			
+		} else 
+		{
+			$msg = '<font color="red" size="2">Could not login with the supplied user name and password! MySQL said: '.$err.'</font>'; 
+			if ($errno == 1251) $msg .= '<br/><br/><font color="red" size="2">Seems like you are running MySQL 4.1. Please go to the following location to read the solution: </font><a href="http://www.kplaylist.net/forum/viewtopic.php?p=2231" target="_blank">http://www.kplaylist.net/forum/viewtopic.php?p=2231</a>'; 
+			kInstall_show_form($msg);
+		}
+	} else
+	if (isset($_GET['showgpl']))
+	{
 		kprintheader();
 		echo 'The GPL license is available here: http://www.kplaylist.net/COPYING';
 		kprintend();
-	} 
-	else	
-	if (@$_GET['showsql']) { 
+	} else
+	if (isset($_GET['showsql']))
+	{
 		kprintheader();
 		showsql();
 		kprintend();
-	} 
-	else kInstall_show_form();
+	} else kInstall_show_form();
 	die();
 }
 
@@ -4649,7 +5217,12 @@ function show_upgrade($sql, $error="")
 	<tr><td height="10"></td></tr>
 	<tr><td colspan="2" class="wtext">SQL call(s) we will be executing:</td></tr>
 	<tr><td height="10"></td></tr>
-	<tr><td colspan="2" class="wtext"><?php echo $sql; ?></td></tr>
+	<tr><td colspan="2" class="wtext"><?php 
+	for ($i=0,$c=count($sql);$i<$c;$i++) 
+	{
+		echo str_replace("\n", '<br/>', $sql[$i]).';<br/><br/>';
+	}
+	?></td></tr>
 	</table>
 	<form name="upgradeform" method="post" action="<?php echo $PHP_SELF; ?>">
 	<table width="50%" align="center" cellpadding="0" cellspacing="0" border="0">
@@ -4685,7 +5258,7 @@ function show_upgrade($sql, $error="")
 		<td colspan="2" class="wtext"><input type="submit" class="fatbuttom" name="executeupgrade" value="Upgrade"/></td>
 	</tr>
 	</table>
-	</form>			
+	</form>
 	<?php
 	kprintend();
 	die();
@@ -4705,10 +5278,18 @@ function upgrade_ok()
 	<tr>
 		<td class="importnant"><br/>
 		Upgrading performed successfully. Enjoy your new version of kPlaylist.<br/><br/> 
-		Reload this page to get started.<br/>		
+		Reload this page to get started.<br/><br/>
+		
+		<b>Would</b> you like to send the following information about this successful upgrade? This would
+		give the kPlaylist site valuable information about supported systems, but also to increase the motivation knowing
+		that this script actually is used. Thank you!
+		<br/><br/>
+
+		<?php show_feedback(true); ?>
+		
 		</td>
 	</tr>
-	</table>	
+	</table>
 	<?php
 
 	kprintend();
@@ -4717,20 +5298,22 @@ function upgrade_ok()
 
 if (!$enable_install) check_version();
 
-if ($enable_tablecheck) 
+if ($enable_tablecheck)
 {
 	$update_sql = check_all_tables();
-	if (!empty($update_sql)) 
+	if (count($update_sql) > 0) 
 	{
 		$error = "";
-		if (isset($_POST['executeupgrade'])) 
+		if (isset($_POST['executeupgrade']))
 		{
 			$dbi['user'] = $_POST['mysqluser'];
 			$dbi['pass'] = $_POST['mysqlpass'];
 			$link = mysql_connect($db['host'], $dbi['user'], $dbi['pass'], true);
 			if ($link)
 			{
-				$sqls = explode("\n", check_all_tables("\n"));
+				$mysqlserverv = mysql_get_server_info($link);
+	
+				$sqls = check_all_tables();
 				if (mysql_select_db($db['name'],$link))
 				{
 					for ($i=0,$c=count($sqls);$i<$c;$i++)
@@ -4748,7 +5331,7 @@ if ($enable_tablecheck)
 			} else $error = "Could not connect. Please check that the username or password is correct.";
 			if (empty($error)) upgrade_ok();
 		}
-		show_upgrade(check_all_tables(";<br/>"),$error);
+		show_upgrade(check_all_tables(),$error);
 	} else
 	{
 		$sql = 'update '.TBL_KPLAYVERSION.' set app_build = "'.$app_build.'", app_ver = "'.$app_ver.'"';
@@ -4798,7 +5381,7 @@ function kprintlogin($msg = '')
 										<?php
 										if (USERSIGNUP) 
 										{ 
-											?><input type="button" name="Signup" onClick="openwin('Users', '<?php echo $PHP_SELF; ?>?signup=1');" value="<?php echo get_lang(158); ?>" class="logonbuttom" /><?php 
+											?><input type="button" name="Signup" onclick="newwin('Users', '<?php echo $PHP_SELF; ?>?signup=1', 195, 350);" value="<?php echo get_lang(158); ?>" class="logonbuttom" /><?php 
 										}
 									} else echo '<a href="https://'.$phpenv['streamlocation'].'"><font class="logintext">'.get_lang(41).'</font></a>'; 
 									?>
@@ -4868,11 +5451,16 @@ class kp_playlist
 		}
 	}
 
+	function getres()
+	{
+		return db_execquery('SELECT sid FROM '.TBL_PLAYLIST_LIST.' WHERE listid = '.$this->listid.' ORDER BY seq ASC');
+	}
+
 	function play()
 	{
 		if ($this->listid >= 0)
 		{
-			$result = db_execquery('SELECT sid FROM '.TBL_PLAYLIST_LIST.' WHERE listid = '.$this->listid.' ORDER BY seq ASC');
+			$result = $this->getres();
 			if ($result && mysql_num_rows($result) > 0)
 			{
 				$tunes = array();
@@ -5026,7 +5614,7 @@ function playlist_savesequence($seqlist, $id)
 
 function playlist_editor($plid, $prev, $sort = 0)
 {
-	global $PHP_SELF,$u_cookieid, $base_dir, $u_id, $curdrive,$phpenv;
+	global $PHP_SELF,$u_cookieid, $base_dir, $u_id, $curdrive,$phpenv, $cfg;
 	kprintheader(get_lang(59), 1);
 
 	$result = db_execquery('SELECT * FROM '.TBL_PLAYLIST.' WHERE listid = '.$plid);	
@@ -5036,14 +5624,14 @@ function playlist_editor($plid, $prev, $sort = 0)
 		$row = mysql_fetch_array($result);
 		$name = $row['name'];
 		$public = $row['public'];
-		if ($row['u_id'] == $u_id) $myown = 1; else $myown = 0;
+		if ($row['u_id'] == $u_id || db_guinfo('u_access') == 0) $myown = 1; else $myown = 0;
 		$shuffle = $row['status'];
 	}
 	
 	$result = db_execquery('SELECT * FROM '.TBL_PLAYLIST_LIST.' WHERE listid = '.$plid.' ORDER BY seq ASC');
 
 	if ($result) $many = mysql_num_rows($result); else $many = 0;
-	$playlistlink = '<input type="hidden" name="action" value="playlist"/>'.
+	$playlistlink = '<input type="hidden" name="action" value="playlisteditor"/>'.
 					'<input type="hidden" name="sel_playlist" value="'.$plid.'"/>'.
 					'<input type="hidden" name="previous" value="'.$prev.'"/>'.
 					'<input type="hidden" name="drive" value="'.$curdrive.'"/>';
@@ -5054,8 +5642,9 @@ function playlist_editor($plid, $prev, $sort = 0)
 	'<input type="submit" name="playplaylist" value="'.get_lang(42).'" class="fatbuttom"/>&nbsp;&nbsp;';
 
 	if ($myown) $code .=
-	"<input type=\"submit\" name=\"deleteplaylist\" onclick=\"javascript: if (!confirm('".get_lang(169)."')) return false;\"  value=\"".get_lang(43)."\" class=\"fatbuttom\"/>&nbsp;&nbsp;".
-	'<input type="text" name="playlistname" value="'.$name.'" size="30" class="fatbuttom"/>&nbsp;&nbsp;';
+	"<input type=\"submit\" name=\"deleteplaylist\" onclick=\"javascript: if (!confirm('".get_lang(169)."')) return false;\"  value=\"".get_lang(43)."\" class=\"fatbuttom\"/>&nbsp;&nbsp;";
+	if (ALLOWDOWNLOAD && db_guinfo('u_allowdownload') && $cfg['archivemode']) $code .= '<input type="button" name="pdlall" value="'.get_lang(117).'" onclick="javascript: newwin(\'dlplaylist\', \''.$PHP_SELF.'?action=dlplaylist&amp;pid='.$plid.'\', 130, 450);" class="fatbuttom"/>&nbsp;&nbsp;';
+	if ($myown) $code .= '<input type="text" name="playlistname" value="'.$name.'" size="30" class="fatbuttom"/>&nbsp;&nbsp;';
 
 	if ($myown)
 	{			
@@ -5078,94 +5667,105 @@ function playlist_editor($plid, $prev, $sort = 0)
 	if (UNAUTHORIZEDSTREAMS) $code .= '<a href="'.$PHP_SELF.'?streamplaylist='.$plid.'&amp;extm3u=true">i</a>';
 	$code .= '</td></tr></table>';
 
+	echo '<form action="'.$PHP_SELF.'" method="post">';	
+	blackbox(get_lang(46, $name, $many),$code,0);
+	echo '</form>';
+	
+	echo '<form name="psongs" action="'.$PHP_SELF.'" method="post">';	
+	echo '<input type="hidden" name="action" value="playlisteditor"/>';
+	if ($myown) echo blackboxpart(get_lang(47),1); else echo blackboxpart(get_lang(48),1);
+
 	$out = '';
 	if ($many > 0)
 	{
-		$out =  '<input type="hidden" name="previous" value="'.$prev.'"/>';
-		$out .= '<input type="hidden" name="action" value="playlist"/>';
-		$out .=	'<input type="hidden" name="sort" value="0"/>';
-		$out .=	'<input type="hidden" name="sel_playlist" value="'.$plid.'"/>';
+		echo '<input type="hidden" name="previous" value="'.$prev.'"/>';
+		echo	'<input type="hidden" name="sort" value="0"/>';
+		echo	'<input type="hidden" name="sel_playlist" value="'.$plid.'"/>';
 
-		$out .= '<table width="800" cellspacing="0" border="0" cellpadding="0">';
+		echo '<table width="800" cellspacing="0" border="0" cellpadding="0">';
 		
-		$out .= '
+		echo '
 		<tr> 
 		    <td width="60" class="wtext"><b>'.get_lang(49).'</b></td>
 		    <td width="60" class="wtext"><b>'.get_lang(50).'</b></td>
 			<td width="100" class="wtext"><b>'.get_lang(51).'</b></td>
 		    <td width="120" class="wtext"><b>'.get_lang(52).'</b></td>
 		    <td width="100" class="wtext"><b>';		
-			if ($myown) $out .= get_lang(53);
-			$out .= '
+			if ($myown) echo get_lang(53);
+			echo '
 			</b></td>
 
 			<td class="wtext" width="360" align="left"><b>'.get_lang(54).'</b></td>
 		</tr>';
-		$out .= '<tr><td height="8" colspan="6"></td></tr>';		
-		$out .= '<tr><td colspan="6"><img src="'.getimagelink('spacer.gif').'" border="0" height="1" width="800" alt=""/></td></tr>';	
-		$out .= '<tr><td height="6" colspan="6"></td></tr>';			
+		echo '<tr><td height="8" colspan="6"></td></tr>';		
+		echo '<tr><td colspan="6"><img src="'.getimagelink('spacer.gif').'" border="0" height="1" width="800" alt=""/></td></tr>';	
+		echo '<tr><td height="6" colspan="6"></td></tr>';			
 		$totplaytime = $count = $countfails = 0;
 		
+		$l181 = get_lang(181);
+		$l60 = get_lang(60);
+		$l43 = get_lang(43);
+
 		while ($row = mysql_fetch_array($result))
 		{
 			$count++;			
-			$srow = get_searchrow($row['sid']);
-			$fexists = false;
 			$id = $row['id'];
-			
-			if ($srow !== false)
-			{
-				$f2 = new file2($row['sid'], true);
-				$fexists = $f2->ifexists();
-				$id3 = $f2->getid3();
-				$filelink = $PHP_SELF.'?sid='.$row['sid'].'&amp;c='.$u_cookieid;
-			} 
+
+			$f2 = new file2($row['sid'], true);
+			if (!$f2) continue;
+			$fexists = $f2->ifexists();
+			$id3 = $f2->getid3();
+			$filelink = $PHP_SELF.'?sid='.$row['sid'].'&amp;c='.$u_cookieid;
 		
-			if (($count % 2) == 0) $out .= '<tr class="row2nd">'; else $out .= '<tr>';
-			$out .= '<td class="file" align="center" width="60">';
-			$out .= '<input type="checkbox" class="wtext" name="selected[]" value="'. $row['id']. '"/>';
-			$out .= '</td>';
-			$out .= '<td width="60" class="wtext">';
-			if ($myown) $out .= '<input class="smalltext" type="text" name="seq[]" value="'.lzero($row['seq']).'" size="4"/>'; 
+			if (($count % 2) == 0) echo '<tr class="row2nd">'; else echo '<tr>';
+			
+			echo '<td class="file" align="center" width="60">
+			<input type="checkbox" class="wtext" name="selected[]" value="'.$id.'"/></td>
+			<td width="60" class="wtext">';
+
+			if ($myown) echo '<input class="smalltext" type="text" name="seq[]" value="'.lzero($row['seq']).'" size="4"/>'; 
 				else
-			$out .= lzero($row['seq']);
-			$out .= '</td>';			
-			$out .= '<td width="100" class="file">';
+			echo lzero($row['seq']);
+			echo '</td><td width="100" class="file">';
 			$idv3title = '';
 			$idv3info  = '';
 
 			if (!$fexists)
 			{ 
-				$out .= '<font color="RED">'.get_lang(182).'</font>'; 
+				echo '<font color="RED">'.get_lang(182).'</font>'; 
 				$countfails++; 
 			} else
 			{
-				$idv3title = rtrim($id3['title']) . ' - '. rtrim($id3['album']);				
-				if (!empty($id3['bitrate']) && !empty($id3['length'])) $idv3info = rtrim($id3['bitrate']).'kb - '. rtrim($id3['length']); 
-				if (!empty($id3['lengths'])) $totplaytime += $id3['lengths'];
-				$out .= get_lang(181);
+				$idv3title = $id3['title'].' - '.$id3['album'];				
+				if (!empty($id3['bitrate']) && !empty($id3['length'])) $idv3info = $id3['bitrate'].'kb - '.$id3['length']; 
+				if (is_numeric($id3['lengths'])) $totplaytime += $id3['lengths'];
+				echo $l181;
 			}
-			$out .= '</td>';
-			$out .= '<td width="120" class="wtext">'.$idv3info.'</td>';
-			$out .= '<td width="100" class="file">';
-			if ($myown) $out .= '<a title="'.get_lang(60).'" class="smalltext" href="'. $PHP_SELF . "?action=editplaylist&amp;plid=$plid&amp;del=$id&amp;p=$prev&amp;d=$curdrive".'">&nbsp;'.get_lang(43).'&nbsp;</a>';
-			$out .= '</td>';
-			$out .= '<td width="360" align="left" class="file">';
-			if ($fexists) $out .= '<a title="'.$idv3title.'" href="'. $filelink.'">'.$f2->fname.'</a>'; else $out .= '&nbsp;';
-			$out .= '</td></tr>';
-		} // file iterator
+			echo '</td><td width="120" class="wtext">'.$idv3info.'</td>';
+			echo '<td width="100" class="file">';
+			if ($myown) echo '<a title="'.$l60.'" class="smalltext" href="'. $PHP_SELF . "?action=delsingleplaylist&amp;plid=$plid&amp;del=$id&amp;p=$prev&amp;d=$curdrive".'">&nbsp;'.$l43.'&nbsp;</a>';
+			echo '</td><td width="360" align="left" class="file">';
+			if ($fexists) echo '<a title="'.$idv3title.'" href="'.$filelink.'">'.$f2->fname.'</a>'; else echo '&nbsp;';
+			echo '</td></tr>';
+		} 
 
-		$out .= '<tr><td height="6" colspan="6"></td></tr>';
-		$out .= '<tr><td colspan="6"><img src="'.getimagelink('spacer.gif').'" border="0" height="1" width="800" alt=""/></td></tr>';
-		$out .= '<tr><td height="10" colspan="6"></td></tr>';
-
-		$out .= '
+		?>
 		<tr>
-		<td class="wtext" align="center" colspan="2"><b>'.get_lang(55).'</b></td>
-		<td class="file">';
+			<td height="6" colspan="6"></td>
+		</tr>
+		<tr>
+			<td colspan="6"><img src="<?php echo getimagelink('spacer.gif'); ?>" border="0" height="1" width="800" alt=""/></td>
+		</tr>
+		<tr>
+			<td height="10" colspan="6"></td>
+		</tr>
+		<tr>
+			<td class="wtext" align="center" colspan="2"><b><?php echo get_lang(55); ?></b></td>
+			<td class="file">
 
-		if ($countfails==0) $out .= get_lang(181); else $out .= '<font color="red">'.get_lang(56).'</font>';
-		$out .= '</td>';
+		<?php
+		if ($countfails==0) echo get_lang(181); else echo '<font color="red">'.get_lang(56).'</font>';
+		echo '</td>';
 
 		$secs = $totplaytime;
 		$days = floor($secs/86400);
@@ -5177,32 +5777,23 @@ function playlist_editor($plid, $prev, $sort = 0)
 
 		$totshow = get_lang(187, $days, $hours, $min, $secs);
 		
-		$out .= '<td class="wtext">'.$totshow.'</td></tr>';
-		$out .= '<tr><td colspan="6">&nbsp;</td></tr>';
-		$out .= '<tr><td align="left" class="file" colspan="6">';
+		echo '<td class="wtext">'.$totshow.'</td></tr>';
+		echo '<tr><td colspan="6">&nbsp;</td></tr>';
+		echo '<tr><td align="left" class="file" colspan="6">';
 
-		$out .=	'<input type="hidden" name="drive" value="'.$curdrive.'"/>'.
+		echo	'<input type="hidden" name="drive" value="'.$curdrive.'"/>'.
 				'&nbsp;&nbsp;'.get_lang(73).'&nbsp;&nbsp;<input type="button" value="+" class="fatbuttom" onclick="javascript: SelectAll();"/>&nbsp;&nbsp;'.
 				'<input type="button" value="-" class="fatbuttom" onclick="javascript: SelectAll();"/>&nbsp;&nbsp;'.
 		get_lang(57).'&nbsp;&nbsp;<input type="submit" class="fatbuttom" onclick="javascript: if (!anyselected()) { alert(\''.get_lang(159).'\'); return false; }" name="playselected" value="'.get_lang(42).'"/>&nbsp;&nbsp;';
 
-		if ($myown) $out .= '<input type="submit" class="fatbuttom" onclick="javascript: if (!anyselected()) { alert(\''.get_lang(159).'\'); return false; } else if (!confirm(\''.get_lang(210).'\')) return false;" name="delselected" value="'.
+		if ($myown) echo '<input type="submit" class="fatbuttom" onclick="javascript: if (!anyselected()) { alert(\''.get_lang(159).'\'); return false; } else if (!confirm(\''.get_lang(210).'\')) return false;" name="delselected" value="'.
 		get_lang(43).'"/>&nbsp;&nbsp;'.get_lang(58).'&nbsp;&nbsp;<input type="submit" class="fatbuttom" name="saveseq" value="'.get_lang(45).'"/>';
 
-		$out .= '&nbsp;&nbsp;</td></tr><tr><td colspan="6">&nbsp;</td></tr>';
-		$out .= '</table>';
+		echo '&nbsp;&nbsp;</td></tr><tr><td colspan="6">&nbsp;</td></tr>';
+		echo '</table>';
 	}
-	echo '<form action="'.$PHP_SELF.'" method="post">';	
-	if (!$myown)  
-			blackbox(get_lang(46, $name, $many),$code,0);
-		else 
-			blackbox(get_lang(46,$name,$many),$code,0);
-	echo '</form>';
-	{
-		echo '<form name="psongs" action="'.$PHP_SELF.'" method="post">';	
-		if ($myown) blackbox(get_lang(47),$out,0); else blackbox(get_lang(48),$out,0);
-		echo '</form></body></html>'; 
-	}
+	if ($myown) echo blackboxpart(get_lang(47),2); else echo blackboxpart(get_lang(48),2);
+	echo '</form></body></html>'; 
 }
 
 function playlist_new()
@@ -5211,7 +5802,7 @@ function playlist_new()
 	kprintheader(get_lang(61), 1);
 	?>
 	<form method="post" action="<?php echo $PHP_SELF; ?>">
-	<input type="hidden" name="newplaylist" value="new"/>
+	<input type="hidden" name="action" value="playlist_newsave"/>
 	<table width="300" border="0" cellpadding="0" cellspacing="0">
 	<tr> 
 		<td class="wtext" align="left" width="60"><?php echo get_lang(62); ?></td>
@@ -5219,7 +5810,7 @@ function playlist_new()
 	</tr>
 	<tr> 
 		<td class="wtext" align="left" width="60"><?php echo get_lang(44); ?></td>
-		<td class="wtext" colspan="2" width="240"><input type="checkbox" name="shared" value="on" class="wtext"/></td>
+		<td class="wtext" colspan="2" width="240"><input type="checkbox" name="shared" value="1" class="wtext"/></td>
 	</tr>
 	<tr>
 		<td colspan="2" height="10"></td>
@@ -5236,364 +5827,6 @@ function playlist_new()
 	kprintend();
 }
 
-
-function KCreate_Mp3Table($pdir="")
-{
-	global $PHP_SELF, $pdir64;
-	$pdir64 = base64_encode($pdir);
-	?>
-	<table width="100%" border="0" align="left" cellspacing="0" cellpadding="0">
-	<tr>
-	<td align="left" width="70%" valign="top">
-	<form name="psongs" action="<?php echo $PHP_SELF?>" method="post">
-	<input type="hidden" name="previous" value="<?php echo $pdir64; ?>"/>
-	<table width="100%" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-	<td>
-	<?php
-}
-
-function compute_statistics()
-{
-	$row = mysql_fetch_array(db_execquery('SELECT SUM(lengths) AS ls, COUNT(*) AS nr, SUM(fsize) AS fs FROM '.TBL_SEARCH), true);
-	if ($row)
-	{
-		$secs = (int)$row['ls'];
-		$days = floor($secs/86400);
-		$secs = $secs % 86400;
-		$hours = floor($secs/3600);
-		$secs = $secs % 3600;
-		$min = floor($secs/60);
-		$mb = floor($row['fs'] / 1048576);
-		return get_lang(155,$days, $hours, $min, $row['nr'],$mb);
-	}
-}
-
-function KCreate_EndMp3Table($showalbum=1, $dirs=0, $files=0) 
-{ 
-	global $u_id, $PHP_SELF, $curdrive, $archivemode;
-	echo '<tr><td>&nbsp;</td></tr>';	
-	$crstr = '';
-	$crstr_dl = null;
-	$text = '';
-	if ($showalbum)
-	{
-		$crstr .= '<input type="submit" name="psongsall" value="'; 
-		if ($files == 1 && $dirs == 0) $text = get_lang(65); else
-		if ($files > 0 && $dirs == 0) $text = get_lang(66); else
-		if ($files > 0 && $dirs > 0) $text = get_lang(67);
-		$crstr .= $text.'" class="fatbuttom"'."/>".'&nbsp;&nbsp;';
-		$crstr_dl = '<input type="submit" name="pdlall" value="'.$text.'" class="fatbuttom"/>&nbsp;&nbsp;'; 
-	} 	
-	
-	$crstr .= '<input type="submit" onclick="javascript: if (!anyselected()) { alert(\''.get_lang(159).'\'); return false; }" name="psongsselected" value="'.get_lang(68).'" class="fatbuttom"'."/>";
-	$crstr_dl .= '<input type="submit" onclick="javascript: if (!anyselected()) { alert(\''.get_lang(159).'\'); return false; }" name="pdlselected" value="'.get_lang(68).'" class="fatbuttom"'."/>";
-
-	$playlists = db_getplaylist($u_id);
-	$ploutput = "";
-	if (count($playlists)>0)
-	{
-		$ploutput .= '<input type="submit" name="addplaylist" onclick="javascript: if (!anyselected()) { alert(\''.get_lang(32).'\'); return false; }" value="'.get_lang(69).'" class="fatbuttom"/>&nbsp;';
-		$ploutput .= '<select name="sel_playlist" class="file">';
-		
-		$playid = db_guinfo("defplaylist");
-		for ($c=0,$cnt=count($playlists);$c<$cnt;$c++) 
-		{		
-			if ($playlists[$c][1] == $playid) $sel=' selected="selected" '; else $sel='';
-			$ploutput .= '<option value="'. $playlists[$c][1].'"'.$sel.'>'.$playlists[$c][0].'</option>';
-		}
-		$ploutput .= '</select>';
-	}
-	$ploutput .= '<input type="hidden" name="action" value="playlist"/>';
-	$ploutput .= '<input type="hidden" name="drive" value="'.$curdrive.'"/>';
-	if (count($playlists)>0)
-	{
-		$ploutput .= '<input type="submit" name="playplaylist" value="'.get_lang(70).'" class="fatbuttom"/>&nbsp;';
-		$ploutput .= '<input type="submit" name="editplaylist" value="'.get_lang(71).'" class="fatbuttom"/>&nbsp;';
-	}
-	
-	$upload = '<input type="button" name="upload" onclick="javascript: newwin(\'upload\', \''.$PHP_SELF.'?fupload=true\', 120, 450);" value="'.get_lang(69).'" class="fatbuttom"/>';
-
-	$ploutput .= "<input type=\"button\" name=\"newplaylist\" onclick=\"javascript: newwin('playlist', '$PHP_SELF?action=playlist_new', 100, 350);\" value=\"".get_lang(72)."\" class=\"fatbuttom\"".'/>';
-	$selectallcode='<input type="button" value="+" class="fatbuttom" onclick="javascript: SelectAll();"'."/>".'&nbsp;&nbsp;<input type="button" value="-" class="fatbuttom" onclick="javascript: SelectAll();"'."/>";
-	
-	
-
-	?>	
-	<tr>
-	<td>
-	<table border="0" cellspacing="5" cellpadding="0">	
-		<tr>
-		<?php
-		if ($files > 0)
-		{
-			echo '<td align="left"> '.blackbox(get_lang(73), $selectallcode).'</td>';
-			echo '<td align="left"> '.blackbox(get_lang(74), $crstr).'</td>';
-			if (ALLOWDOWNLOAD && db_guinfo('u_allowdownload') && $archivemode) echo '<td align="left"> '.blackbox(get_lang(117), $crstr_dl).'</td>';
-		}
-		echo '<td align="left">'.blackbox(get_lang(75), $ploutput).'</td>';
-		if (ENABLEUPLOAD) echo '<td align="left">'.blackbox(get_lang(234), $upload).'</td>';
-		?>
-		</tr>
-	</table>
-	</td></tr>
-	</table>
-	</form>
-	</td>
-	<?php		
-}
-
-function album_hotlist($type)
-{
-	global $PHP_SELF;
-	$alf = '0abcdefghijklmnopqrstuvwxyz';
-	$chc = 0;
-	$chlist = array();
-	$qres = db_execquery('SELECT LOWER(SUBSTRING(artist,1,1)) AS ch FROM '.TBL_SEARCH.' WHERE TRIM(album) != "" AND TRIM(artist) != "" GROUP BY SUBSTRING(artist,1,1)');
-	while ($row = mysql_fetch_row($qres)) if (is_numeric($row[0])) $chlist[$chc++] = '0'; else $chlist[$chc++] = $row[0];
-	$out = '';
-	for ($i=0,$c=strlen($alf);$i<$c;$i++)
-	{
-		if (in_array($alf[$i], $chlist, true))
-			$out .= '<a title="'.get_lang(30, $alf[$i]).'" href="'.$PHP_SELF.'?'.$type.'='.$alf[$i].'" class="hot">'.$alf[$i].'</a>&nbsp;'; 
-		else 
-			$out .= '<font class="loginkplaylist">'.$alf[$i].'</font>&nbsp;';
-	}
-	return $out;
-}
-
-function genre_select($top = true, $default)
-{
-	$inf = new id3('');
-	$res = db_execquery('SELECT genre FROM '.TBL_SEARCH.' WHERE genre != 255 AND TRIM(album) != "" GROUP BY genre ORDER BY genre');
-	if ($top) $genres = '<select name="genreno" class="fatbuttom">'; else $genres = '';
-	$cnt = 0;
-	while ($row = mysql_fetch_array($res))
-	{
-		$gname = $inf->getgenre($row[0]);
-		if (empty($gname)) continue;
-		$glist[$cnt] = checkchs($gname);
-		$glistid[$cnt] = $row[0];
-		$cnt++;
-	}
-
-	if ($cnt > 0)
-	{
-		array_multisort($glist, $glistid, SORT_STRING);
-		for ($i=0;$i<$cnt;$i++)
-		{
-			if ($glistid[$i] == $default) 
-			$genres .= '<option value="'.$glistid[$i].'" selected="selected">'.$glist[$i].'</option>'; 
-				else
-			$genres .= '<option value="'.$glistid[$i].'">'.$glist[$i].'</option>';
-		}
-	}
-	if ($top) $genres .= '</select>';
-	return $genres;
-}
-
-function KCreate_infobox()
-{
- 	global $PHP_SELF, $u_cookieid, $u_id, $app_ver, $setctl, $u_id, $u_searchstr,
-		$u_playlist, $u_playlistid, $pdir64, $app_build, $homepage;
-
-	?>
-	<td valign="top" align="left" width="30%">
-	<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr>
-		<td colspan="2">		
-		<?php if ($setctl->get('showkeyteq')) 
-		{
-			?><span class="notice"><?php echo '<a href="http://keyteq.no" target="_blank">'.substr(get_lang(77),0,3).'</a>'.substr(get_lang(77),3); ?></span><?php
-		}
-		?>		
-		<?php if ($setctl->get('showupgrade')) 
-		{
-			?><a title="<?php echo get_lang(120); ?>" href="http://www.kplaylist.net/?ver=<?php echo $app_ver; ?>&amp;build=<?php echo $app_build; ?>" target="_blank">
-			<font color="#CCCCCC"><?php echo get_lang(78); ?></font></a><br/><?php
-		} else if ($setctl->get('showkeyteq')) echo "<br/>"; ?>
-		<a title="<?php echo get_lang(79); ?>" href="<?php echo $homepage; ?>" target="_blank">
-		<img alt="<?php echo get_lang(79); ?>" src="<?php echo getimagelink('kplaylist.gif'); ?>" border="0"/><span class="notice">v<?php echo $app_ver.' '.$app_build; ?></span></a>
-		</td>    
-	</tr>	
-	</table>	
-	<form name="search" action="<?php echo $PHP_SELF; ?>" method="post">
-	<input type="hidden" name="action" value="Search"/>
-	<table width="100%" border="0" cellspacing="0" cellpadding="0">		
-	<?php
-	if ($setctl->get('showstatistics'))
-	{
-		?>
-		<tr>
-		<td colspan="4">
-		<font class="statistics">&nbsp;<?php echo compute_statistics(); ?></font>
-		</td>
-		</tr>
-		<?php
-	}
-	?>		
-	<tr>
-		<td colspan="4">&nbsp;<input type="text" name="searchfor" value='<?php echo $u_searchstr; ?>' maxlength="150" size="35" class="fatbuttom"/></td>		
-	</tr>
-	<tr>
-		<td colspan="4">
-			<input type="radio" name="search" value="0" <?php if (db_guinfo('defaultsearch')=='0') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(81); ?>&nbsp;</font>
-			<input type="radio" name="search" value="1" <?php if (db_guinfo('defaultsearch')=='1') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(82); ?>&nbsp;</font>
-			<input type="radio" name="search" value="2" <?php if (db_guinfo('defaultsearch')=='2') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(83); ?></font>
-		</td>
-		
-	</tr>
-	<tr>
-		<td height="5" colspan="4"></td>
-	</tr>
-	<tr>
-		<td colspan="4" align="left">
-			<input type="checkbox" name="onlyid3" value="1" <?php if (db_guinfo('defaultid3')) echo ' checked="checked"'; ?>/>
-			<font class="notice"><?php echo get_lang(80); ?></font>			
-			&nbsp;
-			<select class="fatbuttom" name="hitsas">
-			<option value="0"<?php if (db_guinfo('hitsas') == 0) echo 'selected="selected"'; ?>><?php echo get_lang(185); ?></option>
-			<option value="1"<?php if (db_guinfo('hitsas') == 1) echo 'selected="selected"'; ?>><?php echo get_lang(186); ?></option>
-			</select>
-			<font class="notice"><?php echo get_lang(184); ?></font>
-		</td>		
-	</tr>
-	<tr>
-		<td height="5" colspan="4"></td>
-	</tr>
-	<tr>
-		<td colspan="4" align="left">&nbsp;<input type="submit" name="startsearch" value="<?php echo get_lang(5); ?>" class="fatbuttom"/></td>
-	</tr>
-	<tr>		
-		<td colspan="4"></td>  
-	</tr>	
-	<tr><td colspan="4">&nbsp;</td></tr>
-	
-	<tr>
-		<td class="finfo" colspan="4" align="left">
-
-		<script type="text/javascript">
-			<!--
-			document.search.searchfor.focus();
-			// -->
-		</script>
-		<?php blackbox(get_lang(84), album_hotlist('artist'), 0, 'boxhotlist'); ?>
-		</td>
-	</tr>
-	</table>
-	</form>
-	<?php		
-		db_sharedplaylist($u_id);
-		$ploutput = "";
-		if (count($u_playlist)>0)
-		{
-			$ploutput .= '&nbsp;<input type="hidden" name="action" value="playlist"/>';
-			$ploutput .= '<input type="hidden" name="previous" value="'.$pdir64.'"/>';
-			$ploutput .= '<select name="sel_shplaylist" class="file">';
-
-			$playid = db_guinfo('defshplaylist');
-			for ($c=0;$c<count($u_playlist);$c++) 
-			{
-				if ($u_playlistid[$c] == $playid) $sel=' selected="selected" '; else $sel='';
-				$ploutput .= '<option value="'. $u_playlistid[$c] . '"'.$sel.'>'.$u_playlist[$c].'</option>';
-			}
-			$ploutput .= '</select>';
-			$ploutput .= '<input type="submit" name="playplaylist" value="'.get_lang(70).'" class="fatbuttom"/>&nbsp;';
-			$ploutput .= '<input type="submit" name="viewplaylist" value="'.get_lang(85).'" class="fatbuttom"/>&nbsp;';
-		}
-
-		if (!empty($ploutput))
-		{
-			?>
-			<form name="sharedplaylist" action="<?php echo $PHP_SELF?>" method="post">
-			<table width="100%" border="0" cellspacing="0" cellpadding="0">
-			<tr>
-				<td colspan="2"><?php echo blackbox(get_lang(86), $ploutput); ?></td>
-			</tr>
-			</table>
-			</form>
-			<?php 
-		}
-		?>
-
-	<form name="misc" action="<?php echo $PHP_SELF?>" method="post">
-	<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<?php
-		
-		if (db_guinfo('u_access') == 0)
-		{
-			?>
-			<tr>
-				<td align="left" colspan="2">
-			<?php
-			$admincode='&nbsp;<input type="button" name="action" value="'.get_lang(87).'" class="fatbuttom" onclick="javascript: openwin(\'Users\', \''.$PHP_SELF.'?users=show\');"/>
-			<input type="button" name="updatesearch" value="'.get_lang(15).'" class="fatbuttom" onclick="javascript: openwin(\'Update\', \''. $PHP_SELF.'?filelist=update\');"/>&nbsp;'.
-			'<input type="button" name="settings" value="'.get_lang(126).'" class="fatbuttom" onclick="javascript: newwin(\'Settings\',\''.
-			$PHP_SELF.'?settings=edit\',370,675);"/>&nbsp;';
-			
-			echo blackbox(get_lang(88),$admincode); ?>
-			</td></tr>
-			<tr><td colspan="2" height="12"></td></tr>
-		<?php } 
-
-		$genres = '';
-		
-		if (class_exists('id3'))
-		{
-			$genres = genre_select(true,db_guinfo('defgenre'));
-			$genres .= '&nbsp;<input type="submit" class="fatbuttom" name="genrelist" value="'.get_lang(154).'"/>';
-		}
-		
-		$othercode = '&nbsp;<input type="submit" name="whatsnew" value="'.get_lang(89).'" class="fatbuttom"/>&nbsp;';
-
-		$othercode .= '<input type="submit" name="whatshot" value="'.get_lang(90).'" class="fatbuttom"/>&nbsp;';
-
-
-		$usermisc = '&nbsp;<input type="submit" name="logmeout" value="'.get_lang(91).'" class="fatbuttom"/>&nbsp;'.
-					'<input type="button" name="editoptions" value="'.get_lang(92).'" class="fatbuttom" '. 'onclick="javascript: newwin(\'Options\', \''.$PHP_SELF.'?editoptions=show\',250,550);"/>&nbsp;';
-		$usermisc .=  '<input type="button" name="randomizer" value="'.get_lang(212).'" class="fatbuttom" '. 'onclick="javascript: newwin(\'Randomizer\', \''.$PHP_SELF.'?randomizer=show\',220,550);"/>&nbsp;';
-				
-
-		?>
-		<tr>
-		<td colspan="2"><?php echo blackbox(get_lang(93), $othercode); ?></td>
-		</tr>
-
-		<tr><td colspan="2" height="12"></td></tr>
-		
-		<?php
-		if (!empty($genres))
-		{
-			?>
-			<tr>
-			<td colspan="2"><?php echo blackbox(get_lang(147), $genres,1); ?></td>
-			</tr>
-			<?php
-		}
-		?>
-		<tr><td colspan="2" height="12"></td></tr>
-		<tr>
-			<td colspan="2"><?php echo blackbox(get_lang(94), $usermisc,1); ?></td>
-		</tr>
-		</table>
-		</form>
-		</td>
-<?php
-}
-
-function syslog_write($msg)
-{
-	global $phpenv, $win32;
-	$msg = "Client ".$phpenv['remote']." ".$phpenv['useragent']." $msg";
-	if (!$win32)
-	{
-		define_syslog_variables();
-		openlog("kplaylist", LOG_PID | LOG_PERROR, LOG_LOCAL0);
-		syslog(LOG_INFO,$msg);
-		closelog();
-	} else user_error($msg);
-}
-
 function db_getplaylist($u_id)
 {
 	$result = db_execquery('SELECT u_id, name, listid FROM '.TBL_PLAYLIST.' WHERE u_id = '.$u_id);
@@ -5605,7 +5838,7 @@ function db_getplaylist($u_id)
 function db_sharedplaylist($u_id)
 {
 	global $u_playlist, $u_playlistid;
-	$result = db_execquery('SELECT name, listid FROM '.TBL_PLAYLIST.' WHERE public = 1 AND u_id != '.$u_id);
+	$result = db_execquery('SELECT name, listid FROM '.TBL_PLAYLIST.' WHERE public = 1 AND u_id != '.$u_id.' ORDER by name ASC');
 
 	$u_playlist = array();
 	$u_playlistid = array();
@@ -5616,74 +5849,6 @@ function db_sharedplaylist($u_id)
 		$u_playlist[$c]	= " ".$row['name']. " ";
 		$u_playlistid[$c] = $row['listid'];
 		$c++;
-	}
-}
-
-function db_verify_stream($cookie = 0, $ip)
-{
-	global $u_id, $demo_mode, $setctl, $disablelogin, $assumeuserid, $validated_user;	
-	if ($disablelogin) 
-	{
-		$u_id = $assumeuserid;
-		loadvalidated($u_id);
-		if ($validated_user === false) 
-		{
-			echo '$assumeuserid has a ID to a user that does not exist. Please set it correctly in the script and reload this page.';
-			die();
-		}
-		return 1;
-	} else
-	{
-		$result = db_execquery('SELECT u_id, u_login, u_pass, u_time FROM '.TBL_USERS.' WHERE u_sessionkey = '.$cookie);
-		if ($result)
-		{
-			$row = mysql_fetch_array($result);
-			$u_id = $row['u_id'];
-			loadvalidated($u_id);
-			$time = $row['u_time'];
-			if ($demo_mode == 1) return 1;
-			if ($setctl->get('timeout') != 0) if (($time + $setctl->get('timeout')) < time()) return 0;
-			return mysql_num_rows ($result);
-		}
-		return 0;		
-	}
-}
-
-function webprocess()
-{
-	global $_POST, $cookie_name, $userauth, $u_cookieid, $demo_mode, $phpenv, $disablelogin;
-	if ($disablelogin) 
-	{
-		$userauth = 1;
-		return true;
-	} else
-	{
-		if (isset($_POST['user']) && isset($_POST['password']))
-		{
-			$user = mysql_escape_string($_POST['user']);
-			$pass = mysql_escape_string($_POST['password']);
-			if (!empty($user) && !empty($pass))
-			{
-				if (db_verify_user($user, $pass) == 1)
-				{
-					if ($demo_mode) 
-					{
-						$result = db_execquery('SELECT u_sessionkey FROM '.TBL_USERS.' WHERE u_pass = "'.md5($pass).'" AND u_login = "'.$user.'"');
-						$row = mysql_fetch_array($result);
-						$num = $row['u_sessionkey'];
-					} else
-					{
-						$num = getrand(1);
-						db_login($user, $phpenv['remote']);
-						db_update_session($num, $user);
-						$u_cookieid = $num;
-					}
-					$userauth = 1;
-					setcookie($cookie_name,"");
-					setcookie($cookie_name,$num);
-				}
-			}
-		}
 	}
 }
 
@@ -5701,6 +5866,7 @@ function settings_save($data, $page)
 				$setctl->set('require_https', 0);
 				$setctl->set('usersignup', 0);
 				$setctl->set('mailmp3', 0);
+				$setctl->set('bulletin', 0);
 				break;
 
 			case 1:
@@ -5708,7 +5874,9 @@ function settings_save($data, $page)
 				$setctl->set('showkeyteq', 0);
 				$setctl->set('showupgrade', 0);
 				$setctl->set('showstatistics', 0);
-				
+				$setctl->set('albumcover', 0);
+				$setctl->set('albumresize', 0);
+				$setctl->set('fetchalbum', 0);				
 				break;
 
 			case 2:
@@ -5737,8 +5905,8 @@ function settings_save($data, $page)
 					{
 						if (!empty($s_base_dir[$i]))
 						{
-							if ($s_base_dir[$i][strlen($s_base_dir[$i])-1] != '/') $s_base_dir[$i] .= '/';	
-							$value .= slashtranslate($s_base_dir[$i]);					
+							$value .= slashtranslate($s_base_dir[$i]);
+							if ($value[strlen($value)-1] != '/') $value .= '/';
 							if (isset($s_base_dir[$i+1])) if (!empty($s_base_dir[$i+1])) $value .= ';';
 						}
 					}
@@ -5746,12 +5914,21 @@ function settings_save($data, $page)
 
 				case 'uploadpath':
 					if (!empty($value))
-					if ($value[strlen($value)-1] != '/') $value .= '/';	
+					{
+						$value = slashtranslate($value);
+						if (strlen($value) > 0) if ($value[strlen($value)-1] != '/') $value .= '/';	
+					}
 					break;
 
 				case 'homepage':
 					$value = htmlentities($value);
-					break;				
+					break;	
+				
+				case 'lamecmd':
+					$value = stripcslashes($value);
+					break;
+
+				case 'albumfiles': $value = stripcslashes($value); break;
 				
 				case 'externimagespath':						
 					if (!empty($value)) if ($value[strlen($value)-1] != '/') $value .= '/';	
@@ -5762,22 +5939,21 @@ function settings_save($data, $page)
 	}
 }
 
-function helplink($section, $name="?")
+function helplink($section, $name='?')
 {
-	global $deflanguage;
-	return '<a target="_new" title="'.get_lang(161).'" href="http://www.kplaylist.net/?configuration='.$section."&amp;lang=".$deflanguage.'">'.$name.'</a>';
+	global $deflanguage, $app_build;
+	return '<a target="_new" title="'.get_lang(161).'" href="http://www.kplaylist.net/?configuration='.$section.'&amp;lang='.$deflanguage.'&amp;b='.$app_build.'">'.$name.'</a>';
 }
 
-function store_filetype($id, $m3u, $mime, $extension='')
+function store_filetype($id, $m3u, $search, $logaccess, $mime, $extension='')
 {
 	if ($id != 0)
 	{	
-		db_execquery('UPDATE '.TBL_FILETYPES.' SET m3u = '.$m3u.', mime = "'.$mime.'", extension = "'.$extension.'" WHERE id = '.$id);
+		db_execquery('UPDATE '.TBL_FILETYPES.' SET m3u = '.$m3u.', search = '.$search.', logaccess = '.$logaccess.', mime = "'.$mime.'", extension = "'.$extension.'" WHERE id = '.$id);
 		return $id;
-	}
-	else 
+	} else 
 	{
-		db_execquery('INSERT INTO '.TBL_FILETYPES.' SET m3u = '.$m3u.', mime = "'.$mime.'", search = 1, enabled = 1, getid = 0, extension = "'.$extension.'"');
+		db_execquery('INSERT INTO '.TBL_FILETYPES.' SET m3u = '.$m3u.', search = '.$search.', logaccess = '.$logaccess.', mime = "'.$mime.'", enabled = 1, getid = 0, extension = "'.$extension.'"');
 		return mysql_insert_id();
 	}	
 }
@@ -5789,37 +5965,52 @@ function edit_filetype($id, $reload = false)
 	if ($id != 0)
 	{
 		$res = db_execquery('SELECT * FROM '.TBL_FILETYPES.' WHERE id = '.$id);
-		$row = mysql_fetch_assoc($res);
+		$row = mysql_fetch_assoc($res);		
 	} else 
 	{
 		$row['extension'] = '';
 		$row['mime'] = '';
 		$row['m3u'] = 1;
+		$row['search'] = 1;		
+		$row['logaccess'] = 1;
 	}
 	kprintheader(get_lang(209), 1);
 	?>
 	<form name="edit_filetype" method="post" action="<?php echo $PHP_SELF; ?>">
-	<input type="hidden" name="store_filetype" value="true"/>
+	<input type="hidden" name="action" value="storefiletype"/>
 	<input type="hidden" name="id" value="<?php echo $id; ?>"/>
 
-	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<table width="97%" align="center" border="0" cellspacing="0" cellpadding="0">
 	<tr>
 		<td class="wtext"><?php echo get_lang(206); ?></td>
-		<td class="wtext"><input type="text" name="extension" class="fatbuttom" maxlength="32" size="30" value="<?php echo $row['extension']; ?>"/></td>				
+		<td class="wtext"><input type="text" name="extension" class="fatbuttom" maxlength="32" size="30" value="<?php echo $row['extension']; ?>"/></td>
+		<td class="wtext"><?php echo helplink('ftextension'); ?></td>
 	</tr>
 	<tr>
 		<td class="wtext"><?php echo get_lang(207); ?></td>
-		<td class="wtext"><input type="text" name="mime" class="fatbuttom" size="30" maxlength="128" value="<?php echo $row['mime']; ?>"/></td>				
+		<td class="wtext"><input type="text" name="mime" class="fatbuttom" size="30" maxlength="128" value="<?php echo $row['mime']; ?>"/></td>
+		<td class="wtext"><?php echo helplink('ftmime'); ?></td>
 	</tr>
 	<tr>
 		<td class="wtext"><?php echo get_lang(208); ?></td>
-		<td class="wtext"><input type="checkbox" name="m3u" value="1" <?php echo checked($row['m3u']); ?>></td>				
+		<td class="wtext"><input type="checkbox" name="m3u" value="1" <?php echo checked($row['m3u']); ?>></td>
+		<td class="wtext"><?php echo helplink('ftm3u'); ?></td>
 	</tr>
 	<tr>
-		<td colspan="2" height="10"/>
+		<td class="wtext"><?php echo get_lang(265); ?></td>
+		<td class="wtext"><input type="checkbox" name="logaccess" value="1" <?php echo checked($row['logaccess']); ?>></td>
+		<td class="wtext"><?php echo helplink('ftlogaccess'); ?></td>
 	</tr>
 	<tr>
-		<td colspan="2">
+		<td class="wtext"><?php echo get_lang(266); ?></td>
+		<td class="wtext"><input type="checkbox" name="search" value="1" <?php echo checked($row['search']); ?>></td>
+		<td class="wtext"><?php echo helplink('ftsearch'); ?></td>
+	</tr>
+	<tr>
+		<td colspan="3" height="10"/>
+	</tr>
+	<tr>
+		<td colspan="3">
 			<input type="submit" class="fatbuttom" name="save" value="<?php echo get_lang(45); ?>"/>&nbsp;
 			<input type="button" class="fatbuttom" name="close" value="<?php echo get_lang(27); ?>" onclick="javascript: window.close(); <?php if ($reload) echo 'window.opener.location.reload();'; ?>"/>
 		</td>
@@ -5832,7 +6023,7 @@ function edit_filetype($id, $reload = false)
 
 function settings_page($page)
 {
-	global $phpenv, $setctl, $enablegetid3, $win32, $streamtypes, $pstreamtypes, $PHP_SELF;
+	global $phpenv, $setctl, $cfg, $win32, $streamtypes_default, $PHP_SELF;
 	
 	phpfigure();
 
@@ -5890,8 +6081,27 @@ function settings_page($page)
 			<td class="wtext"><input type="checkbox" value="1" name="mailmp3" <?php echo $setctl->getchecked('mailmp3'); ?>/></td>
 			<td class="wtext"><?php echo helplink('mailmp3'); ?></td>
 			</tr>
-
-			<?php	
+			<tr>				
+				<td class="wtext"><?php echo get_lang(250); ?></td>
+				<td>
+					<?php $method = $setctl->get('mailmethod'); ?>
+					<select class="fatbuttom" name="mailmethod">
+					<option value="1"<?php if ($method == 1) echo ' selected="selected"'; ?>><?php echo get_lang(251); ?></option>
+					<option value="2"<?php if ($method == 2) echo ' selected="selected"'; ?>><?php echo get_lang(252); ?></option>
+					</select>
+				</td>
+				<td class="wtext"><?php echo helplink('mailmethod'); ?></td>
+			</tr>
+			<?php if (class_exists('kbulletin'))
+			{
+			?>
+			<tr>
+				<td class="wtext"><?php echo get_lang(268); ?></td>
+				<td class="wtext"><input type="checkbox" value="1" name="bulletin" <?php echo $setctl->getchecked('bulletin'); ?>/></td>
+				<td class="wtext"><?php echo helplink('bulletin'); ?></td>
+			</tr>
+			<?php
+			}
 			break;
 	
 		case 1:
@@ -5936,8 +6146,43 @@ function settings_page($page)
 				<td class="wtext"><input type="checkbox" value="1" name="showstatistics" <?php echo $setctl->getchecked('showstatistics'); ?>/></td>
 				<td class="wtext"><?php echo helplink('showstatistics'); ?></td>
 			</tr>
-			
+			<tr>
+				<td class="wtext"><?php echo get_lang(245); ?></td>
+				<td class="wtext"><input type="checkbox" value="1" name="albumcover" <?php echo $setctl->getchecked('albumcover'); ?>/></td>
+				<td class="wtext"><?php echo helplink('albumcover'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext"><?php echo get_lang(246); ?></td>
+				<td class="wtext"><input type="text" class="fatbuttom" name="albumfiles" maxlength="250" size="50" value="<?php echo $setctl->get('albumfiles'); ?>"/></td>
+				<td class="wtext"><?php echo helplink('albumfiles'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext"><?php echo get_lang(247); ?></td>
+				<td class="wtext"><input type="checkbox" value="1" name="albumresize" <?php echo $setctl->getchecked('albumresize'); ?>/></td>
+				<td class="wtext"><?php echo helplink('albumresize'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext"><?php echo get_lang(248); ?></td>
+				<td class="wtext"><input type="text" class="fatbuttom" name="albumheight" value="<?php echo $setctl->get('albumheight'); ?>"/></td>
+				<td class="wtext"><?php echo helplink('albumheight'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext"><?php echo get_lang(249); ?></td>
+				<td class="wtext"><input type="text" class="fatbuttom" name="albumwidth" value="<?php echo $setctl->get('albumwidth'); ?>"/></td>
+				<td class="wtext"><?php echo helplink('albumwidth'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext"><?php echo get_lang(256); ?></td>
+				<td class="wtext"><input type="checkbox" value="1" name="fetchalbum" <?php echo $setctl->getchecked('fetchalbum'); ?>/></td>
+				<td class="wtext"><?php echo helplink('fetchalbum'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext"><?php echo get_lang(257); ?></td>
+				<td class="wtext"><input type="text" size="50" class="fatbuttom" name="albumurl" value="<?php echo $setctl->get('albumurl'); ?>"/></td>
+				<td class="wtext"><?php echo helplink('albumurl'); ?></td>
+			</tr>
 			<?php
+
 			break;
 		
 		case 2:
@@ -5994,13 +6239,18 @@ function settings_page($page)
 			</tr>
 			<tr>
 				<td class="wtext"><?php echo get_lang(201); ?></td>
-				<td class="wtext"><input type="checkbox" value="1" <?php if (!$enablegetid3) echo 'disabled="disabled"'; ?> name="writeid3v2" <?php if ($enablegetid3) echo $setctl->getchecked('writeid3v2'); ?>/></td>
+				<td class="wtext"><input type="checkbox" value="1" <?php if (!$cfg['enablegetid3']) echo 'disabled="disabled"'; ?> name="writeid3v2" <?php if ($cfg['enablegetid3']) echo $setctl->getchecked('writeid3v2'); ?>/></td>
 				<td class="wtext"><?php echo helplink('writeid3v2'); ?></td>
 			</tr>
 			<tr>
 				<td class="wtext"><?php echo get_lang(220); ?></td>
 				<td class="wtext"><input type="checkbox" value="1" name="lamesupport" <?php echo $setctl->getchecked('lamesupport'); ?>/></td>
 				<td class="wtext"><?php echo helplink('lamesupport'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext"><?php echo get_lang(244); ?></td>
+				<td class="wtext"><input type="text" class="fatbuttom" size="55" maxlength="255" name="lamecmd" value='<?php echo $setctl->get('lamecmd'); ?>'/></td>
+				<td class="wtext"><?php echo helplink('lamecmd'); ?></td>
 			</tr>
 			<tr>
 				<td class="wtext"><?php echo get_lang(231); ?></td>
@@ -6032,20 +6282,25 @@ function settings_page($page)
 								</tr>
 							<?php
 
-							for ($i=0,$c=count($streamtypes);$i<$c;$i++)
+							$editstreamtypes = array();
+							for ($i=0,$c=count($streamtypes_default);$i<$c;$i++) $editstreamtypes[] = array($streamtypes_default[$i],1);
+							$res = db_execquery('SELECT extension, mime, m3u, getid, search, id FROM '.TBL_FILETYPES.' WHERE enabled = 1', true);
+							if ($res) while ($row = mysql_fetch_row($res)) $editstreamtypes[] = array($row, 0);;
+
+							for ($i=0,$c=count($editstreamtypes);$i<$c;$i++)
 							{
 								$cnt++;
 								if ($cnt % 2 == 0) echo '<tr>'; else echo '<tr class="row2nd">';
 								?>
-									<td class="wtext"><?php echo '.'.$streamtypes[$i][0]; ?></td>
-									<td class="wtext"><?php echo $streamtypes[$i][1]; ?></td>
-									<td class="wtext"><?php echo selected($streamtypes[$i][2],get_lang(204), get_lang(205)); ?></td>
+									<td class="wtext"><?php echo '.'.$editstreamtypes[$i][0][0]; ?></td>
+									<td class="wtext"><?php echo $editstreamtypes[$i][0][1]; ?></td>
+									<td class="wtext"><?php echo selected($editstreamtypes[$i][0][2],get_lang(204), get_lang(205)); ?></td>
 									<td class="wtext"><?php 
-									if (isset($streamtypes[$i][5])) 
+									if (!$editstreamtypes[$i][1]) 
 									{
-										echo '<a class="hot" onclick="javascript: if (!confirm(\''.get_lang(210).'\')) return false;" href="'. $PHP_SELF .'?editfiletype=delete&amp;del='.$streamtypes[$i][5].'">'.get_lang(109).'</a>&nbsp;&nbsp;';
+										echo '<a class="hot" onclick="javascript: if (!confirm(\''.get_lang(210).'\')) return false;" href="'. $PHP_SELF .'?action=deletefiletype&amp;del='.$editstreamtypes[$i][0][5].'">'.get_lang(109).'</a>&nbsp;&nbsp;';
 										
-										echo '<a class="hot" href="javascript: void(0);" onclick="javascript: newwin(\'fileditor\', \''.$PHP_SELF.'?editfiletype='.$streamtypes[$i][5].'\',110,350);">'.get_lang(71).'</a>&nbsp;';
+										echo '<a class="hot" href="javascript: void(0);" onclick="javascript: newwin(\'fileditor\', \''.$PHP_SELF.'?action=editfiletype&amp;id='.$editstreamtypes[$i][0][5].'\',180,365);">'.get_lang(71).'</a>&nbsp;';
 									}
 								?>
 								</td>
@@ -6055,7 +6310,7 @@ function settings_page($page)
 							}
 							?>
 							<tr>
-								<td colspan="3"/><td><?php echo '<a class="hot" href="javascript: void(0);" onclick="javascript: newwin(\'fileditor\', \''.$PHP_SELF.'?editfiletype=0\',110,350);">'.get_lang(69).'</a>&nbsp;';?></td>
+								<td colspan="3"/><td><?php echo '<a class="hot" href="javascript: void(0);" onclick="javascript: newwin(\'fileditor\', \''.$PHP_SELF.'?action=editfiletype&amp;id=0\',180,365);">'.get_lang(69).'</a>&nbsp;';?></td>
 							</tr>
 						</table>
 					</td>
@@ -6078,14 +6333,13 @@ function settings_edit($reload = 0, $page = 0)
 	function pagelink($id, $reload)
 	{
 		global $PHP_SELF;
-		return $PHP_SELF.'?settings=edit&amp;reload='.$reload.'&amp;page='.$id;
+		return $PHP_SELF.'?action=settingsview&amp;reload='.$reload.'&amp;page='.$id;
 	}
 	
 	?>
 	<form name="settings" method="post" action="<?php echo $PHP_SELF; ?>">
-	<input type="hidden" name="settings" value="save"/>
-	<input type="hidden" name="page" value="<?php echo $page; ?>"/>
-	
+	<input type="hidden" name="action" value="savesettings"/>
+	<input type="hidden" name="page" value="<?php echo $page; ?>"/>	
 	<table width="100%" border="0" cellpadding="0" cellspacing="0">	
 		<tr>
 			<td width="25%" class="<?php echo $menuclass[0]; ?>"><a class="<?php echo $menuclass[0]; ?>" href="<?php echo pagelink(0,$reload); ?>"><?php echo get_lang(188); ?></a></td>
@@ -6134,6 +6388,74 @@ function settings_edit($reload = 0, $page = 0)
 }
 
 
+function webprocess()
+{
+	global $_POST, $userauth, $u_cookieid, $phpenv, $cfg;
+	if ($cfg['disablelogin']) 
+	{
+		$userauth = 1;
+		return true;
+	} else
+	{
+		if (isset($_POST['user']) && isset($_POST['password']))
+		{
+			$user = mysql_escape_string($_POST['user']);
+			$pass = mysql_escape_string($_POST['password']);
+			if (!empty($user) && !empty($pass))
+			{
+				if (db_verify_user($user, $pass) == 1)
+				{
+					if ($cfg['demomode']) 
+					{
+						$result = db_execquery('SELECT u_sessionkey FROM '.TBL_USERS.' WHERE u_pass = "'.md5($pass).'" AND u_login = "'.$user.'"');
+						$row = mysql_fetch_array($result);
+						$num = $row['u_sessionkey'];
+					} else
+					{
+						$num = getrand(1);
+						db_login($user, $phpenv['remote']);
+						db_update_session($num, $user);
+						$u_cookieid = $num;
+					}
+					$userauth = 1;
+					setcookie($cfg['cookie'],'');
+					setcookie($cfg['cookie'],$num);
+				}
+			}
+		}
+	}
+}
+
+function db_verify_stream($cookie = 0, $ip)
+{
+	global $u_id, $setctl, $cfg, $validated_user;	
+	if ($cfg['disablelogin']) 
+	{
+		$u_id = $cfg['assumeuserid'];
+		loadvalidated($u_id);
+		if ($validated_user === false) 
+		{
+			echo $cfg['assumeuserid'].' has a ID to a user that does not exist. Please set it correctly in the script and reload this page.';
+			die();
+		}
+		return 1;
+	} else
+	{
+		$result = db_execquery('SELECT u_id, u_login, u_pass, u_time FROM '.TBL_USERS.' WHERE u_sessionkey = '.$cookie);
+		if ($result)
+		{
+			$row = mysql_fetch_array($result);
+			$u_id = $row['u_id'];
+			loadvalidated($u_id);
+			$time = $row['u_time'];
+			if ($cfg['demomode'] == 1) return 1;
+			if ($setctl->get('timeout') != 0) if (($time + $setctl->get('timeout')) < time()) return 0;
+			return mysql_num_rows ($result);
+		}
+		return 0;		
+	}
+}
+
 function loadvalidated($uid)
 {
 	global $validated_user;
@@ -6157,31 +6479,52 @@ function db_guinfo($field)
 
 function addhistory($u_id, $sid, $tid = 0)
 {
-	db_execquery('INSERT INTO '.TBL_MHISTORY.' SET u_id = '.$u_id.', s_id = '.$sid.', utime = '.time().', tid = '.$tid);
+	if (db_execquery('INSERT INTO '.TBL_MHISTORY.' SET u_id = '.$u_id.', s_id = '.$sid.', utime = '.time().', tid = '.$tid)) return mysql_insert_id();
 }
 
-function getlasthistory($sid)
+function updatehistory($id, $pos)
 {
-	$res = db_execquery('SELECT s_id, utime FROM '.TBL_MHISTORY.' WHERE s_id = '.$sid.' ORDER BY h_id DESC LIMIT 1');	
+	$res = db_execquery('SELECT s_id, dwritten FROM '.TBL_MHISTORY.' WHERE h_id = '.$id);
+	if ($res && mysql_num_rows($res) == 1)
+	{
+		$row = mysql_fetch_row($res);
+		$add = (int) $row[1];
+		$add = $add + $pos;
+		$res = db_execquery('SELECT fsize FROM '.TBL_SEARCH.' WHERE id = '.$row[0]);
+		if ($res && mysql_num_rows($res) == 1)
+		{
+			$row = mysql_fetch_row($res);
+			$size = $row[0];
+			if ($add > $size) $add = $size;
+			$dpercent = ($add / $size) * 100;
+			db_execquery('UPDATE '.TBL_MHISTORY.' SET dwritten = '.$add.', dpercent = '.number_format($dpercent,0).' WHERE h_id = '.$id);
+		}
+	}
+}
+
+function getlasthistory($sid, $uid, $rhid=false)
+{
+	$res = db_execquery('SELECT s_id, utime, h_id FROM '.TBL_MHISTORY.' WHERE s_id = '.$sid.' AND u_id = '.$uid.' ORDER BY h_id DESC LIMIT 1');	
 	if ($res !== false && mysql_num_rows($res) > 0)
 	{
 		$row = mysql_fetch_assoc($res);
-		return $row['utime'];
+		if ($rhid) return $row['h_id']; 
+			else return $row['utime'];
 	} 
 	return 0;
 }
 
 function gethistory($u_id, $rows = 0)
 {
-	$sql = 'SELECT h.tid, h.utime, s.free FROM '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s WHERE h.s_id = s.id and h.u_id = '.$u_id.' ORDER BY h.utime DESC';
+	$sql = 'SELECT h.tid, h.utime, s.free, h.dpercent FROM '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s WHERE h.s_id = s.id and h.u_id = '.$u_id.' ORDER BY h.utime DESC';
 	if ($rows != 0) $sql .= ' LIMIT '.$rows;
 	return db_execquery($sql);
 }
 
 function db_login($user, $ip)
 {
-	global $demo_mode;
-	if ($demo_mode != 1)
+	global $cfg;
+	if ($cfg['demomode'] != 1)
 	{
 		db_execquery('UPDATE '.TBL_USERS.' SET u_ip = "'.$ip.'" WHERE u_login = "'.$user.'"');
 		db_execquery('UPDATE '.TBL_USERS.' SET u_status = 1 WHERE u_login = "'.$user.'"');
@@ -6206,19 +6549,19 @@ function get_archiver_combo($default)
 
 function db_logout($cookie, $ip)
 {
-	global $demo_mode;
-	if ($demo_mode != 1) db_execquery('UPDATE '.TBL_USERS.' SET u_status = 0, u_sessionkey = 0 WHERE u_sessionkey = '.$cookie.' and u_ip = "'.$ip.'"');
+	global $cfg;
+	if ($cfg['demomode'] != 1) db_execquery('UPDATE '.TBL_USERS.' SET u_status = 0, u_sessionkey = 0 WHERE u_sessionkey = '.$cookie.' and u_ip = "'.$ip.'"');
 }
 
 function db_update_session($num, $user)
 {
-	global $demo_mode;
-	if ($demo_mode != 1) db_execquery('UPDATE '.TBL_USERS.' SET u_sessionkey = "'.$num.'", u_time = '.time().' WHERE u_login like "'.$user.'"');
+	global $cfg;
+	if ($cfg['demomode'] != 1) db_execquery('UPDATE '.TBL_USERS.' SET u_sessionkey = "'.$num.'", u_time = '.time().' WHERE u_login like "'.$user.'"');
 }
 
-function show_new_user_form($id = -1, $name='', $pass='', $comment='', $login='', $access=1, $download=0, $udlrate=0, $allowemail = 0)
+function show_userform($id = -1, $text = '', $name='', $pass='', $comment='', $login='', $access=1, $download=0, $udlrate=0, $allowemail = 0)
 {
-	global $userauth, $PHP_SELF;
+	global $PHP_SELF, $u_id;
 
 	if ($id != -1)
 	{
@@ -6244,12 +6587,16 @@ function show_new_user_form($id = -1, $name='', $pass='', $comment='', $login=''
 	kprintheader($title, 1);
 	?>
 	<form method="post" action="<?php echo $PHP_SELF; ?>">
-	<input type="hidden" name="formusers" value="userchange" />
-	<input type="hidden" name="u_id" value="<?php echo $id; ?>" />
+	<input type="hidden" name="action" value="usersave"/>
+	<input type="hidden" name="u_id" value="<?php echo $id; ?>"/>
 	<table width="100%" border="0" cellpadding="0" cellspacing="0">
 	<tr><td width="40%"></td><td width="50%"></td><td width="10%"></td></tr>
 
-<?php if ($id != -1) { ?>
+	<tr>
+		<td class="wtext" colspan="3"><?php echo $text; ?></td>
+	</tr>
+
+<?php if ($id != -1 && $u_id != $id) { ?>
 	<tr> 
       <td class="wtext"><?php echo get_lang(124); ?></td>
 		 <td><input type="checkbox" name="booted" value="1" <?php echo checked($row['u_booted']); ?> /></td>
@@ -6320,8 +6667,8 @@ function show_new_user_form($id = -1, $name='', $pass='', $comment='', $login=''
 		<tr><td colspan="3" height="10"></td></tr>
 		<tr>		
 		<td colspan="3" class="wtext">		
-		<input type="submit" name="Submit" value="<?php echo get_lang(45); ?>" class="fatbuttom" />&nbsp;
-		<input type="submit" name="Cancel" value="<?php echo get_lang(16); ?>" class="fatbuttom" />
+		<input type="submit" name="submit" value="<?php echo get_lang(45); ?>" class="fatbuttom" />&nbsp;
+		<input type="submit" name="cancel" value="<?php echo get_lang(34); ?>" class="fatbuttom"/>
 		</td>
 		</tr>
   </table>
@@ -6329,7 +6676,6 @@ function show_new_user_form($id = -1, $name='', $pass='', $comment='', $login=''
 </body>
 </html>
 <?php
-die();
 }
 
 function KSignup()
@@ -6341,85 +6687,75 @@ function KSignup()
 		{
 			if (!empty($_POST['name']) && !empty($_POST['login']) && !empty($_POST['password'])) 
 			{
+				$mail = $_POST['email'];
 				$result = db_execquery('INSERT INTO '.TBL_USERS.' SET u_name = "'.mysql_escape_string($_POST['name']).'", u_login = "'.mysql_escape_string($_POST['login']).'", u_pass = "'.
-				md5(mysql_escape_string($_POST['password'])).'", u_comment = "'.mysql_escape_string($_POST['comment']).'", u_access = 1, u_allowdownload = 1, lang = '.$deflanguage);
-				if ($result) 
-				{
-					kprintheader(get_lang(96), 1);
-					echo '<p class="wtext">Ok, '.$_POST['login'].' has been added to kPlaylist<br><br>';
-					echo '<input type="button" name="Close" value="Close" onclick="javascript: window.close();window.opener.userform.user.focus();"  class="fatbuttom" /></p>';
-					kprintend(); 
-					die();
-				}
-				else signup_form('Something went wrong.. Try another username..');
-			} else signup_form('Error signing up...');
+				md5(mysql_escape_string($_POST['password'])).'", u_comment = "'.mysql_escape_string($_POST['comment']).'", u_access = 1, u_allowdownload = 1, lang = '.$deflanguage.', email = "'.mysql_escape_string($mail).'", created = '.time());
+				if ($result) signup_form(get_lang(259), false); 
+					else signup_form(get_lang(56));
+			} else signup_form(get_lang(56));
 		} else signup_form(); 
-	}
-	else die("Signup disabled...");
+	}	
 }
 
-function signup_form($error="")
+function signup_form($error='', $controls = true)
 {
-	global $userauth, $PHP_SELF;
-
-	$title=get_lang(96); 
-	kprintheader($title,1);
-	if (!empty($error)) echo '<font color="RED">'.$error.'</font><br />'; 
-	?>	
+	global $PHP_SELF;
+	kprintheader(get_lang(96),1);
+	?>
 	<form method="post" action="<?php echo $PHP_SELF; ?>">
-	<input type="hidden" name="signup" value="1" />
-	<input type="hidden" name="adduser" value="1" />
-	<table width="600" border="0" cellpadding="2" cellspacing="2">
-	<tr> 
-      <td width="110" height="17" class="wtext"><?php echo get_lang(97); ?></td>
-      <td width="490" height="17"><input type="text" name="name" class="userfield" value="" /></td>
-      <td width="47" height="17">&nbsp;</td>
-    </tr>    
-	<tr> 
-      <td width="110" class="wtext"><?php echo get_lang(98); ?></td>
-      <td width="490"><input type="text" name="login" class="userfield" value="" /></td>
-      <td width="47">&nbsp;</td>
-    </tr>
-	<tr> 
-      <td width="110" class="wtext"><?php echo get_lang(100); ?></td>
-      <td width="490"><input type="password" name="password" class="userfield" value="" /></td>
-      <td width="47">&nbsp;</td>
-    </tr>    
-	<tr> 
-      <td width="110" class="wtext"><?php echo get_lang(101); ?></td>
-      <td width="490"><input type="text" name="comment" class="userfield" value="" /></td>
-      <td width="47">&nbsp;</td>
-    </tr>
+	<input type="hidden" name="signup" value="1"/>
+	<input type="hidden" name="adduser" value="1"/>
+	<table width="100%" align="center" border="0" cellpadding="2" cellspacing="2">
 	<tr>
-      <td colspan="2" class="wtext">
-        <br/>
-		<input type="submit" name="Submit" value="<?php echo get_lang(45); ?>" class="fatbuttom" />&nbsp;
-        <input type="submit" name="Cancel" value="<?php echo get_lang(16); ?>" onclick="javascript: window.close();" class="fatbuttom" />
-      </td>
-      <td width="490">&nbsp;</td>
+		<td class="wtext" colspan="2"><?php echo $error; ?></td>
 	</tr>
-  </table>
-</form>
-</body>
-</html>
+	<tr> 
+		<td width="50%" class="wtext"><?php echo get_lang(97); ?></td>
+		<td width="50%"><input type="text" name="name" class="fatbuttom" value=""/></td>
+	</tr>    
+	<tr> 
+		<td class="wtext"><?php echo get_lang(98); ?></td>
+		<td><input type="text" name="login" class="fatbuttom" value=""/></td>
+	</tr>
+	<tr> 
+		<td class="wtext"><?php echo get_lang(100); ?></td>
+		<td><input type="password" name="password" class="fatbuttom" value=""/></td>
+	</tr>    
+	<tr> 
+		<td class="wtext"><?php echo get_lang(101); ?></td>
+		<td><input type="text" name="comment" class="fatbuttom" value=""/></td>
+	</tr>
+	<tr> 
+		<td class="wtext"><?php echo get_lang(223); ?></td>
+		<td><input type="text" name="email" class="fatbuttom" value=""/></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="wtext">
+			<?php if ($controls) { ?><input type="submit" name="submit" value="<?php echo get_lang(45); ?>" class="fatbuttom"/>&nbsp;<?php } ?>
+			<input type="submit" name="cancel" value="<?php echo get_lang(27); ?>" onclick="javascript: window.close();" class="fatbuttom"/>
+		</td>      
+	</tr>
+	</table>
+	</form>
 <?php
+kprintend();
 die();
 }
 
 function show_userhistory($id, $length = 20)
 {
-	global $PHP_SELF;
+	global $PHP_SELF, $cfg;
 	kprintheader(get_lang(121),1);
 	$res = gethistory($id, $length);
 	?>
 	<form method="post" action="<?php echo $PHP_SELF; ?>">
-	<input type="hidden" name="formusers" value="modify"/>
-	<input type="hidden" name="history" value="true"/>
+	<input type="hidden" name="action" value="historyview"/>
 	<input type="hidden" name="id" value="<?php echo $id; ?>"/>
 	<table width="100%" border="0" cellspacing="0" cellpadding="0">
 	<tr>
-		<td class="wtext" colspan="3">
-			<input class="fatbuttom" type="button" onclick="javascript: location = '<?php echo $PHP_SELF.'?users=show'; ?>';" name="back" value="<?php echo get_lang(34); ?>"/>&nbsp;&nbsp;	
+		<td class="wtext" colspan="4">
+			<input class="fatbuttom" type="button" onclick="javascript: location = '<?php echo $PHP_SELF.'?action=showusers'; ?>';" name="back" value="<?php echo get_lang(34); ?>"/>&nbsp;&nbsp;	
 			<input class="fatfield" size="3" maxlength="5" type="text" name="length" value="<?php echo $length; ?>"/>&nbsp;
 			<?php echo get_lang(178); ?>&nbsp;&nbsp;
 			<input type="submit" value="<?php echo get_lang(107) ;?>" name="Refresh" class="fatbuttom"/>
@@ -6429,8 +6765,7 @@ function show_userhistory($id, $length = 20)
 		<td colspan="3" height="15"></td>
 	</tr>	
 	<?php
-		
-		$tidarray = array(0 => get_lang(183), 1 => get_lang(117), 2 => get_lang(223));	
+		$tidarray = array(0 => get_lang(183), 1 => get_lang(117), 2 => get_lang(223), 3 => get_lang(267));	
 		if ($res)
 		{
 			$cnt = 0;
@@ -6440,7 +6775,8 @@ function show_userhistory($id, $length = 20)
 				?>
 					<td class="file"><?php echo $tidarray[$row['tid']]; ?></td>
 					<td class="file"><?php echo strlen($row['free']) > 80 ? substr($row['free'], 0, 80) : $row['free']; ?></td>
-					<td class="file"><?php echo date("d.m.y H:i:s",$row['utime']); ?></td>					
+					<td class="file"><?php echo date($cfg['dateformat'],$row['utime']); ?></td>
+					<td class="file"><?php if ($row['tid'] == 0 || $row['tid'] == 1) echo $row['dpercent'].'%'; ?></td>
 				</tr>
 				<?php
 				$cnt++;
@@ -6458,11 +6794,10 @@ function show_userhistory($id, $length = 20)
 
 function show_users()
 {
-	global $userauth, $PHP_SELF, $setctl;
+	global $PHP_SELF, $setctl, $u_id, $cfg;
 	kprintheader(get_lang(121),1);
 
-    $query = "SELECT * FROM ".TBL_USERS." order by u_time desc";
-	$result = db_execquery($query);
+	$result = db_execquery('SELECT * FROM '.TBL_USERS.' ORDER BY u_time DESC');
 	
 	$pereach=0;
 	$out = '<table width="570" border="0" cellspacing="0" cellpadding="0">';
@@ -6472,12 +6807,16 @@ function show_users()
 		$pereach++;
 
 		$ulogin = $row['u_login'];
-		if ($row['u_access'] == 0) $uname = '<font color="red">'. $row['u_name'].'</font>'; else $uname = $row['u_name'];
 		
-		$out .= '<td width="90" class="file"><a class="hot" href="'. $PHP_SELF .'?users=modify'. "&amp;edit=".$row['u_id'].'" title="'.get_lang(95).'">'. $ulogin. "</a></td>\n";
+		$uname = '<font title="'.date($cfg['dateformat'],$row['created']).'"';
+
+		if ($row['u_access'] == 0) $uname .= ' color="red">'; else $uname .= '>';
+		$uname .= $row['u_name'].'</font>';
+		
+		$out .= '<td width="90" class="file"><a class="hot" href="'. $PHP_SELF .'?action=useredit&amp;id='.$row['u_id'].'" title="'.get_lang(95).'">'. $ulogin. "</a></td>\n";
 		$out .= '<td width="175" class="file">'. $uname. '</td>';
 		$out .= '<td width="135" class="file"><font title="';
-		$out .= date("d.m.y ".'\a\t'." H:i",$row['u_time']);
+		$out .= date($cfg['dateformat'],$row['u_time']);
 		$out .= '"> '.$row['u_ip']. '</font></td>';
 
 		if ($setctl->get('timeout') != 0 && $row['u_status'] == 1)  if (((int)$row['u_time'] + $setctl->get('timeout')) < time()) $row['u_status'] = 0;
@@ -6485,29 +6824,26 @@ function show_users()
 		switch ($row['u_status'] )
 		{
 			case 0: $stout = get_lang(104); break;
-			case 1: $stout = '<font color="red">'.get_lang(103).'</font>'; break;
-			case 2: $stout = "Booted"; break;
-			default: $stout = "Unknown"; break;
+			case 1: $stout = '<font color="red">'.get_lang(103).'</font>'; break;	
 		}
 		$out .= '<td width="60" class="file">'. $stout. "</td>\n";
 		$out .= '<td width="110" class="file">'."\n";
 		
-		$out .= '<a class="hot" onclick="javascript: if (!confirm(\''.get_lang(175).'\')) return false;" href="'. $PHP_SELF .'?users=modify'. "&amp;del=".$row['u_id'].' " title="'.get_lang(105).'">'.get_lang(109).'&nbsp;&nbsp;</a>';
-		$out .= '<a class="hot" href="'. $PHP_SELF .'?users=modify'. "&amp;history=".$row['u_id'].'" title="'.get_lang(176).'">'.get_lang(177).'</a>&nbsp;&nbsp;';
-		if ($row['u_status'] == 1)
-		$out .= '<a class="hot" href="'. $PHP_SELF .'?users=modify'. "&amp;logout=".$row['u_id'].'" title="'.get_lang(106).'">'.get_lang(110).'</a>';
+		if ($u_id != $row['u_id']) $out .= '<a class="hot" onclick="javascript: if (!confirm(\''.get_lang(175).'\')) return false;" href="'.$PHP_SELF.'?action=userdel&amp;id='.$row['u_id'].'" title="'.get_lang(105).'">'.get_lang(109).'&nbsp;&nbsp;</a>';
+		$out .= '<a class="hot" href="'. $PHP_SELF .'?action=userhistory&amp;id='.$row['u_id'].'" title="'.get_lang(176).'">'.get_lang(177).'</a>&nbsp;&nbsp;';
+		if ($row['u_status'] == 1 && $u_id != $row['u_id']) $out .= '<a class="hot" href="'. $PHP_SELF .'?action=userlogout&amp;id='.$row['u_id'].'" title="'.get_lang(106).'">'.get_lang(110).'</a>';
 		$out .= '</td></tr>';
 	}
 
 	$out .= "</table>";
 	$out .= "<form action=\"$PHP_SELF\" method=\"post\">". "\n";
-	$out .= '<input type="hidden" name="formusers" value="modify"/>';
+	$out .= '<input type="hidden" name="action" value="useraction"/>';
 	$out .= '<table width="600" border="0">'."\n";
 	$out .= "<tr><td height=\"5\" colspan=\"6\"></td></tr>\n";
 	$out .= "<tr><td colspan=\"8\">";
-	$out .= '<input type="submit" value="'.get_lang(107).'" name="Refresh" class="fatbuttom" />';
+	$out .= '<input type="submit" value="'.get_lang(107).'" name="refresh" class="fatbuttom" />';
 	$out .= '&nbsp;<input type="submit" value="'.get_lang(108).'" name="newuser" class="fatbuttom" />';
-	$out .= '&nbsp;<input type="submit" value="'.get_lang(27).'" name="button" class="fatbuttom" onclick="javascript: window.close();" />';
+	$out .= '&nbsp;<input type="submit" value="'.get_lang(27).'" name="close" class="fatbuttom" onclick="javascript: window.close();" />';
 	$out .= '</td></tr></table></form>';
 
     echo $out;
@@ -6528,6 +6864,7 @@ function save_useroptions($_POST)
 	$state = 0;
 	$pass = "";
 	if (@$_POST['extm3u'] == '1') $extm3u = 1; else $extm3u = 0;
+	if (@$_POST['plinline'] == '1') $plinline = 1; else $plinline = 0;
 	if (is_numeric($_POST['hotrows'])) $hotrows = $_POST['hotrows']; else $hotrows = 25;
 	if (is_numeric($_POST['searchrows'])) $searchrows = $_POST['searchrows']; else $searchrows = 25;
 	if (is_numeric($_POST['u_language'])) $ulang = $_POST['u_language']; else $ulang = 0;
@@ -6546,7 +6883,7 @@ function save_useroptions($_POST)
 		}		
 	}
 	$deflanguage = $ulang;
-	db_execquery("UPDATE ".TBL_USERS." set extm3u = $extm3u, hotrows = $hotrows, searchrows = $searchrows, lang = $ulang, archer = $archer, lamerate = $lamerate, email = '".$email."' where u_id = $u_id");
+	db_execquery("UPDATE ".TBL_USERS." set extm3u = $extm3u, plinline = $plinline, hotrows = $hotrows, searchrows = $searchrows, lang = $ulang, archer = $archer, lamerate = $lamerate, email = '".$email."' where u_id = $u_id");
 	if (!empty($pass)) 
 	{ 
 		db_execquery('UPDATE '.TBL_USERS.' set u_pass = "'.$pass.'" where u_id = '.$u_id); 
@@ -6556,19 +6893,20 @@ function save_useroptions($_POST)
 	return $state;
 }
 
-function show_useroptions($msg="", $reload = false)
+function show_useroptions($msg='', $reload = false)
 {
-	global $userauth, $PHP_SELF, $u_id, $klang, $deflanguage, $lamebitrates, $setctl;
+	global $PHP_SELF, $u_id, $klang, $deflanguage, $lamebitrates, $setctl;
 	$result = db_execquery('SELECT * from '.TBL_USERS.' WHERE u_id = '.$u_id);
 	if ($result) $row = mysql_fetch_array($result);
 	if (!$row) die();
-	if ($row['extm3u'] == 1) $ext3mu = 'checked="checked"'; else $ext3mu="";
-	$langout = get_lang_combo($row['lang'], "u_language");
+	if ($row['extm3u'] == 1) $ext3mu = 'checked="checked"'; else $ext3mu = '';
+	if ($row['plinline'] == 1) $plinline = 'checked="checked"'; else $plinline = '';
+	$langout = get_lang_combo($row['lang'], 'u_language');
 	
 	kprintheader(get_lang(123),1);
 	?>
 	<form name="useroptions" method="post" action="<?php echo $PHP_SELF; ?>">
-	<input type="hidden" name="useroptions" value="save"/>
+	<input type="hidden" name="action" value="saveuseroptions"/>
 	<table width="100%" border="0" cellspacing="0" cellpadding="0">	
 	<tr><td width="40%"></td><td width="50%"></td><td width="10%"></td></tr>
 	<?php if (!empty($msg))
@@ -6583,6 +6921,11 @@ function show_useroptions($msg="", $reload = false)
 		<td class="wtext"><?php echo get_lang(111); ?></td>
 		<td><input type="checkbox" value="1" name="extm3u" <?php echo $ext3mu; ?>/></td>
 		<td class="wtext"><?php echo helplink('oextm3u'); ?></td>
+	</tr>
+	<tr>	
+		<td class="wtext"><?php echo get_lang(255); ?></td>
+		<td><input type="checkbox" value="1" name="plinline" <?php echo $plinline; ?>/></td>
+		<td class="wtext"><?php echo helplink('plinline'); ?></td>
 	</tr>
 	<tr>
 		<td class="wtext"><?php echo get_lang(112); ?></td>
@@ -6607,17 +6950,17 @@ function show_useroptions($msg="", $reload = false)
 	<tr>	
 		<td class="wtext"><?php echo get_lang(164); ?></td>
 		<td><input type="password" maxlength="10" size="10" class="fatbuttom" name="curpassword"/></td>
-		<td></td>
+		<td class="wtext"><?php echo helplink('ocurpassword'); ?></td>
 	</tr>
 	<tr>	
 		<td class="wtext"><?php echo get_lang(100); ?></td>
 		<td><input type="password" maxlength="10" size="10" class="fatbuttom" name="password"/></td>
-		<td></td>
+		<td class="wtext"><?php echo helplink('onewpassword'); ?></td>
 	</tr>
 	<tr>	
 		<td class="wtext"><?php echo get_lang(166); ?></td>
 		<td><select name="archer" class="fatbuttom"><?php echo get_archiver_combo($row['archer']); ?></select></td>
-		<td></td>
+		<td class="wtext"><?php echo helplink('oarchiver'); ?></td>
 	</tr>
 	<?php if ($row['lameperm'] && $setctl->get('lamesupport'))
 	{
@@ -6638,7 +6981,7 @@ function show_useroptions($msg="", $reload = false)
 				?>
 			</select>
 		</td>
-		<td></td>
+		<td class="wtext"><?php echo helplink('olamerate'); ?></td>
 	</tr>
 	<?php
 	}
@@ -6646,15 +6989,16 @@ function show_useroptions($msg="", $reload = false)
 	<tr>	
 		<td class="wtext"><?php echo get_lang(223); ?></td>
 		<td><input type="text" maxlength="128" size="30" class="fatbuttom" name="email" value="<?php echo $row['email']; ?>"/></td>
-		<td></td>
+		<td class="wtext"><?php echo helplink('oemail'); ?></td>
 	</tr>
 	<tr><td colspan="3" height="10"></td></tr>
 	<tr>
-		<td colspan="3">
+		<td>
 		<input class="fatbuttom" type="submit" name="save" value="<?php echo get_lang(45); ?>"/>&nbsp;
 		<input class="fatbuttom" type="button" name="closeme" value="<?php echo get_lang(27); ?>" onclick="javascript: window.close(); <?php 
-			if ($reload) echo 'window.opener.location.reload();'; ?>"/>
+			if ($reload) echo 'window.opener.location.reload();'; ?>"/>		
 		</td>
+		<td colspan="2" align="right" class="wtext"><?php echo get_lang(191); ?>&nbsp;</td>
 	</tr>
 	</table>
 	</form>
@@ -6673,13 +7017,13 @@ function nextch($ssearch,$pos)
 
 function nhghlist($sql, $header, $ndir, $special=0, $extra = '')
 {
-	global $titlesperalbum;
+	global $cfg;
 	$result = db_execquery($sql);
 			
 	kprintheader($header, 1);
-	KCreate_Mp3Table("");			
+	mp3table('');			
 	
-	show_nice_dir("",$ndir,0);
+	showdir('',$ndir,0);
 
 	echo $extra;
 
@@ -6688,7 +7032,7 @@ function nhghlist($sql, $header, $ndir, $special=0, $extra = '')
 	echo '</td></tr>';
 	while ($row = mysql_fetch_array($result)) 
 	{
-		if ($row['many'] >= $titlesperalbum)
+		if ($row['many'] >= $cfg['titlesperalbum'])
 		{
 			$f2 = new file2($row['id'], false);			
 			$dir = $f2->relativepath;
@@ -6696,23 +7040,20 @@ function nhghlist($sql, $header, $ndir, $special=0, $extra = '')
 			$ainf = gen_aheader($row['album'], $row['artist'], $row['lengths'], $row['many']);		
 			switch ($special)
 			{
-				case 0: echo print_dir($row['drive'],$row['artist'].' - '.$row['album'], $dir, -1 , 1,'link.gif', $row['artist'], $ainf, '', true); 
+				case 0: echo print_dir($row['drive'],$row['artist'].' - '.$row['album'], $dir, -1 , 1,'link.gif', $row['artist'], $ainf, '', true, 0, $row['album']); 
 						break;
 				case 1: if ($row['cntr'] > 0)  
 						{
-							echo print_dir($row['drive'],' '.lzero($cntr+1).' '.$row['artist'].' -  '.$row['album'], $dir, -1 , 1, 'link.gif',$row['cntr'].' hits - '.$row['many'].' tunes', $ainf, '', true);							
+							echo print_dir($row['drive'],' '.lzero($cntr+1).' '.$row['artist'].' -  '.$row['album'], $dir, -1 , 1, 'link.gif',$row['cntr'].' hits - '.$row['many'].' tunes', $ainf, '', true, $row['cntr'], $row['album']);							
 							$cntr++;
 						}
 						break;
-				case 2: echo print_dir($row['drive'],date("d.m.y H:i",$row['date']).' - '.$row['artist'].' - '.$row['album'], $dir, -1 , 1, 'link.gif',$row['artist'],$ainf, '', true); 
+				case 2: echo print_dir($row['drive'],date($cfg['dateformat'],$row['date']).' - '.$row['artist'].' - '.$row['album'], $dir, -1 , 1, 'link.gif',$row['artist'],$ainf, '', true,0, $row['album']); 
 						break;
 				
 				case 3: if ($row['cntr'] > 0)  
 						{
-					
-							//print_dir($drive,$name, $pdir, $nr, $return=0,$image='dir.gif',$title='', $ainf=null, $mark='', $showalbum = false)
-							
-							echo print_dir($row['drive'], ' '.lzero($cntr+1).' '.$row['artist'].' -  '.$row['album'], $dir, -1 , 1, 'link.gif',$row['cntr'].' hits - '.$row['many'].' tunes', null, '', true, $row['many']);							
+							echo print_dir($row['drive'], ' '.lzero($cntr+1).' '.$row['artist'].' -  '.$row['album'], $dir, -1 , 1, 'link.gif',$row['cntr'].' hits - '.$row['many'].' tunes', null, '', true, $row['many'], $row['album']);							
 							$cntr++;
 						}
 						break;
@@ -6722,23 +7063,90 @@ function nhghlist($sql, $header, $ndir, $special=0, $extra = '')
 	
 	if ($many==0) echo '<tr><td><font class="finfo">'.get_lang(10).'</font></td></tr>';
 	
-	KCreate_EndMp3Table(0);
-	KCreate_infobox();
+	endmp3table(0);
+	infobox();
 	echo '</tr></table></body></html>';	
 	die();
 }
 
-function hotselect($char)
+function album_hotlist($type)
+{
+	global $PHP_SELF;
+	$alf = '*0abcdefghijklmnopqrstuvwxyz';
+	$chlist = $alfa = array();
+	for ($i=0,$c=strlen($alf);$i<$c;$i++) $alfa[] = $alf[$i];
+	$qres = db_execquery('SELECT LOWER(SUBSTRING(artist,1,1)) AS ch FROM '.TBL_SEARCH.' WHERE TRIM(album) != "" AND TRIM(artist) != "" GROUP BY SUBSTRING(artist,1,1)');
+	while ($row = mysql_fetch_row($qres)) if (is_numeric($row[0])) $chlist['0'] = true; else $chlist[$row[0]] = true;
+	$out = '';
+	
+	for ($i=0,$c=strlen($alf);$i<$c;$i++)
+	{
+		$add = false;
+		if ($i == 0)
+		{
+			foreach ($chlist as $tch => $val) if (!in_array($tch, $alfa)) $add = true; 
+		} else
+			if (isset($chlist[$alf[$i]])) $add = true;
+
+		if ($add)
+			$out .= '<a title="'.get_lang(30, $alf[$i]).'" href="'.$PHP_SELF.'?action=hotselect&amp;'.$type.'='.$alf[$i].'" class="hot">'.$alf[$i].'</a>&nbsp;'; 
+		else 
+			$out .= '<font class="loginkplaylist">'.$alf[$i].'</font>&nbsp;';
+	}
+	return $out;
+}
+
+function genre_select($top = true, $default)
+{
+	$inf = new id3('');
+	$res = db_execquery('SELECT genre FROM '.TBL_SEARCH.' WHERE genre != 255 AND TRIM(album) != "" GROUP BY genre ORDER BY genre');
+	if ($top) $genres = '<select name="genreno" class="fatbuttom">'; else $genres = '';
+	$cnt = 0;
+	while ($row = mysql_fetch_array($res))
+	{
+		$gname = $inf->getgenre($row[0]);
+		if (empty($gname)) continue;
+		$glist[$cnt] = checkchs($gname);
+		$glistid[$cnt] = $row[0];
+		$cnt++;
+	}
+
+	if ($cnt > 0)
+	{
+		array_multisort($glist, $glistid, SORT_STRING);
+		for ($i=0;$i<$cnt;$i++)
+		{
+			$selected = false;
+			if (is_array($default))
+			{
+				foreach($default as $name) if ($name == $glistid[$i]) $selected = true;
+			} else if ($glistid[$i] == $default) $selected = true;
+			if ($selected)
+			$genres .= '<option value="'.$glistid[$i].'" selected="selected">'.$glist[$i].'</option>'; 
+				else
+			$genres .= '<option value="'.$glistid[$i].'">'.$glist[$i].'</option>';
+		}
+	}
+	if ($top) $genres .= '</select>';
+	return $genres;
+}
+
+function hotselect($char='')
 {
 	$query = 'SELECT id,artist,album,free,drive,count(free) AS many, sum(lengths) AS lengths FROM '.TBL_SEARCH.' WHERE ';
-	if (@$char == "0") 
-	{ 
-		for ($i=0;$i<10;$i++) 
-		{
-			$query .= 'rtrim(artist) like "'.$i.'%"';
-			if ($i < 9) $query .= ' or ';
-		}
-	} else $query .= 'rtrim(artist) like "'.$char.'%"';
+	
+	switch($char)
+	{
+		case '*': $query .= 'rtrim(artist) NOT REGEXP("^[0-9a-zA-Z]")'; break;
+		case '0': 
+				for ($i=0;$i<10;$i++) 
+				{
+					$query .= 'rtrim(artist) like "'.$i.'%"';
+					if ($i < 9) $query .= ' or ';
+				}
+				break;
+		default: $query .= 'rtrim(artist) like "'.$char.'%"'; break;
+	} 
 	$query .= ' and length(rtrim(album)) > 0 group by rtrim(album) order by artist';
 	nhghlist($query, get_lang(31, $char), get_lang(30, $char));
 }
@@ -6753,6 +7161,9 @@ function genrelist($genreno)
 function whats_hot($max=25, $filter = 0)
 {
 	$fsel = array(0 => '', 1 => '', 2 => '', 3 => '');
+	
+	if ($filter == 0) $filter = db_guinfo('hotmode');
+
 	$fsel[$filter] = ' selected="selected"';
 	$mode = 1;
 	if ($filter == 0)
@@ -6779,7 +7190,7 @@ function whats_hot($max=25, $filter = 0)
 				$uxto = mktime(23, 59, 59, date('n'), date('j') - 31, date('Y'));				
 				break;
 		}
-		$query = 'SELECT s.*, sum(s.hits) as cntr, count(*) AS many FROM tbl_search s, tbl_mhistory h WHERE h.utime >= '.$uxfrom.' AND h.utime <= '.$uxto.
+		$query = 'SELECT s.*, sum(s.hits) as cntr, count(*) AS many, sum(h.dpercent) as rate FROM '.TBL_SEARCH.' s, '.TBL_MHISTORY.' h WHERE h.utime >= '.$uxfrom.' AND h.utime <= '.$uxto.
 		' AND rtrim(s.album) != "" AND h.s_Id = s.id GROUP BY s.album ORDER BY many DESC limit '.$max;	
 	}
 	$extra = '</td></tr><tr><td height="5"></td></tr><tr><td class="notice">'.get_lang(238).':&nbsp; ';		
@@ -6802,7 +7213,7 @@ function whats_new($cnt)
 
 function search($what, $where, $id3, $hitsas = 0)
 {
-	global $base_dir;
+	global $base_dir, $cfg;
 
 	$ssearch = stripslashes($what); 	
 	$ssearchlinefree = '';	
@@ -6843,7 +7254,7 @@ function search($what, $where, $id3, $hitsas = 0)
 	if ($where == 1) $safter = 'title';
 	if ($where == 2) $safter = 'artist';
 
-	$ssearchline = 'WHERE ';
+	$ssearchline = 'AND ';
 	for ($i=0;$i<$i2;$i++) 
 	{ 
 			if ($slines['opt'][$i] == 0) $ssearchline .= $safter.' LIKE "%'.$slines['text'][$i].'%"'; else
@@ -6861,9 +7272,9 @@ function search($what, $where, $id3, $hitsas = 0)
 	if ($hitsas == 1) $extra = ',COUNT(free) AS many, SUM(lengths) AS lengths'; else $extra = '';
 	
 	if ($id3==0) 
-	$query = 'SELECT *'.$extra.' FROM '.TBL_SEARCH.' '.$ssearchline.' OR '.$ssearchlinefree;
+	$query = 'SELECT *'.$extra.' FROM '.TBL_SEARCH.' WHERE f_stat = 0 '.$ssearchline.' OR '.$ssearchlinefree;
 		else 
-	$query= 'SELECT *'.$extra.' FROM '.TBL_SEARCH.' '.$ssearchline;	
+	$query= 'SELECT *'.$extra.' FROM '.TBL_SEARCH.' WHERE f_stat = 0 '.$ssearchline;	
 	
 	if ($hitsas == 1) $query .= ' AND LENGTH(rtrim(album)) > 0 GROUP BY RTRIM(album)';
 	
@@ -6876,39 +7287,42 @@ function search($what, $where, $id3, $hitsas = 0)
 	$exectime = $endt-$startt;
 	if ($exectime < 0) $execstr = '0.00'; else $execstr =  substr($exectime, 0, 4);
 
-	KCreate_Mp3Table('');
+	mp3table('');
 	$many = mysql_num_rows($result);
 	$mwritten=0;
 
-	$max = db_guinfo("searchrows");
+	$max = db_guinfo('searchrows');
 	$extra="";
 	if ($many > $max) $extra = get_lang(6, $max); 
-	show_nice_dir("",get_lang(8, $ssearch),0);
+	showdir('',get_lang(8, $ssearch),0);
 	echo '<font class="wtext"> - '.get_lang(9)." $many $extra / $execstr ".get_lang(7).'</font>';
 	echo '</td></tr>';
+	$filter = 0;
 
 	while ($row = mysql_fetch_array($result)) 
 	{
 		if ($mwritten+1 > $max) break;
 		$f2 = new file2($row['id']);
-		if ($f2->ifexists())
+		$fdesc = new filedesc($f2->fname);
+		if ($fdesc->view && $f2->ifexists())
 		{
 			switch ($hitsas)
 			{
-				case 0: print_file($row['id'],1,1,$f2,$ssearch);
+				case 0: print_file($row['id'],1,1,$f2,$row['id']);
 						break;
 						
 				case 1: $ainf = gen_aheader($row['album'], $row['artist'], $row['lengths'], $row['many']);		
-						echo print_dir($row['drive'],date("d.m.y H:i",$row['date']).' - '.$row['artist'].' - '.$row['album'], $f2->relativepath, -1 , 1, 'link.gif',$row['artist'],$ainf,$ssearch, true);
+						echo print_dir($row['drive'],date($cfg['dateformat'], $row['date']).' - '.$row['artist'].' - '.$row['album'], $f2->relativepath, -1 , 1, 'link.gif',$row['artist'],$ainf,$ssearch, true, 0, $row['album']);
 						break;
 			}			
 			$mwritten++;			
-		}
+		} else $filter++;
 	}
 	if ($many==0) echo '<tr><td><font class="finfo">'.get_lang(10).'</font></td></tr>';
+	if ($filter>0) echo '<tr><td><font class="finfo">'.get_lang(264,$filter).'</font></td></tr>';
 
-	KCreate_EndMp3Table(0, 0, $mwritten);
-	KCreate_infobox();
+	endmp3table(0, 0, $mwritten);
+	infobox();
 	echo '</tr></table>';
 	kprintend();
 	die();
@@ -6942,9 +7356,9 @@ function search_qinscontruct($album, $title, $artist, $genre=255, $filein, $md5,
 	$lengths.', '.$ratemode.', '.$bitrate.', '.$tagid.', '.$drive.', '.$mtime.', "'.mysql_escape_string(getrelative($filein)).'")';
 }
 
-function search_qupdcontruct($album, $title, $artist, $genre=255, $filein, $md5,$id, $lengths=0, $ratemode=0, $bitrate=0, $tagid=0, $drive=0, $mtime = 0)
+function search_qupdcontruct($album, $title, $artist, $genre=255, $filein, $md5,$id, $lengths=0, $ratemode=0, $bitrate=0, $tagid=0, $drive=0, $mtime = 0, $f_stat = 0, $fsize=0)
 {
-	return 'UPDATE '.TBL_SEARCH.' SET title = "'.mysql_escape_string($title).'", album = "'.mysql_escape_string($album).'", artist = "'.mysql_escape_string($artist).'", md5 = "'.$md5.'", free = "'.mysql_escape_string(basename($filein)).'", genre = '.$genre.', lengths = '.$lengths.', ratemode = '.$ratemode.', bitrate = '.$bitrate.', tagid = '.$tagid.', drive = '.$drive.', mtime = '.$mtime.', dirname = "'.mysql_escape_string(getrelative($filein)).'" where id = '.$id;
+	return 'UPDATE '.TBL_SEARCH.' SET title = "'.mysql_escape_string($title).'", album = "'.mysql_escape_string($album).'", artist = "'.mysql_escape_string($artist).'", md5 = "'.$md5.'", free = "'.mysql_escape_string(basename($filein)).'", genre = '.$genre.', lengths = '.$lengths.', ratemode = '.$ratemode.', bitrate = '.$bitrate.', tagid = '.$tagid.', drive = '.$drive.', mtime = '.$mtime.', dirname = "'.mysql_escape_string(getrelative($filein)).'", f_stat = '.$f_stat.', fsize = '.$fsize.' WHERE id = '.$id;
 }
 
 function search_qupdfree($free, $drive, $id)
@@ -6971,23 +7385,39 @@ function updatesingle($free)
 	global $base_dir;
 	$id = search_findid($free);
 	$fid = get_file_info($free);
-	
 	$drive = -1;
 	for ($i=0;$i<count($base_dir);$i++)
 	{
 		$str = substr($free,0,strlen($base_dir[$i]));
 		if (strcasecmp($base_dir[$i], $str) == 0) $drive = $i;
 	}
-	if ($fid && $drive != -1)	
-	{
+	
+	if ($fid && $drive != -1)
+	{		
+		$freestrip = substr($free, strlen($base_dir[$drive]));
+	
+		if (!$id)
+		{
+			$sfree = mysql_escape_string(basename($freestrip));
+			$sdirname = mysql_escape_string(getrelative($freestrip));
+
+			$res = db_execquery('SELECT id FROM '.TBL_SEARCH.' WHERE free = "'.$sfree.'" AND dirname = "'.$sdirname.'"');
+			
+			if ($res && mysql_num_rows($res) == 1) 
+			{
+				$row = mysql_fetch_row($res);
+				$id = $row[0];
+			}
+		}
+
 		if ($id)
-			$query = search_qupdcontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), substr($free, strlen($base_dir[$drive])), md5file($free), $id, $fid['lengths'], $fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, filemtime($free)); 
+			$query = search_qupdcontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), $freestrip, md5file($free), $id, $fid['lengths'], $fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, filemtime($free), 0, filesize($free));
 		else
-			$query = search_qinscontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), substr($free, strlen($base_dir[$drive])), md5file($free), filesize($free), $fid['lengths'], $fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, filemtime($free));	
+			$query = search_qinscontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), $freestrip, md5file($free), filesize($free), $fid['lengths'], $fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, filemtime($free));
 		
 		db_execquery($query);
 		return $id;
-	} 
+	}
 }
 
 function search_updatevote($id)
@@ -7002,7 +7432,7 @@ function search_updatelist_options()
 	kprintheader(get_lang(11), 1);
 	?>
 	<form name="updateoptions" method="post" action="<?php echo $PHP_SELF; ?>">
-	<input type="hidden" name="update" value="options"/>
+	<input type="hidden" name="action" value="performupdate"/>
 	<table width="400" border="0">
 	<tr>
 	<td colspan="3" class="warning">
@@ -7034,7 +7464,6 @@ function search_updatelist_options()
 	kprintend();	
 }
 
-// update process
 function search_updatelist($options="")
 {
 	global $base_dir, $win32, $gData, $gCnt;
@@ -7044,12 +7473,10 @@ function search_updatelist($options="")
 	if (@$options['debugmode'] == '1') $debugmode = 1; else $debugmode = 0;
 	if (@$options['sleeppertrans'] != 0) $sleeptrans = $options['sleeppertrans']; else $sleeptrans = 0;
 
-	$db_out= array();	
-	$db_mtime = array();
-	$db_unique = array();
+	$db_out = $db_mtime = $db_unique = $db_path = array();	
 
-	$filecntr=0;
-	$file="";
+	$filecntr = 0;
+	$file = '';
 
 	$updateall = false;
 
@@ -7083,37 +7510,38 @@ function search_updatelist($options="")
 		$forupdate = $row[0];
 
 		if ($dbrows == $forupdate) $updateall = true;
-
-		$query = 'SELECT fsize, id, md5, free, drive, mtime, dirname FROM '.TBL_SEARCH.' ORDER BY id ASC';
-		$result = db_execquery ($query);
+		$result = db_execquery('SELECT fsize, id, md5, free, drive, mtime, dirname FROM '.TBL_SEARCH.' ORDER BY id ASC', true);
 
 		$dcntr=0;
 		while ($row = mysql_fetch_row($result)) 
 		{
 			$db_out[$dcntr++] = $row;
-			if (!isset($db_mtime[$row[0]][$row[5]])) $db_mtime[$row[0]][$row[5]] = $dcntr-1;
-			if (!isset($db_unique[$row[0]][$row[2]])) $db_unique[$row[0]][$row[2]] = $dcntr-1;
+			if (!isset($db_mtime[$row[0]][$row[5]])) $db_mtime[$row[0]][$row[5]] = $dcntr - 1;
+			if (!isset($db_unique[$row[0]][$row[2]])) $db_unique[$row[0]][$row[2]] = $dcntr - 1;
+
+			$path = crc32($row[6].$row[3]);
+
+			if (isset($db_path[$path]))
+			{
+				$ids = $db_path[$path];
+				$ids[] = $dcntr; 
+				$db_path[$path] = $ids;
+			} else $db_path[$path] = array($dcntr);
 		}
-		
+
 		if ($updateall) $db_mtime = array();
 		
 		$query=null;
 		
 		$totalqupds = $dcntr;	
-		$failed=0;
 		
 		echo '<font class="notice">'.get_lang(18, $datacnt).'</font><br/><br/>';
 		echo '<div id="up_status" class="notice"></div><br/>';
 		flush();
 
 		$totalins = $datacnt;	
-		$qins = 0;
-		$qupd = 0;
-		$qupdins = 0;
-		$skips=0;
-		$qdels=0;
-		$perten=0;
-		$fdups=0;
+		$qins = $qupd = $failed = $qupdins = $skips= $qdels = $perten = $fdups = 0;
+		
 		if ($datacnt > 0)
 		{
 			for ($drive=0,$drivec=count($data);$drive<$drivec;$drive++)
@@ -7128,16 +7556,16 @@ function search_updatelist($options="")
 					{
 						if ($totalins > $totalqupds)
 						{
-							$percent2 = (($qins + $qupd + $skips + $fdups) / $totalins) * 100; 
-							$percent2 = substr($percent2,0,4).'%';
+							$percent2 = (($qins + $qupd + $skips + $fdups) / $totalins) * 100;
+							if ($percent2 < 100) $percent2 = number_format($percent2,0).'%'; else $percent2 = '100%';
 						} else $percent2 = '100%';
 						if ($qupd > 0 && $totalqupds>0)
 						{ 
 							$percent = (($qupd + $qupdins) / $totalqupds) * 100;
-							$percent=substr($percent,0,4).'%';
+							if ($percent < 100) $percent = number_format($percent,0).'%'; else $percent='100%';
 						} else $percent='100%';
 						$perout = get_lang(20,$percent2,$percent);					
-						echo '<script type="text/javascript">document.all.up_status.innerHTML="'.$perout;
+						echo '<script type="text/javascript">d = document.getElementById("up_status"); d.innerHTML="'.$perout;
 						echo (strlen($filein) > 60) ? addslashes(substr($filein,0,60))."..." : addslashes($filein);
 						echo '";</script>';
 						flush();
@@ -7148,7 +7576,7 @@ function search_updatelist($options="")
 					$mtime = filemtime($file);
 
 					if (!$fsize)
-					{
+					{						
 						echo '<font class="notice">'.get_lang(19,$file).'</font><br/>';
 						flush();
 						$skips++;
@@ -7191,7 +7619,7 @@ function search_updatelist($options="")
 							if ($mtime != $db_out[$idupdate][5])
 							{
 								$fid = get_file_info($file);
-								$query = search_qupdcontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), $filein, $md5, $db_out[$idupdate][1], $fid['lengths'], $fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, $mtime);							
+								$query = search_qupdcontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), $filein, $md5, $db_out[$idupdate][1], $fid['lengths'], $fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, $mtime, 0, $fsize);							
 								$qupdins++;
 							}
 							else
@@ -7204,11 +7632,37 @@ function search_updatelist($options="")
 						} 
 						else
 						{
+							$frel = getrelative($filein);
+							$ffilein = basename($filein);
+							$checkex = crc32($frel.$ffilein);
+							$useid = -1;
+							if (isset($db_path[$checkex]))
+							{
+								$ids = $db_path[$checkex];
+								for ($i3=0,$c3=count($ids);$i3<$c3;$i3++)
+								{
+									$cid = $ids[$i3] - 1;
+									if ($db_out[$cid][3] == $ffilein && $db_out[$cid][6] == $frel)
+									{
+										$useid = $cid;
+										break;
+									}
+								}							
+							}
+
 							$fid = get_file_info($file);								
-							$query = search_qinscontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), $filein, $md5, $fsize, $fid['lengths'],$fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, $mtime);
-							$db_out[$dcntr++] = array(-1, 0, $md5, $filein, $drive, $mtime, $filein);
-							$db_unique[$fsize][$md5] = $dcntr-1;
-							$qins++;
+							
+							if ($useid == -1) 
+							{
+								$query = search_qinscontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), $filein, $md5, $fsize, $fid['lengths'],$fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, $mtime);
+								$db_out[$dcntr++] = array(-1, 0, $md5, $filein, $drive, $mtime, $filein);
+								$db_unique[$fsize][$md5] = $dcntr-1;
+								$qins++;								
+							} else
+							{
+								$query = search_qupdcontruct($fid['album'], $fid['title'], $fid['artist'], vernumset($fid['genre'],255), $filein, $md5, $db_out[$useid][1], $fid['lengths'], $fid['ratemode'], $fid['bitrate'], $fid['tagid'], $drive, $mtime, 0, $fsize);	
+								$qupdins++;
+							}						
 						}
 
 						if ($query !== null)
@@ -7236,7 +7690,7 @@ function search_updatelist($options="")
 		if ($db_out[$i2][0] != -1) $fordel++;
 
 		if ($deleteunused)
-		{
+		{		
 			if ($skips == 0)
 			{
 				for ($i2=0;$i2<$dcntr;$i2++)
@@ -7251,7 +7705,7 @@ function search_updatelist($options="")
 		}
 		$runtime = (time() - $starttime);
 
-		echo '<script type="text/javascript">document.all.up_status.innerHTML="";</script>';         
+		echo '<script type="text/javascript">d = document.getElementById("up_status"); d.innerHTML="";</script>';         
 		echo '<br/><font class="notice">'.get_lang(26).'<br/><br/>';
 		echo get_lang(25, $qins, $qupdins, $qdels, $failed, $skips, $filecntr, $runtime, $fordel);
 		echo '</font><br/><br/>';
@@ -7266,14 +7720,13 @@ function search_updatelist($options="")
 	kprintend();
 }
 
-// for automatic update using a browser such as lynx without logging in, etc.
 function search_updateautomatic($user, $host, $waittrans=0)
 {
-	global $autoupdate, $autoupdatehost, $autoupdateuser;
+	global $cfg;
 
-	if (@$autoupdate)
+	if ($cfg['autoupdate'])
 	{
-		if ($host == $autoupdatehost && $user == $autoupdateuser)
+		if ($host == $cfg['autoupdatehost'] && $user == $cfg['autoupdateuser'])
 		{ 
 			$options = array('deleteunused', 'rebuildid3', 'debugmode');
 			$options['deleteunused'] = 0;
@@ -7290,7 +7743,7 @@ function search_updateautomatic($user, $host, $waittrans=0)
 $crlf = "\r\n";
 $addcrlf = false;
 
-function getarchiveline($archiver, $destination, $file)
+function getarchiveline($archiver, $destination, $file, $flist = '')
 {
 	global $archivers;
 	if (isset($archivers[$archiver]))
@@ -7299,9 +7752,133 @@ function getarchiveline($archiver, $destination, $file)
 		$out = $archivers[$archiver][2];
 		$out = str_replace('%D', $destination, $out); 
 		$out = str_replace('%F', $file, $out); 
+		$out = str_replace('%LIST', $flist, $out);
 		return $out;
 	}
 	return 0;
+}
+
+class kparchiver
+{
+	var $files;
+
+	function kparchiver()
+	{
+		$this->files = array();
+	}
+	
+	function setfile($file)
+	{
+		$this->files[] = $file;
+	}
+
+	function execute()
+	{
+		global $win32, $cfg, $archivers, $PHP_SELF, $u_id;
+		
+		$listmode = false;
+
+		kprintheader(get_lang(260),0);
+		echo '<div id="up_status" class="notice">0%</div><br/>';
+		flush();
+		
+		$usearc = 0;
+		$preferarc = db_guinfo('archer');
+		if (isset($archivers[$preferarc]) && $archivers[$preferarc][0] == 1) $usearc = db_guinfo('archer');
+		$tf = tempnam($cfg['archivetemp'], 'kppack');
+		$f = $tf . '.'.$archivers[$usearc][1];
+
+		if (strpos($archivers[$usearc][2],'%LIST') !== false) $listmode = true;
+		
+		$cwd = getcwd();
+	
+		$files = 0;
+		for ($i=0,$c=count($this->files);$i<$c;$i++)
+		{
+			$f2 = new file2($this->files[$i]);
+			if ($f2->ifexists()) 
+			{
+				if ($listmode)
+				{
+					$fp = fopen($tf, 'a');
+					if ($fp) 
+					{
+						fwrite($fp, $f2->fullpath.$cfg['archivefilelist_cr']);
+						fclose($fp);
+					}
+				}
+				$files++;
+			}
+		}
+
+		if ($listmode)
+		{
+			$run = getarchiveline($usearc, $f, $f2->getfullpath($win32), $tf);
+			if ($cfg['archivemodedebug']) echo($run); else exec($run);
+			echo '<script type="text/javascript">d = document.getElementById("up_status"); d.innerHTML="100%";</script>';
+		} else
+		{
+			$cnt = 0;
+			for ($i=0,$c=count($this->files);$i<$c;$i++)
+			{
+				$f2 = new file2($this->files[$i]);
+				if ($f2->ifexists()) 
+				{
+					chdir($f2->getdrivedir());
+					$run = getarchiveline($usearc, $f, $f2->getfullpath($win32));
+					if (!empty($run)) 
+					{
+						if ($cfg['archivemodedebug']) echo($run); else exec($run);						
+					}
+					$cnt++;
+					$per = ($cnt / $files) * 100;
+					$per = number_format($per, 0).'%';
+					echo '<script type="text/javascript">d = document.getElementById("up_status"); d.innerHTML="'.$per;
+					echo ' .. '.$f2->fname;
+					echo '";</script>';
+					flush();
+				}
+			}
+		}
+		
+		chdir($cwd);
+		if (file_exists($f)) 
+		{
+			for ($i=0,$c=count($this->files);$i<$c;$i++)
+			{
+				$f2 = new file2($this->files[$i]);
+				if ($f2->ifexists()) 
+				{
+					$fdesc = new filedesc($f2->fname);
+					if ($u_id && $fdesc->logaccess) $hid = addhistory($u_id, $f2->sid, 3);
+				}				
+			}
+			
+			?>
+				<form action="<?php echo $PHP_SELF; ?>" method="post">			
+				<input type="hidden" name="action" value="downloadarchive"/>
+				<input type="hidden" name="file" value="<?php echo basename($f); ?>"/>
+				<input type="hidden" name="mime" value="<?php echo $archivers[$usearc][3]; ?>"/>
+				<table width="95%" cellpadding="0" cellspacing="0" border="0" align="center">
+				<tr>
+					<td class="notice"><?php echo get_lang(65); ?></td>
+					<td><input type="text" class="fatbuttom" name="filename" value="<?php echo 'kpdl'.date('hi').'.'.$archivers[$usearc][1]; ?>"/></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td>
+						<input type="submit" class="fatbuttom" name="download" value="<?php echo get_lang(117); ?>"/>
+						<input type="button" value="<?php echo get_lang(27); ?>" name="close" class="fatbuttom" onclick="javascript: window.close();"/>
+					</td>
+				</tr>
+				</table>
+				
+				</form>
+			<?php
+		} else echo '<font class="notice">'.get_lang(167).'</font>'; 
+		@unlink($tf);
+		kprintend();
+	}
 }
 
 function httpstreamheader2($ftype=1, $sid)
@@ -7323,19 +7900,26 @@ function httpstreamheader2($ftype=1, $sid)
 
 function kpgenerateid3v2tag($sid)
 {
-	global $enablegetid3;
-	if ($enablegetid3)
+	global $cfg;
+	if ($cfg['enablegetid3'])
 	{
-		require_once(GETID3_INCLUDEPATH.'getid3.id3v2.php');
 		$f2 = new file2($sid, true);
+
 		$data['id3v2']['TIT2']['encodingid'] = 0;
 		$data['id3v2']['TIT2']['data']       = $f2->id3['title'];
 		$data['id3v2']['TPE1']['encodingid'] = 0;
 		$data['id3v2']['TPE1']['data']       = $f2->id3['artist'];
 		$data['id3v2']['TALB']['encodingid'] = 0;
 		$data['id3v2']['TALB']['data']       = $f2->id3['album'];
-		return GenerateID3v2Tag($data['id3v2'], 3, 0, 0, '', false, false, false); 
-	}
+		
+		switch (GETID3_V)
+		{
+			case 16:
+					require_once(GETID3_INCLUDEPATH.'getid3.id3v2.php');					
+					return GenerateID3v2Tag($data['id3v2'], 3, 0, 0, '', false, false, false); 
+					break;					
+		}
+	}	
 }
 
 function mkextinf2($name, $lengths)
@@ -7346,20 +7930,21 @@ function mkextinf2($name, $lengths)
 
 function decode64($b64)
 {
-	if (!empty($b64)) return stripslashes(base64_decode($b64));
+	$data = '';
+	if (!empty($b64)) $data = stripslashes(base64_decode($b64));
+	if (checkstructure($data, false) == 0) return $data; else die();
 }
 
 function kPlay_sendlink2($sid)
 {
-	global $streamtypes;
 	$f2 = new file2($sid, true);
 	if ($f2->ifexists())
 	{
-		$ftype = file_type($f2->fname);
-		if (isset($streamtypes[$ftype]) && $streamtypes[$ftype][2] == 1)
+		$fd = new filedesc($f2->fname);
+		if ($fd->found && $fd->m3u)
 		{
 			if (db_guinfo('extm3u')) echo mkextinf2($f2->fname, $f2->getlengths());
-			httpstreamheader2(file_type($f2->fname), $sid);
+			httpstreamheader2($fd->fid, $sid);
 		}
 	}
 }
@@ -7368,7 +7953,8 @@ function kplay_m3uurl()
 {
 	global $addcrlf;
 	$num = lzero(getrand(1,999999),6);
-    header('Content-Disposition: inline; filename=kp'.$num.'.m3u');
+    if (db_guinfo('plinline')) $method = 'inline'; else $method = 'attachment';
+	header('Content-Disposition: '.$method.'; filename="kp'.$num.'.m3u"');
 	header('Content-Type: audio/x-mpegurl');
 	if (db_guinfo('extm3u'))
 	{ 
@@ -7379,18 +7965,17 @@ function kplay_m3uurl()
 
 function Kplay_resource2($sid, $many=0)
 {
-	global $streamtypes;
 	$f2 = new file2($sid, true);
 	if ($f2->ifexists())
 	{
-		$ftype = file_type($f2->fname);
-		if ($streamtypes[$ftype][2] == 1)
+		$fd = new filedesc($f2->fname);
+		if ($fd->m3u)
 		{
 			kplay_m3uurl();
 			if (!$many)
 			{
 				if (db_guinfo('extm3u')) echo mkextinf2($f2->fname, $f2->getlengths());
-				httpstreamheader2($ftype, $sid);
+				httpstreamheader2($fd->fid, $sid);
 			}
 		} else Kplay_senduser2($sid, 1);	
 	}
@@ -7444,7 +8029,7 @@ function streamfp($fp, $kbit, $prebuffer=true)
 	$precision = (int)$streamsettings['precision'];	
 
 	$kqm->start();
-	while (!feof($fp))
+	while (!feof($fp) && !connection_aborted())
 	{
 		echo fread($fp, $breadbuf);
 		flush();
@@ -7455,8 +8040,8 @@ function streamfp($fp, $kbit, $prebuffer=true)
 
 function getlame($bitrate=128,$file)
 {
-	global $lamecmd;
-	$out = str_replace('%bitrate%', $bitrate, $lamecmd);
+	global $setctl;
+	$out = str_replace('%bitrate%', $bitrate, $setctl->get('lamecmd'));
 	$out = str_replace('%file%', $file, $out);
 	return $out;
 }
@@ -7464,16 +8049,17 @@ function getlame($bitrate=128,$file)
 
 function Kplay_senduser2($sid, $inline=0)
 {
-	global $win32, $streamtypes, $_SERVER, $setctl, $streamsettings, $u_id, $lamebitrates;
-
+	global $win32, $_SERVER, $setctl, $streamsettings, $u_id, $lamebitrates;
+	ignore_user_abort(true);
+	$hid = 0;
 	$f2 = new file2($sid, true);
 	if ($f2->ifexists())
 	{
 		$fp = fopen($f2->fullpath, "rb");
 		if ($fp)
 		{
-			$ftype = file_type($f2->fname);			
-			if ($u_id && db_guinfo('lameperm') && db_guinfo('lamerate') != 0 && $setctl->get('lamesupport') && @$streamtypes[$ftype][3] == 1) $uselame = true; else $uselame = false;
+			$fdesc = new filedesc($f2->fname);
+			if ($u_id && db_guinfo('lameperm') && db_guinfo('lamerate') != 0 && $setctl->get('lamesupport') && $fdesc->gid == 1) $uselame = true; else $uselame = false;
 			$posfrom = 0;
 			if (isset($_SERVER['HTTP_RANGE']))
 			{
@@ -7484,18 +8070,19 @@ function Kplay_senduser2($sid, $inline=0)
 
 			if ($posfrom == 0)
 			{
-				$lastux = getlasthistory($sid);
+				$lastux = getlasthistory($sid, $u_id);
 				if ($lastux + 3 < time()) 
 				{
 					search_updatevote($sid);
-					if ($u_id) addhistory($u_id, $sid);
+					if ($u_id && $fdesc->logaccess) $hid = addhistory($u_id, $sid);
 				}
 			}
 
-			if (!ALLOWSEEK) $posfrom = 0;		
-		
-			header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-		
+			if (!ALLOWSEEK) $posfrom = 0;
+
+			if ($posfrom > 0)
+				$hid = getlasthistory($sid, $u_id, true);
+			
 			if (!$inline)
 			{		
 				header('Content-Disposition: filename='.$f2->fname); 
@@ -7514,10 +8101,10 @@ function Kplay_senduser2($sid, $inline=0)
 				}
 			}
 
-			header('Content-Type: '.$streamtypes[$ftype][1]);
+			header('Content-Type: '.$fdesc->mime);
 			header('Content-Range: bytes '.$posfrom.'-');
 
-			if ($setctl->get('writeid3v2') && @$streamtypes[$ftype][3] == 1 && $posfrom == 0)
+			if ($setctl->get('writeid3v2') && $fdesc->gid == 1 && $posfrom == 0)
 			{
 				$id = fread($fp, 3);
 				if ($id != 'ID3') echo kpgenerateid3v2tag($sid);
@@ -7526,6 +8113,7 @@ function Kplay_senduser2($sid, $inline=0)
 
 			if ($posfrom > 0)
 			{				
+				header('Partial content', true, 206);
 				if ($posfrom == ($f2->fsize - 129) || $posfrom == ($f2->fsize - 128)) // request id3v1
 				{
 					fseek($fp, -128, SEEK_END);
@@ -7536,7 +8124,6 @@ function Kplay_senduser2($sid, $inline=0)
 
 			if ($uselame)
 			{
-				ignore_user_abort(true);
 				if ($win32)
 				{
 					$descriptorspec = array(
@@ -7566,8 +8153,12 @@ function Kplay_senduser2($sid, $inline=0)
 					streamfp($fp, $f2->id3['bitrate']);
 						else
 					streamfp($fp, $streamsettings['defaultrate']);
-
-			} else fpassthru($fp);
+					if ($hid != 0) updatehistory($hid, ftell($fp) - $posfrom);
+			} else 
+			{	
+				while (!feof($fp) && !connection_aborted()) echo fread($fp, 32768);
+				if ($hid != 0) updatehistory($hid, ftell($fp) - $posfrom);
+			}
 			@fclose($fp);
 		}
 	}
@@ -7581,7 +8172,7 @@ function kplay_archivedownload($file, $mime, $name)
 	if ($fp)
 	{
 		header('Content-Type: '.$mime);
-		header('Content-Disposition: inline; filename='.$name);
+		header('Content-Disposition: inline; filename="'.$name.'"');
 		header('Content-Length: '.filesize($file));
 
 		if (db_guinfo('udlrate')) $udlrate = db_guinfo('udlrate');
@@ -7599,7 +8190,8 @@ function kplay_archivedownload($file, $mime, $name)
 
 function Kplay_download($sid)
 {
-	global $win32, $streamtypes, $dlrate, $curdrive, $u_id;
+	global $win32, $dlrate, $curdrive, $u_id;
+	ignore_user_abort(true);
 	if (ALLOWDOWNLOAD && db_guinfo('u_allowdownload'))
 	{
 		$f2 = new file2($sid);
@@ -7608,10 +8200,10 @@ function Kplay_download($sid)
 			$fp = fopen($f2->fullpath, 'rb');	
 			if ($fp)
 			{
-				if ($u_id) addhistory($u_id, $sid, 1);
-				$ftype = file_type($f2->fname);			
-				$mimeheader = 'Content-Type: '.$streamtypes[$ftype][1];
-				header($mimeheader);
+				$hid = 0;
+				if ($u_id) $hid = addhistory($u_id, $sid, 1);
+				$fdesc = new filedesc($f2->fname);			
+				header('Content-Type: '.$fdesc->mime);
 				header('Content-Disposition: attachment; filename="'.$f2->fname.'"');
 				header('Content-Length: '.$f2->fsize);
 
@@ -7623,7 +8215,9 @@ function Kplay_download($sid)
 			
 				if ($udlrate && !$win32) streamfp($fp, $udlrate, false);
 					else
-				fpassthru($fp);
+				while (!feof($fp) && !connection_aborted()) echo fread($fp, 32768);
+				
+				if ($hid != 0) updatehistory($hid, ftell($fp));
 				if (!connection_aborted()) fclose($fp);
 			} 
 		}
@@ -7631,25 +8225,62 @@ function Kplay_download($sid)
 	die();
 }
 
-function print_dir($drive,$name, $pdir, $nr, $return=0,$image='dir.gif',$title='', $ainf=null, $mark='', $showalbum = false, $hits = 0)
+function print_dir($drive,$name, $pdir, $nr, $return=0,$image='dir.gif',$title='', $ainf=null, $mark='', $showalbum = false, $hits = 0, $albumid='')
 {
 	global $PHP_SELF;
 	if (!empty($pdir)) $pdir_64 = base64_encode($pdir); else $pdir_64='';
 	$out = '<tr><td>&nbsp;';
 	if ($showalbum) 
 	{
-		$out .= '<a href="'.$PHP_SELF.'?n='.$nr.'&amp;p='.$pdir_64.'&amp;d='.$drive.'&amp;psongsalbum=true" class="dir">';
+		$out .= '<a href="'.$PHP_SELF.'?n='.$nr.'&amp;p='.$pdir_64.'&amp;d='.$drive.'&amp;ft='.$albumid.'&amp;action=playalbum" class="dir">';
 		$out .= '<img alt="'.get_lang(42).'" src="'.getimagelink('album.gif').'" border="0"/>&nbsp;';
 		$out .= '</a>';
 	}
-	$out .= '<a href="'.$PHP_SELF.'?n='.$nr.'&amp;p='.$pdir_64.'&amp;d='.$drive.'&amp;mark='.urlencode($mark).'" class="dir">';
-	$out .= '<img alt="'.get_lang(115).'" src="'.getimagelink($image).'" border="0"';
+	if ($nr != -1) $md = md5($name); else $md = '';
+	$out .= '<a href="'.$PHP_SELF.'?n='.$nr.'&amp;n2='.$md.'&amp;p='.$pdir_64.'&amp;d='.$drive.'&amp;mark='.urlencode($mark).'" class="dir">';
+	$out .= '<img alt="'.$name.'" src="'.getimagelink($image).'" border="0"';
 	if (!empty($title)) $out .= ' title="'.get_lang(116, checkchs($pdir)).'"';
 	$out .= '/>&nbsp;'.checkchs($name).'</a>';
-	if ($ainf) $out .= ' <span class="finfo">&nbsp;('.get_lang(151, $ainf['length'], $ainf['index']).')</span>'; else
+	if ($ainf) $out .= ' <span class="finfo">&nbsp;('.get_lang(151, $ainf['length'], $ainf['index']).')</span>';
 	if ($hits > 0) $out .= ' <span class="finfo">&nbsp;('.$hits.' '.get_lang(243).')</span>';
 	$out .= '</td></tr>';
 	if ($return) return $out; else echo $out;
+}
+
+
+class filedesc
+{
+	var $fid;
+
+	var $found;
+	var $gid;
+	var $m3u;
+	var $logaccess;
+	var $view;
+	var $mime;
+
+	function filedesc($fname)
+	{
+		global $streamtypes;
+		$this->fid = file_type($fname);
+		if ($this->fid != -1)
+		{
+			$this->found = true;
+			$this->mime = $streamtypes[$this->fid][1];
+			$this->m3u = $streamtypes[$this->fid][2];
+			$this->gid = $streamtypes[$this->fid][3];
+			$this->view = $streamtypes[$this->fid][4];
+			$this->logaccess = $streamtypes[$this->fid][5];
+		} else
+		{
+			$this->found = false;
+			$this->mime = 0;
+			$this->gid = 0;
+			$this->m3u = 0;
+			$this->view = 0;
+			$this->logaccess = 0;
+		}		
+	}
 }
 
 function file_type($name, $sindex= 0)
@@ -7740,59 +8371,75 @@ function get_searchrow($sid)
 
 function get_file_info($name)
 {
-	global $streamtypes, $enablegetid3;
+	global $streamtypes, $cfg;
 	$ret = gen_file_header();
-	if ($enablegetid3)
+	if ($cfg['enablegetid3'])
 	{
-		$finfo = GetAllFileInfo($name, file_extension($name));
-		if ($finfo)
+		if (GETID3_V == 16)
 		{
+			$finfo = GetAllFileInfo($name, file_extension($name));
+			if ($finfo)
+			{
+				$ret['length'] = isset($finfo['playtime_string']) ? $finfo['playtime_string'] : "00:00";
+				$ret['lengths'] = isset($finfo['playtime_seconds']) ? round($finfo['playtime_seconds']) : 0;
+				$ret['bitrate'] = isset($finfo['bitrate']) ? round($finfo['bitrate']) / 1000 : 0;			
+				$ret['ratemode'] = isset($finfo['audio']['bitrate_mode']) ? ratetypeid($finfo['audio']['bitrate_mode']) : 0;
+
+				if (isset($finfo['id3v1']) && is_array($finfo['id3v1'])) 
+				{
+					$ret['tag'] = 'id3v1';
+					$ret['tagid'] = 2;
+				}
+				else
+				if (isset($finfo['id3v2']) && is_array($finfo['id3v2'])) 
+				{
+					$ret['tag'] = 'id3v2';
+					$ret['tagid'] = 1;
+
+					$ret['title'] =		@$finfo['comments']['title'][0];
+					$ret['artist'] =	@$finfo['comments']['artist'][0];
+					$ret['album'] =		@$finfo['comments']['album'][0];
+					$ret['genre'] =	@is_numeric(@$finfo['comments']['genreid'][0]) ? @$finfo['comments']['genreid'][0] : 255;	
+					
+					return $ret;
+				} 
+				else
+				if (isset($finfo['comments']) && is_array($finfo['comments'])) 
+				{
+					
+					$ret['tag'] = 'comments';
+					$ret['tagid'] = 0; // unknown
+					
+					$ret['title'] =		@$finfo[$ret['tag']]['title'][0];
+					$ret['artist'] =	@$finfo[$ret['tag']]['artist'][0];
+					$ret['album'] =		@$finfo[$ret['tag']]['album'][0];
+					$ret['genre'] =	@is_numeric(@$finfo[$ret['tag']]['genreid'][0]) ? $finfo[$ret['tag']]['genreid'][0] : 255;	
+					
+					return $ret;
+				}
+				
+				if (!empty($ret['tag']))
+				{
+					$ret['title'] =		@$finfo[$ret['tag']]['title'];
+					$ret['artist'] =	@$finfo[$ret['tag']]['artist'];
+					$ret['album'] =		@$finfo[$ret['tag']]['album'];
+					$ret['genre'] =		@$finfo[$ret['tag']]['genreid'];			
+				} 
+			} 
+		} else
+		if (GETID3_V == 17)
+		{
+			$getID3 = new getID3();
+			$finfo = $getID3->analyze($name);
+			getid3_lib::CopyTagsToComments($finfo);
+
+			$ret['title'] =		@$finfo['comments_html']['title'];
+			$ret['artist'] =	@$finfo['comments_html']['artist'];
+			$ret['album'] =		@$finfo['comments_html']['album'];
+					
 			$ret['length'] = isset($finfo['playtime_string']) ? $finfo['playtime_string'] : "00:00";
-			$ret['lengths'] = isset($finfo['playtime_seconds']) ? round($finfo['playtime_seconds']) : 0;
-			$ret['bitrate'] = isset($finfo['bitrate']) ? round($finfo['bitrate']) / 1000 : 0;			
-			$ret['ratemode'] = isset($finfo['audio']['bitrate_mode']) ? ratetypeid($finfo['audio']['bitrate_mode']) : 0;
-
-			if (isset($finfo['id3v1']) && is_array($finfo['id3v1'])) 
-			{
-				$ret['tag'] = 'id3v1';
-				$ret['tagid'] = 2;
-			}
-			else
-			if (isset($finfo['id3v2']) && is_array($finfo['id3v2'])) 
-			{
-				$ret['tag'] = 'id3v2';
-				$ret['tagid'] = 1;
-
-				$ret['title'] =		@$finfo['comments']['title'][0];
-				$ret['artist'] =	@$finfo['comments']['artist'][0];
-				$ret['album'] =		@$finfo['comments']['album'][0];
-				$ret['genre'] =	@is_numeric(@$finfo['comments']['genreid'][0]) ? @$finfo['comments']['genreid'][0] : 255;	
-				
-				return $ret;
-			} 
-			else
-			if (isset($finfo['comments']) && is_array($finfo['comments'])) 
-			{
-				
-				$ret['tag'] = 'comments';
-				$ret['tagid'] = 0; // unknown
-				
-				$ret['title'] =		@$finfo[$ret['tag']]['title'][0];
-				$ret['artist'] =	@$finfo[$ret['tag']]['artist'][0];
-				$ret['album'] =		@$finfo[$ret['tag']]['album'][0];
-				$ret['genre'] =	@is_numeric(@$finfo[$ret['tag']]['genreid'][0]) ? $finfo[$ret['tag']]['genreid'][0] : 255;	
-				
-				return $ret;
-			}
-			
-			if (!empty($ret['tag']))
-			{
-				$ret['title'] =		@$finfo[$ret['tag']]['title'];
-				$ret['artist'] =	@$finfo[$ret['tag']]['artist'];
-				$ret['album'] =		@$finfo[$ret['tag']]['album'];
-				$ret['genre'] =		@$finfo[$ret['tag']]['genreid'];			
-			} 
-		} 
+			$ret['lengths'] = isset($finfo['playtime_seconds']) ? round($finfo['playtime_seconds']) : 0;		
+		}
 		return $ret;
 	}
 
@@ -7868,10 +8515,10 @@ function ismarked($info)
 	if ($hits == $c) return true;
 }
 
-function file_parse($f2)
+function file_parse($f2, $link, $class)
 {
 	global $setctl;
-	$str = $setctl->get('filetemplate');
+	$str = '<a href="%i"[ title="%t - %l"]><span class="%c">%f</span></a>[ <span class="finfo">(%b kbit %m mins)</span>]'; 	
 	$str2 = '';
 	$spos = -1;
 	$epos = -1;
@@ -7913,16 +8560,18 @@ function file_parse($f2)
 					case 'l': $add = $f2->id3['album']; break;
 					case 't': $add = $f2->id3['title']; break;
 					case 'b': $add = $f2->id3['bitrate']; break;
-					case 'm': $add = $f2->id3['lengthmin']; break;
-					case 's': $add = $f2->id3['lengthsec']; break;
-					case 'h': $add = $f2->getsearchvar('hits'); break;
+					case 'm': //$add = $f2->id3['lengthmin']; break;
+					case 's': $add = $f2->id3['length']; break;
+					case 'h': $add = $f2->hits; break;
+					case 'i': $add = $link; break;
+					case 'c': $add = $class; break;
 					default: $match = false; break;
 				}
 				if ($match) 
 				{
 					$i++;
 					$str2 .= $add; 
-				}
+				} else $str2 .= '%';
 				if ($conditional && empty($add)) $fullfilled = false;
 				break;
 			default: $str2 .= $str[$i]; break;
@@ -7931,9 +8580,9 @@ function file_parse($f2)
 	return $str2;
 }
 
-function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $mark = '')
+function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid = -1)
 {
-	global $PHP_SELF, $u_cookieid, $setctl, $id3editor;
+	global $PHP_SELF, $u_cookieid, $setctl, $cfg, $marksid;
 
 	if (!$f2) $f2 = new file2($sid, true);
 	$inf = $f2->getid3();
@@ -7943,78 +8592,84 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $mark = ''
 	$extra = '';
 	$extravalue = '';
 
-	if ($showlink) $extra = '<a href="'.$PHP_SELF.'?p='.$f2->getdir64().'&amp;d='.$f2->drive.'&amp;mark='.urlencode($mark).'" title="'.get_lang(116, checkchs($f2->relativepath)).'">'.
-	'<img src="'.getimagelink('link.gif').'" alt="'.get_lang(116, checkchs($f2->relativepath)).'" border="0"></a>&nbsp;';
+	if ($showlink) $extra = '<a href="'.$PHP_SELF.'?p='.$f2->getdir64().'&amp;d='.$f2->drive.'&amp;marksid='.$smarksid.'" title="'.get_lang(116, checkchs($f2->relativepath)).'">'.
+	'<img src="'.getimagelink('link.gif').'" alt="'.get_lang(116, checkchs($f2->relativepath)).'" border="0"/></a>&nbsp;';
 	if ($includeabsolute) $extravalue = ';'.$f2->getdir64();
 
-	$out = '<tr><td>';
-	$out .= '<input type="checkbox" name="selected[]" value="'.$sid.'"/> ';
+	echo '<tr><td><input type="checkbox" name="selected[]" value="'.$sid.'"/> ';
 
-	if ($id3editor && @$inf && $inf['tagid'] == 1 && db_guinfo('u_access') == 0)
+	if ($cfg['id3editor'] && db_guinfo('u_access') == 0)
 	{
 		$id3link = '&amp;id3sid='.$sid;
-		$out .= '<a href="javascript: void(0);" onclick="javascript: openwin(\'id3editor\', \''.$PHP_SELF.'?id3edit=true'.$id3link.'\');">id3</a>&nbsp;';
+		echo '<a href="javascript: void(0);" onclick="javascript: openwin(\'id3editor\', \''.$PHP_SELF.'?action=id3edit'.$id3link.'\');">id3</a>&nbsp;';
 	}
 
 	if (ALLOWDOWNLOAD && db_guinfo('u_allowdownload')) 
-	$out .= '<span class="file"><a href="'. $PHP_SELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.'">'.
+	echo '<span class="file"><a href="'. $PHP_SELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.'">'.
 	'<img src="'.getimagelink('saveicon.gif').'" alt="'.get_lang(117).'" border="0"/></a></span>&nbsp;';
 
 	if (MAILMP3 && db_guinfo('allowemail') && class_exists('mailmp3'))
-	$out .= '<a href="javascript: void(0);" onclick="javascript: newwin(\'mp3mail\', \''.$PHP_SELF.'?sendmail='.$sid.'&amp;c='.$u_cookieid.'\', 180, 390);">'.
-	'<img src="'.getimagelink('sendmail.gif').'" alt="'.get_lang(223).'" border="0"/></a></span>&nbsp;';
+	echo '<a href="javascript: void(0);" onclick="javascript: newwin(\'mp3mail\', \''.$PHP_SELF.'?action=sendmail&amp;id='.$sid.'&amp;c='.$u_cookieid.'\', 195, 390);">'.
+	'<img src="'.getimagelink('sendmail.gif').'" alt="'.get_lang(223).'" border="0"/></a>&nbsp;';
 
-	$out .=	$extra.'<a href="'.$PHP_SELF.'?sid='.$sid.'&amp;c='.$u_cookieid.'"';
-	if (!empty($title)) $out .= ' title="'. $title. '"';
-	if (ismarked($f2->fname.$title)) $useclass = 'filemarked'; else $useclass = 'file';
-	$out .= '>'.'<span class="'.$useclass.'">'.checkchs($f2->fname).'</span></a>&nbsp;&nbsp;';
+	echo $extra.'<a href="'.$PHP_SELF.'?sid='.$sid.'&amp;c='.$u_cookieid.'"';
+	if (!empty($title)) echo ' title="'. $title. '"';
+	if (ismarked($f2->fname.$title) || $f2->sid == $marksid) $useclass = 'filemarked'; else $useclass = 'file';
+	echo '>'.'<span class="'.$useclass.'">'.checkchs($f2->fname).'</span></a><span class="finfo">&nbsp;&nbsp;';
 
-	if (!empty($inf['bitrate']) && !empty($inf['length'])) $out .= '<span class="finfo">('.get_lang(152, $inf['bitrate'], $inf['length']).')</span>';
+	if (!empty($inf['bitrate']) && !empty($inf['length'])) echo '('.get_lang(152, $inf['bitrate'], $inf['length']).') ';
+	if ($f2->fsize > 1048576) echo get_lang(272, number_format($f2->fsize / 1048576,1)); else
+	if ($f2->fsize > 8192) echo get_lang(273, number_format($f2->fsize / 1024,1)); else
+							echo get_lang(274, $f2->fsize);
+	echo '</span></td></tr>';
 
-	$out .= '</td></tr>';
-
-	echo $out;
+	// new parsed (later) echo $extra.file_parse($f2, $link, $useclass);
 }
 
 function listfiles($where, &$in, $drive)
 {
 	if ($d = @opendir($where)) 
 	{
-		while ($file = readdir($d)) if (is_file($where.$file) && file_type($file, 1) != -1) $in[] = array($file, $drive); 
+		while ($file = readdir($d)) if (is_file($where.$file) && file_type($file) != -1) $in[] = array($file, $drive, filesize($where.$file),filemtime($where.$file)); 
 		closedir($d);
 	}
 }
 
-function disksync($dir, $drive, $root = false)
+function disksync($dir, $drive, $root = false, $stop = false)
 {
 	global $base_dir;
 	$flist = array();
 	$dblist = array();
 	$found = 0;
 	if (!$root) 
-		$dbres = db_execquery('SELECT free FROM '.TBL_SEARCH.' WHERE dirname = "'.$dir.'" AND drive = '.$drive.' ORDER BY free ASC');
+		$dbres = db_execquery('SELECT free,fsize,mtime FROM '.TBL_SEARCH.' WHERE f_stat = 0 AND dirname = "'.$dir.'" AND drive = '.$drive.' ORDER BY free ASC');
 			else
-		$dbres = db_execquery('SELECT free FROM '.TBL_SEARCH.' WHERE dirname = "" ORDER BY free ASC');
+		$dbres = db_execquery('SELECT free,fsize,mtime FROM '.TBL_SEARCH.' WHERE f_stat = 0 AND dirname = "" ORDER BY free ASC');
 
-	while ($row = mysql_fetch_row($dbres)) $dblist[] = $row[0];
+	while ($row = mysql_fetch_row($dbres)) $dblist[] = array($row[0], $row[1], $row[2]);
 	
 	if (!$root) listfiles($base_dir[$drive].$dir, $flist, $drive); else
 	for ($i=0;$i<count($base_dir);$i++) listfiles($base_dir[$i], $flist, $i);
 	
 	$c2=count($flist);
+	$c=count($dblist);
 
-	for ($i=0,$c=count($dblist);$i<$c;$i++)
-	for ($i2=0;$i2<$c2;$i2++)
-	if ($dblist[$i] == $flist[$i2][0]) 
+	if ($c2 != $c)
 	{
-		$found++;
-		$flist[$i2][0] = '';
-	}
-
-	if ($found != $c2)
+		if (!$root) $sql = 'UPDATE '.TBL_SEARCH.' SET f_stat = 1 WHERE dirname = "'.$dir.'" AND drive = '.$drive;
+		else $sql = 'UPDATE '.TBL_SEARCH.' SET f_stat = 1 WHERE dirname = ""';
+		db_execquery($sql);
+		for ($i=0;$i<$c2;$i++) updatesingle($base_dir[$flist[$i][1]].$dir.$flist[$i][0]);
+	} else
 	{
-		for ($i=0,$c=count($flist);$i<$c;$i++)
-			if (!empty($flist[$i][0])) updatesingle($base_dir[$flist[$i][1]].$dir.$flist[$i][0]);
+		$changes = false;
+		for ($i=0;$i<$c;$i++) for ($i2=0;$i2<$c2;$i2++) if ($dblist[$i][0] == $flist[$i2][0] && $dblist[$i][1] == $flist[$i2][2] && $dblist[$i][2] == $flist[$i2][3]) $flist[$i2][0] = '';
+		for ($i2=0;$i2<$c2;$i2++) if (!empty($flist[$i2][0])) 
+		{
+			$changes = true;
+			updatesingle($base_dir[$flist[$i2][1]].$dir.$flist[$i2][0]);
+		}
+		if ($changes && !$stop) disksync($dir, $drive, $root, true);
 	}
 }
 
@@ -8052,7 +8707,7 @@ function file_id3editor($file)
 		kprintheader("id3editor (beta)", 1);
 		?>
 			<form name="settings" method="post" action="<?php echo $PHP_SELF; ?>">
-			<input type="hidden" name="id3info" value="save"/>
+			<input type="hidden" name="action" value="id3save"/>
 			<input type="hidden" name="file" value="<?php echo base64_encode($file); ?>"/>
 			<table width="100%" border="0">
 			<tr>
@@ -8104,9 +8759,9 @@ function file_id3editor($file)
 	}
 }
 
-function checkstructure($where)
+function checkstructure($where, $b64=true)
 {
-	$checkdir=stripslashes(base64_decode($where));
+	if ($b64) $checkdir=stripslashes(base64_decode($where)); else $checkdir = $where;
 	$srcstr1 = '../';	
 	if (strlen($checkdir) > 0)
 	{
@@ -8121,7 +8776,7 @@ $lastwhere = false;
 
 function readresources($where)
 {
-	global $dir_list, $lastwhere, $dirignorelist;
+	global $dir_list, $lastwhere, $cfg;
 	$c = 0;
 	
 	if ($lastwhere == $where) return; 
@@ -8131,17 +8786,47 @@ function readresources($where)
 
 	if ($dir = @opendir($where)) 
 	{
-		while ($file = readdir($dir)) if (!isset($dirignorelist[$file])) if (is_dir($where.$file)) $dir_list[$c++] = $file;
+		while ($file = readdir($dir)) if (!isset($cfg['dirignorelist'][$file])) if (is_dir($where.$file)) $dir_list[$c++] = $file;
 		closedir($dir);
 	}
 	usort($dir_list, 'strcasecmp');
 }
 
+function firsttime()
+{
+	?>
+	<tr>
+		<td>
+			<table width="80%" bgcolor="#CCCCCC" align="center" cellpadding="2" cellspacing="5" border="0">
+			<tr>
+				<td class="fatfield">Welcome to kPlaylist!</td>
+			</tr>			
+			<tr>
+				<td class="importnant">To get your site quickly up:</td>
+			</tr>
+			<tr>
+				<td class="importnant">Click Settings to your right, choose 'File handling' on the top and enter the paths to your music directory or directories in the 'base directory' field. Click
+				on the ? for help.</td>
+			</tr>
+			<tr>
+				<td class="importnant">If you have problems, click <a class="importnant" href="http://kplaylist.net/index.php?showinstall=1" target="_blank">-here-</a> for the kPlaylist installation manual.</td>
+			</tr>
+			<tr>
+				<td class="importnant">Good luck!</td>
+			</tr>
+			</table>
+		</td>
+	</tr>
+	<?php
+}
+
 function listroot()
 {
-	global $base_dir, $dir_list, $disksync;
-	KCreate_Mp3Table();
+	global $base_dir, $dir_list, $cfg;
+	mp3table();
 	echo '</td></tr>';
+
+	if (count($base_dir) == 1 && $base_dir[0] == '/path/to/my/music/archive/' && db_guinfo('u_access') == 0) firsttime();
 
 	$dcnt = 0;
 	$fcnt = 0;
@@ -8161,34 +8846,168 @@ function listroot()
 			$sortcnt++;
 		}
 	}
-	array_multisort($sortlist, $drivelist, $nrlist, SORT_STRING);	
+	if ($cfg['sortroot']) array_multisort($sortlist, $drivelist, $nrlist, SORT_STRING);	
 	for ($i=0;$i<$sortcnt;$i++) echo print_dir($drivelist[$i],$sortlist[$i], '', $nrlist[$i],1);
 	
-	if ($disksync) disksync('', 0, true);
+	if (DISKSYNC) disksync('', 0, true);
 
-	$res = fsearch('/', true);
-	$fcnt = mysql_num_rows($res);
-	while ($row = mysql_fetch_row($res)) print_file($row[0],0,1);
+	$res = fsearch('/', true,0,'id, free');
+	$fcnt = 0;
+	while ($row = mysql_fetch_row($res)) 
+	{
+		$fdesc = new filedesc($row[1]);
+		if ($fdesc->view) 
+		{
+			$fcnt++;
+			print_file($row[0],0,1);
+		}
+	}
 	
-	KCreate_EndMp3Table(0, $dcnt, $fcnt);
-	KCreate_infobox();
+	endmp3table(0, $dcnt, $fcnt);
+	infobox();
 	?>
 	</tr>
 	</table>
 	<?php	
 }
 
-function fsearch($dir, $root = false, $drive = 0)
+function fsearch($dir, $root = false, $drive = 0, $r='id')
 {
-	if (!$root) $sql = 'SELECT id FROM '.TBL_SEARCH.' WHERE dirname = "'.$dir.'" AND drive = '.$drive.' ORDER BY free ASC';	
+	if (!$root) $sql = 'SELECT '.$r.' FROM '.TBL_SEARCH.' WHERE f_stat = 0 AND dirname = "'.$dir.'" AND drive = '.$drive.' ORDER BY free ASC';	
 			else
-				$sql = 'SELECT id FROM '.TBL_SEARCH.' WHERE dirname = "" ORDER BY free ASC';
+				$sql = 'SELECT '.$r.' FROM '.TBL_SEARCH.' WHERE f_stat = 0 AND dirname = "" ORDER BY free ASC';
 	return db_execquery($sql);
 }
 
-function read_dir($pdir, $count=-1, $drive=0)
+function fmatch($file, $pattern)
 {
-	global $base_dir, $dir_list, $disksync;
+	$match = '';
+	$fpos = 0;
+	for ($i=0,$c=strlen($pattern);$i<=$c;$i++)
+	{
+		if ($i == $c || $pattern[$i] == '*')
+		{
+			if (!empty($match))
+			{
+				$p = strpos($file, $match, $fpos);
+				if ($p !== false) $fpos = $p + strlen($match);
+					else return false;
+			}
+			$match = '';
+		} else $match .= $pattern[$i];
+	}
+	return true;
+}
+
+function albumshow($rows)
+{
+	global $setctl;
+	$names = array();
+	for ($i=0,$c=count($rows);$i<$c;$i++)
+	{
+		$f2 = new file2($rows[$i], false);
+		$names[] = array($f2->fname, $f2->weblink(), $f2->fullpath);
+	}
+
+	$albumfiles = explode(',', strtoupper($setctl->get('albumfiles')));
+	
+	for ($i=0,$c=count($albumfiles);$i<$c;$i++)
+	{		
+		$amatch = trim($albumfiles[$i]);
+		if (empty($amatch)) continue;
+		for ($i2=0,$c2=count($names);$i2<$c2;$i2++)
+		{
+			if (fmatch(strtoupper($names[$i2][0]), $amatch))
+			{
+				?>
+				<tr>
+					<td>
+					<?php
+					if ($setctl->get('albumresize')) 
+					{ 
+						if ($imagesize = @getimagesize($names[$i2][2]))
+						{
+							$w = $imagesize[0]; 
+							$h = $imagesize[1]; 
+							$wm = $setctl->get('albumwidth'); 
+							$hm = $setctl->get('albumheight'); 
+							$nw = min ($wm, $w); 
+							$nh = min ($hm, $h); 
+							$p = ($wm > $hm) ? $w / $h : $h / $w; 
+							if ($p > 1) 
+							$nh = round($h * $nw / $w); 
+							else 
+							$nw = round($w * $nh / $h); 
+							if ($nw > $wm || $nh > $hm) 
+							{ 
+								$nw = min ($wm, $nw); 
+								$nh = min ($hm, $nh); 
+								$p = ($wm > $hm) ? $h / $w : $w / $h; 
+								if ($p > 1) 
+								$nh = round($h * $nw / $w); 
+								elseif ($p < 1) 
+								$nw = round($w * $nh / $h); 
+							}
+						} else
+						{
+							$nw = $setctl->get('albumwidth');
+							$nh = $setctl->get('albumheight');
+						}
+						echo '<img src="'.$names[$i2][1].'" alt="album" width="'.$nw.'" height="'.$nh.'"/>'; 
+					}
+					else echo '<img alt="album" src="'.$names[$i2][1].'"/>';
+					?>
+					</td>
+				</tr>
+				<?php
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+function retornaEndImgCapa($artist, $album)
+{
+	global $setctl;
+	$url = str_replace('%artist', urlencode($artist), $setctl->get('albumurl'));
+	$strEndereco = str_replace('%album', urlencode($album), $url);
+	$handle = fopen($strEndereco, 'r');	
+	if (!empty($handle))
+	{
+		$contents = '';
+		while (!feof($handle)) {
+		  $contents .= fread($handle, 8192);
+		}
+		fclose($handle);
+				
+		if (is_numeric(strpos($contents,'coverart')))
+		{
+			$contents = substr($contents,strpos($contents,'coverart'),strlen($contents));
+			$contents = substr($contents,strpos($contents,'src="')+5,strlen($contents));			
+			$contents = substr($contents, 0, strpos($contents,'"'));			
+		}
+		else $contents = '';
+		
+		if (!is_numeric(strpos($contents,'.jpg')) & !is_numeric(strpos($contents,'.gif'))) return false;
+			else 
+		return $contents;
+	}
+	return false;
+}
+
+function get_dir($dirlist, $cnt, $n2)
+{
+	if (isset($dirlist[$cnt]) && md5($dirlist[$cnt]) == $n2) return $dirlist[$cnt];
+	for ($i=0,$c=count($dirlist);$i<$c;$i++)
+		if (md5($dirlist[$i]) == $n2) return $dirlist[$i];
+	if (isset($dirlist[$cnt])) return $dirlist[$cnt];
+	return '';
+}
+
+function read_dir($pdir, $count=-1, $drive=0, $n2='')
+{
+	global $base_dir, $dir_list, $setctl, $cfg;
 
 	if (!empty($pdir)) $pdir=base64_decode($pdir);
 
@@ -8198,7 +9017,7 @@ function read_dir($pdir, $count=-1, $drive=0)
 
 	if (is_numeric($count) && ($count != -1))
 	{
-			@$pdir .= $dir_list[$count];
+			$pdir .= get_dir($dir_list, $count, $n2);
 			if (!empty($pdir)) 
 			{ 
 				if ($pdir[strlen($pdir)-1] != '/') $pdir .= '/'; 
@@ -8207,27 +9026,75 @@ function read_dir($pdir, $count=-1, $drive=0)
 	}
 
 	
-	KCreate_Mp3Table($pdir);
-	show_nice_dir($pdir,"",$drive);
-
+	mp3table($pdir);
+	showdir($pdir,'',$drive);
 	echo '</td></tr>';
 	
-	if ($disksync) disksync($pdir, $drive);
+	if (DISKSYNC) disksync($pdir, $drive);
 
-	$res = fsearch($pdir, false, $drive);
+	$res = fsearch($pdir, false, $drive,'id, free');
 
 	$dcnt = count($dir_list);
-	$fcnt = mysql_num_rows($res);
+
+	$rows = $viewrows = array();
+	while ($row = mysql_fetch_row($res)) 
+	{
+		$rows[] = $row[0];
+		$fdesc = new filedesc($row[1]);
+		if ($fdesc->view) $viewrows[] = $row[0];
+	}
+
+	$fcnt = count($viewrows);
+
+	if (ALBUMCOVER && $dcnt <= $cfg['isalbumdircount'] && $fcnt > 0) 
+	{
+		$result = albumshow($rows);
+	
+		if (!$result && FETCHALBUM)
+		{
+			$artist = '';
+			$album = '';
+			for ($i=0,$c=count($rows);$i<$c;$i++)
+			{
+				$sql = 'SELECT artist, album FROM '.TBL_SEARCH.' WHERE id = '.$rows[$i];
+				$res = db_execquery($sql);
+				if ($res !== false)
+				{
+					$id = mysql_fetch_row($res);
+					$artist = $id[0];
+					$album = $id[1];
+					if (!empty($artist) && !empty($album)) break;
+				}
+			}
+			if (!empty($artist) && !empty($album)) 
+			{				
+				$img = retornaEndImgCapa($artist, $album);
+				if (!empty($img))
+				{
+					?>
+					<tr><td>
+					<?php
+					if ($setctl->get('albumresize'))  echo '<img src="'.$img.'" alt="album" width="'.$setctl->get('albumwidth').'" height="'.$setctl->get('albumheight').'"/>'; 
+						else 
+							echo '<img alt="album" src="'.$img.'"/>';
+					?>
+					</td></tr>
+					<?php
+				}
+			}
+
+		}
+	}
 
 	if ($fcnt == 0 && $dcnt == 0) echo '<tr><td class="file">'.get_lang(156).'</td></tr>'; 
 	else
 	{
 		for ($i=0;$i<$dcnt;$i++) echo print_dir($drive,$dir_list[$i], $pdir, $i,1);
-		while ($row = mysql_fetch_row($res)) print_file($row[0],0,1);
+		for ($i=0,$c=count($viewrows);$i<$c;$i++) print_file($viewrows[$i],0,1);
 	}
 	
-	KCreate_EndMp3Table(1, $dcnt, $fcnt);
-	KCreate_infobox();
+	endmp3table(1, $dcnt, $fcnt);
+	infobox();
 	?>
 	</tr>
 	</table>
@@ -8252,7 +9119,7 @@ function dir_divide($path, $drive)
 	return $out;	
 }
 
-function show_nice_dir($pdir, $text="", $drive)
+function showdir($pdir, $text="", $drive)
 {
 	global $PHP_SELF;
 
@@ -8272,17 +9139,17 @@ function show_nice_dir($pdir, $text="", $drive)
 	echo '<font class="curdir">'.$show.'&nbsp;</font><hr width="80%" align="left" size="1"/>'; 
 }
 
-function kplaylist_filelist($where, $n=-1, $drive=0)
+function kplaylist_filelist($where, $n=-1, $drive=0, $n2='')
 {
-	global $mark;
+	global $mark, $marksid;
 	if (checkstructure($where) == 0)
 	{
 		if (isset($_GET['mark']) && !empty($_GET['mark'])) $mark = explode(' ', strtoupper(trim($_GET['mark']))); else $mark = array();
+		if (isset($_GET['marksid'])) $marksid = $_GET['marksid'];
 		kprintheader("kPlaylist", 1);
-		if ( (!isset($n) || $n == -1) && empty($where)) listroot(); else read_dir($where, $n, $drive);  
+		if ( (!isset($n) || $n == -1) && empty($where)) listroot(); else read_dir($where, $n, $drive, $n2);  
 		kprintend(); 
 	} 
-	die();
 }
 
 
@@ -8299,7 +9166,7 @@ class file2
 	var $id3 = false;
 	var $relativepath = '';
 	var $dir64 = '';
-
+	
 	function investigate()
 	{
 		global $base_dir;
@@ -8314,13 +9181,13 @@ class file2
 
 			if (isset($base_dir[$this->drive]))
 			{
-				$this->fname = basename($this->origrow['free']);
+				$this->fname = basename($this->origrow['free']);				
 				$this->fullpath = $base_dir[$this->drive].$this->relativepath.$this->fname;			
 				if (OPTIMISTICFILE) $this->fexists = true; 
 					else 
 				if (@file_exists($this->fullpath)) $this->fexists = true;
 			}
-		}
+		} else return false;
 	}
 
 	function ifexists()
@@ -8343,6 +9210,12 @@ class file2
 	{
 		if (empty($this->dir64)) $this->dir64 = base64_encode($this->relativepath);
 		return $this->dir64;
+	}
+
+	function weblink()
+	{
+		global $PHP_SELF, $u_cookieid;
+		return $PHP_SELF.'?sid='.$this->sid.'&amp;c='.$u_cookieid;
 	}
 
 	// don't get to hung up about the name. It's not really a id3 tag, it's anything (ogg, id3v1, id3v2, etc.)
@@ -8383,6 +9256,7 @@ function KCheckActions()
 	if ($setctl->get('unauthorizedstreams') && $stat == 0)
 	{
 		$validated_user['extm3u'] = $setctl->get('unauthorizedstreamsextm3u');
+		$validated_user['plinline'] = 1;
 		if (isset($_GET['streamsid'])) Kplay_senduser2($_GET['streamsid'], 0);
 		if (isset($_GET['sid']))
 		{
@@ -8407,543 +9281,596 @@ function KCheckActions()
 	die();
 }	
 
-if (isset($_POST['signup']) || isset($_GET['signup'])) KSignup();
-
 if (isset($_GET['downloadfile']) || isset($_GET['sid']) || isset($_GET['streamsid']) || isset($_GET['streamplaylist'])) KCheckActions();
+
 if (isset($_GET['update']) && isset($_GET['user'])) search_updateautomatic($_GET['user'],$phpenv['remote'],$_GET['update']);
 
-if (!empty($_POST['user']) && !empty($_POST['password']))
+if (isset($_POST['signup']) || isset($_GET['signup']) && USERSIGNUP) KSignup();
+
+if (isset($_POST['user']) && isset($_POST['password']) && !empty($_POST['user']) && !empty($_POST['password']))
 {
 	webprocess(); 
 	if ($userauth) 
 	{
-		?>
-		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
-		<html>
-			<head>
-				<title></title>
-				<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-				<meta http-equiv="Refresh" content="0; url=<?php echo $PHP_SELF; ?>?checkcookie=true"/>
-			</head> 
-			<body></body>
-		</html>
-		<?php
+		refreshurl($PHP_SELF.'?checkcookie=true');
 		die();
-	}
-	else
+	} else
 	{
-		if ($setctl->get('report_attempts')) syslog_write('User could not be validated (user: "'.$_POST['user'].'" / pass: "'.$_POST['password'].'")');
-		klogon();			
+		if ($setctl->get('report_attempts')) syslog_write('User could not be validated (user: "'.$_POST['user'].'")');
+		klogon();
 	}
 } 
 
-if (isset($_COOKIE[$cookie_name]) || $disablelogin)
+if (isset($_COOKIE[$cfg['cookie']]) || $cfg['disablelogin'])
 {	
-	if (db_verify_stream(@$_COOKIE[$cookie_name], $phpenv['remote']) == 1)
+	if (db_verify_stream(@$_COOKIE[$cfg['cookie']], $phpenv['remote']))
 	{
 		if (REQUIRE_HTTPS && !$phpenv['https']) klogon();
 
-		if (isset($_COOKIE[$cookie_name])) $u_cookieid = $_COOKIE[$cookie_name]; else $u_cookieid = null;
+		if (isset($_COOKIE[$cfg['cookie']])) $u_cookieid = $_COOKIE[$cfg['cookie']]; else $u_cookieid = null;
 		
 		$deflanguage = db_guinfo('lang');
 
-		if (isset($_POST['search'])) user_saveoption('defaultsearch', vernum($_POST['search'])); 
+		if (isset($_POST['sel_playlist'])) user_saveoption('defplaylist', vernum($_POST['sel_playlist']));
 
-		if (!empty($_POST['searchfor'])) 
-		{	
-			$u_searchstr = stripslashes(checkchs($_POST['searchfor']));
-			user_saveoption('defaultid3', verchar(@$_POST['onlyid3']));
-			user_saveoption('hitsas', verchar(@$_POST['hitsas']));
-		} 
-		
-		if (!empty($_POST['sel_playlist'])) user_saveoption('defplaylist', vernum($_POST['sel_playlist']));
-
-		if (!empty($_POST['sel_shplaylist'])) 
+		if (isset($_POST['sel_shplaylist'])) 
 		{
 			user_saveoption('defshplaylist', vernum($_POST['sel_shplaylist']));
 			$_POST['sel_playlist'] = $_POST['sel_shplaylist'];
-		}		
-		
-		if (isset($_GET['randomizer']) || isset($_POST['randomizer'])) 
-		{
-			if (class_exists('kprandomizer'))
-			{
-				$rz = new kprandomizer();
-				if (isset($_POST['mode'])) $rz->setmode($_POST['mode']);
-				if (isset($_POST['limit'])) $rz->setlimit($_POST['limit']);
-				if (isset($_POST['genre'])) $rz->setgenre($_POST['genre']);
-				if (isset($_POST['playlist'])) $rz->setplaylist($_POST['playlist']);
-				if (isset($_POST['order'])) $rz->setorder($_POST['order']);
-				if (isset($_POST['execute'])) $rz->execute(); else $rz->view();
-				die();
-			}
 		}
-		
-		if (isset($_GET['sendmail']) || isset($_POST['sendmail']))
+
+		if (isset($_GET['action']) || isset($_POST['action']))
 		{
-			if (class_exists('mailmp3'))
-			{
-				$mail3 = new mailmp3();
-				if (isset($_GET['sendmail'])) $mail3->setsid($_GET['sendmail']);
-				$mail3->decide();
-			}
-		} else
-		if (isset($_GET['fupload']) || isset($_POST['fupload']))
-		{
-			if (class_exists('fupload'))
-			{
-				$fu = new fupload();				
-				$fu->decide();
-			}
-		} else
-		if (isset($_POST['whatshot'])) whats_hot(db_guinfo('hotrows'));
-		else 
-		if (isset($_POST['hotoptions'])) 
-		{
-			if (isset($_POST['hotperiod']) && is_numeric($_POST['hotperiod'])) $filter = $_POST['hotperiod']; else $filter = 0;
-			whats_hot(db_guinfo('hotrows'), $filter);
-		}
-		else 
-		if (isset($_POST['whatsnew'])) whats_new(db_guinfo('hotrows'));
-		else		
-		if (isset($_GET['artist'])) hotselect($_GET['artist']);			
-		else
-		if (isset($_POST['psongsselected']) || isset($_POST['psongsall']) || isset($_GET['psongsalbum']))
-		{
-			if (isset($_POST['psongsselected']))
-			{
-				kplay_m3uurl();
-				if (isset($_POST['selected']))
-					for ($i=0,$c=count($_POST['selected']);$i<$c;$i++) kPlay_sendlink2($_POST['selected'][$i]);
-			} else 
-			if (isset($_POST['psongsall']))
-			{				
-				$res = fsearch(decode64($_POST['previous']), false, $curdrive);
-				kplay_m3uurl();	
-				while ($row = mysql_fetch_row($res)) kPlay_sendlink2($row[0]);
-			} else
-			if (isset($_GET['psongsalbum']))
-			{
-				$res = fsearch(decode64($_GET['p']), false, $curdrive);
-				kplay_m3uurl();	
-				while ($row = mysql_fetch_row($res)) kPlay_sendlink2($row[0]);
-			}
-		} else
-		if (isset($_POST['pdlselected']) || isset($_POST['pdlall']))
-		{
-			$usearc = 0;
-			$preferarc = db_guinfo('archer');
-			if (isset($archivers[$preferarc]) && $archivers[$preferarc][0] == 1) $usearc = db_guinfo('archer');
+			if (isset($_GET['action'])) $action = $_GET['action']; else $action = $_POST['action'];		
+			$match = true;
 			
-			$f = tempnam($archivetemp, 'kppack');
-			$f .= '.'.$archivers[$usearc][1];
-
-			$cwd = getcwd();
-			$error = 0;
-
-			if (isset($_POST['pdlselected']))
+			switch ($action)
 			{
-				if (isset($_POST['selected']))
-				{	
-					for ($i=0;$i<count($_POST['selected']);$i++)
-					{
-						$f2 = new file2($_POST['selected'][$i]);
-						if ($f2->ifexists())
+				case 'bulletin':
+						if (class_exists('kbulletin') && BULLETIN)
 						{
-							chdir($f2->getdrivedir());
-							$run = getarchiveline($usearc, $f, $f2->getfullpath($win32));
-							if (!empty($run)) exec($run); 						
+							$kb = new kbulletin();
+							$kb->showall();
 						}
-					}				
-				} else die();				
-			} else 
-			if (isset($_POST['pdlall']))
-			{
-				$res = fsearch(decode64($_POST['previous']), false, $curdrive);
-				while ($row = mysql_fetch_row($res)) 
-				{
-					$f2 = new file2($row[0]);
-					if ($f2->ifexists())
-					{
-						$run = getarchiveline($usearc, $f, $f2->getfullpath($win32));
-						if (!empty($run)) exec($run);					
-					}
-				}				
-			}
-			chdir($cwd);
-			if (!file_exists($f)) errormessage(get_lang(167));
-			kplay_archivedownload($f, $archivers[$usearc][3], 'kpdl'.date('hi').'.'.$archivers[$usearc][1]);
-			@unlink($f);
-		}
-		else 
-		if (!empty($_GET['editoptions'])) show_useroptions();
-		else		
-		if (isset($_GET['users']) && $_GET['users'] == 'modify')
-		{
-			if (db_guinfo('u_access') == 0)
-			{
-				if (!empty($_GET['del'])) 
-				{
-					$id = $_GET['del'];
-					if (is_numeric($id)) db_execquery('DELETE FROM '.TBL_USERS.' WHERE u_id = '.$id);
-				} 
-				else
-				if (!empty($_GET['logout'])) 
-				{
-					$id = $_GET['logout'];
-					if (is_numeric($id)) if (!$demo_mode) db_execquery('UPDATE '.TBL_USERS.' SET u_sessionkey = 0, u_status = 0 WHERE u_id = '.$id);
-				} else
-				if (!empty($_GET['edit']))
-				{
-					$id = $_GET['edit'];
-					show_new_user_form($id);
-					die();
-				} else
-				if (!empty($_GET['history']))
-				{
-					show_userhistory($_GET['history']);
-					die();
-				}
-			}
-			show_users();
-		} 
-		else
-		if (isset($_POST['useroptions']) && $_POST['useroptions'] == 'save')
-		{
-			$state = save_useroptions($_POST);
-			switch ($state)
-			{
-				case 2: show_useroptions(get_lang(157),true); break;
-				case 3: show_useroptions(get_lang(165),true); break;
-				default: show_useroptions(null,true); break;
-			}
-		} 
-		else		
-		if (isset($_POST['formusers']) && $_POST['formusers'] == 'userchange')
-		{
-			if (db_guinfo('u_access') == 0)
-			{
-				if (!empty($_POST['Submit']))
-				{
-					isset($_POST['passchange']) ? $changepw = 1 : $changepw = 0;
-					isset($_POST['booted']) ? $booted = 1 : $booted = 0;
-					isset($_POST['lameperm']) ? $lameperm = 1 : $lameperm = 0;
-					isset($_POST['download']) ? $download = 1 : $download = 0;
-					isset($_POST['allowemail']) ? $allowemail = 1 : $allowemail = 0;
+						break;
+				
+				case 'newbulletin':
+						$kb = new kbulletin();
+						$kb->editbulletin(0);
+						break;
 					
-					
-					$id = $_POST['u_id'];
-					$name = mysql_escape_string($_POST['name']);
-					$login = mysql_escape_string($_POST['login']);
-					$pass = mysql_escape_string($_POST['password']);
-					$comm = mysql_escape_string($_POST['comment']);
-					$access = mysql_escape_string($_POST['access']);
-					if (is_numeric($_POST['udlrate'])) $udlrate = $_POST['udlrate']; else $udlrate = 0;
-
-					if (empty($pass) && $changepw)
-					{
-						show_new_user_form($id,$name,$pass,$comm,$login,$access,$download,$udlrate);
-						die();
-					} 
-					if (empty($name) || empty($login) ) 
-					{
-						show_new_user_form($id,$name,$pass,$comm,$login,$access,$download, $udlrate);
-						die();
-					}
-					$pass = md5($pass);
-					if ($id == -1) $query = 'INSERT into '.TBL_USERS.' set u_name = "'.$name.'", u_login = "'.$login.'", u_pass = "'.$pass.'",  u_comment = "'.$comm.'", u_access = '.$access. ', u_allowdownload = "'.$download.'", lang = "'.$setctl->get('default_language').'", udlrate = '.$udlrate.', allowemail = '.$allowemail; 
-					else
-					{
-						if ($changepw) $query = "UPDATE ".TBL_USERS." set u_name = \"$name\", u_login = \"$login\", u_pass=\"$pass\", u_comment = \"$comm\", u_booted = $booted, u_access = $access, u_allowdownload = \"$download\", udlrate = $udlrate, lameperm = $lameperm, allowemail = $allowemail where u_id = $id"; 
-						else
-						$query = "UPDATE ".TBL_USERS." set u_name = \"$name\", u_login = \"$login\", u_booted = $booted, u_comment = \"$comm\", u_access = $access, u_allowdownload = \"$download\", udlrate = $udlrate, lameperm = $lameperm, allowemail = $allowemail where u_id = $id";
-					}
-					db_execquery($query);
-					show_users();
-					die();
-				} else show_users();
-			}			
-		}
-		else
-		if (isset($_POST['formusers']) && $_POST['formusers'] == 'modify')
-		{
-			if (db_guinfo('u_access') == 0)
-			{
-				if (!empty($_POST['newuser']))
-				{
-					show_new_user_form();
-					die();
-				} else
-				if (!empty($_POST['edit']))
-				{
-					show_new_user_form($_POST['id']);
-					die();
-				} else
-				if (isset($_POST['history']))
-				{
-					show_userhistory($_POST['id'], $_POST['length']);
-					die();
-				}
-			}
-			show_users();			
-		} else		
-		if (!empty($_POST['searchfor']) )
-		{
-			if (!empty($_POST['onlyid3'])) $idv3=1; else $idv3=0;
-			isset($_POST['hitsas']) ? $hitsas = $_POST['hitsas'] : $hitsas = 0;
-			search($_POST['searchfor'], $_POST['search'], $idv3, $hitsas);
-		} else
-		if (isset($_POST['logmeout']))
-		{ 
-			if ($demo_mode != 1) db_logout($u_cookieid, $phpenv['remote']); 
-			klogon(); 
-		} else		
-		if (isset($_GET['action']) && $_GET['action'] == 'playlist_new')
-		{
-			playlist_new();
-		}
-		else
-		if (isset($_GET['users'])) 
-		{
-			if (db_guinfo('u_access') == 0) show_users();			
-		}
-		else
-		if (isset($_GET['id3edit']))
-		{
-			if (db_guinfo('u_access') == 0) 
-			{
-				$f2 = new file2($_GET['id3sid']);
-				if ($f2->ifexists()) file_id3editor($f2->fullpath);
-			}
-		} 
-		else
-		if (isset($_POST['id3info']))
-		{
-			file_id3editor_save(stripcslashes(base64_decode($_POST['file'])), $_POST);
-			file_id3editor(stripcslashes(base64_decode($_POST['file'])));
-		} 
-		else
-		if (isset($_GET['filelist']))
-		{
-			if (db_guinfo('u_access') == 0) search_updatelist_options();
-		} 
-		else
-		if (isset($_GET['settings']))
-		{
-			isset($_GET['page']) ? $page = $_GET['page'] : $page = 0;
-			isset($_GET['reload']) ? $reload = $_GET['reload'] : $reload = 0;
-			if (db_guinfo('u_access') == 0 && isset($_GET['settings']) && $_GET['settings'] == 'edit') settings_edit($reload, $page); 
-		} 
-		else
-		if (isset($_POST['settings']))
-		{
-			if (db_guinfo('u_access') == 0 && isset($_POST['settings']) && $_POST['settings'] == 'save') 
-			{
-				isset($_POST['page']) ? $page = $_POST['page'] : $page = 0;
-				settings_save($_POST, $page); 
-				settings_edit(1, $page);
-			}
-		} 
-		else
-		if (isset($_GET['editfiletype']))
-		{
-			if ($_GET['editfiletype'] == 'delete')
-			{
-				db_execquery('DELETE from '.TBL_FILETYPES.' WHERE id = '.vernum($_GET['del']));
-				loadstreamtypes();
-				settings_edit(1, 3);
-			} else
-			edit_filetype($_GET['editfiletype']);
-		} 
-		else
-		if (isset($_POST['store_filetype']))
-		{
-			if (isset($_POST['extension'])) $extension = $_POST['extension']; else $extension = '';
-			if (isset($_POST['m3u'])) $m3u = 1; else $m3u = 0;
-			$id = store_filetype(vernum($_POST['id']), $m3u, mysql_escape_string($_POST['mime']), $extension);
-			edit_filetype(vernum($id), true);
-		} 
-		else
-		if (isset($_GET['action']) && $_GET['action'] == 'editplaylist')
-		{
-			$plid = $_GET['plid'];
-			if (!empty($_GET['del']))
-			{
-				$id = $_GET['del'];
-				if (is_numeric($id) && is_numeric($plid))
-				{
-					db_execquery('DELETE from '.TBL_PLAYLIST_LIST.' WHERE id = '.$id);					
-					playlist_rewriteseq($plid);
-				}
-			}
-			playlist_editor($plid,$_GET['p']);
-		}
-		else
-		if (!empty($_POST['genrelist']))
-		{
-			user_saveoption('defgenre', @$_POST['genreno']);
-			genrelist($_POST['genreno']);
-		}
-		else
-		if (isset($_POST['action']) && $_POST['action'] == 'playlist')
-		{
-			if (!empty($_POST['saveseq'])) 
-			{
-				playlist_savesequence($_POST['seq'],$_POST['sel_playlist']);
-				playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);
-				die();
-			}
-			if (!empty($_POST['addplaylist']))
-			{
-				kprintheader(get_lang(61), 1);
-
-				if (empty($_POST['selected'])) 
-					echo '<font color="#000000" class="notice">'.get_lang(32).'&nbsp;&nbsp;</font>';
-				else
-				{
-					db_addtoplaylist($_POST['sel_playlist'], $_POST['selected']);
-					echo '<font color="#000000" class="notice">'.get_lang(33).'&nbsp;&nbsp;</font>';
-				}
-				echo '<a href="javascript:history.go(-1)" class="fatbuttom">&nbsp;'.get_lang(34).'&nbsp;</a>';
-				echo '</body></html>';				
-			} else			
-			if (!empty($_POST['saveplaylist']))
-			{
-				if (is_numeric($_POST['sel_playlist']) && !empty($_POST['playlistname']) )
-				{
-					if (isset($_POST['shared'])) $shared = 1; else $shared = 0;
-					if (isset($_POST['shuffle'])) $shuffle = 1; else $shuffle = 0;
-					$id = $_POST['sel_playlist'];
-					if (is_numeric($id))
-					{
-						$name = mysql_escape_string(stripslashes(checkchs($_POST['playlistname'])));						
-						db_execquery('UPDATE '.TBL_PLAYLIST.' SET name = "'.$name.'", public = '.$shared.', status = '.$shuffle.' WHERE listid = '.$id);
-					}
-				}
-				playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);				
-			} 
-			else
-			if (!empty($_POST['sortplaylist']))
-			{
-				$id = $_POST['sel_playlist'];
-				switch ($_POST['sort'])
-				{					
-					case 0: pl_sortalphabetic($id); break;
-					case 1: pl_sortrandom($id); break;
-					case 2: pl_sortoriginal($id); break;
-					case 3: pl_removeduplicates($id); break;
-				}				
-				playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);
-			}
-			else
-			if (!empty($_POST['playplaylist']))
-			{
-				if (isset($_POST['sel_playlist']) && is_numeric($_POST['sel_playlist']))
-				{
-					$kp = new kp_playlist($_POST['sel_playlist']);
-					$kp->play();
-				}
-				/*$result = db_execquery('SELECT status FROM '.TBL_PLAYLIST.' WHERE listid = '.$plid);
-				if ($result)
-				{
-					$row = mysql_fetch_array($result);
-					$shuffle = $row['status'];
-				}				
-				$result = db_execquery('SELECT * FROM '.TBL_PLAYLIST_LIST.' WHERE listid = '.$plid.' ORDER BY seq ASC', true);
-				$tunes = array();
-				$i=0;
-				while ($row = mysql_fetch_array($result)) $tunes[$i++] = $row['sid'];
-				$cnt = $i;
-				if ($shuffle)
-				{
-					srand ((double)microtime()*1000000);
-					for ($j=count($tunes)-1; $j>0; $j--) 
-					{
-						if (($i = rand(0,$j))<$j) 
+				case 'delbulletin':
+						if (isset($_GET['bid']) && is_numeric($_GET['bid']))
 						{
-							$swp=$tunes[$i]; 
-							$tunes[$i]=$tunes[$j]; 
-							$tunes[$j]=$swp;
-					    }
-					}
-				}
-				kplay_m3uurl();	
-				for ($i=0;$i<$cnt;$i++) kPlay_sendlink2($tunes[$i]);*/
+							$kb = new kbulletin();
+							$kb->delbulletin($_GET['bid'], $u_id);
+							$kb->showall();
+							
+						}
+						break;
+
+				case 'editbulletin':
+						if (isset($_GET['bid'])) 
+						{
+							$kb = new kbulletin();
+							$kb->editbulletin($_GET['bid']);
+						}
+						break;
+				
+				case 'savebulletin':
+						$kb = new kbulletin();
+						if (isset($_POST['publish']) && db_guinfo('u_access') == 0) $publish = 1; else $publish = 0;
+						if (isset($_POST['mesg'])) $mesg = $_POST['mesg']; else $mesg = '';
+						if (isset($_POST['bid'])) $bid = $_POST['bid']; else $bid = 0;				
+						$bid = $kb->savebulletin($bid, $publish, $mesg);
+						$kb = new kbulletin();
+						$kb->editbulletin($bid, true);
+						break;
+
+				case 'sendmail':
+						if (class_exists('mailmp3'))
+						{
+							$mail3 = new mailmp3();
+							if (isset($_GET['id'])) $mail3->setsid($_GET['id']);
+							$mail3->decide();
+						}
+						break;
+
+				case 'fupload':
+						if (class_exists('fupload'))
+						{
+							$fu = new fupload();
+							$fu->decide();
+						}
+						break;
+
+				case 'playlist_new':
+						playlist_new();
+						break;
+
+				case 'playlist_newsave':
+						if (!empty($_POST['name'])) 
+						{
+							if (isset($_POST['shared'])) $shared = 1; else $shared = 0;
+							$added = playlist_createnew($_POST['name'],$shared);
+							kprintheader(get_lang(61), 1);    				
+							echo '<font color="#000000" class="notice">';
+							if ($added) echo get_lang(35); else echo get_lang(137);
+							echo '</font><br/><br/>';
+							echo '<a href="javascript:void(0);" onclick="javascript: window.close(); window.opener.location.reload();"><font color="blue">'.get_lang(27).'</font></a>';
+							if ($added) echo '<font class="notice"> - '.get_lang(36).'</font>';
+							kprintend();
+						} else playlist_new();
+						break;
+
+				case 'editoptions':
+						show_useroptions();
+						break;				
+				
+				case 'randomizer':
+						$rz = new kprandomizer();
+						if (isset($_POST['mode'])) $rz->setmode($_POST['mode']);
+						if (isset($_POST['limit'])) $rz->setlimit($_POST['limit']);
+						if (isset($_POST['genres'])) $rz->setgenre($_POST['genres']);
+						if (isset($_POST['playlist'])) $rz->setplaylist($_POST['playlist']);
+						if (isset($_POST['order'])) $rz->setorder($_POST['order']);
+						if (isset($_POST['usersfilter'])) $rz->setusers($_POST['usersfilter']);
+						if (isset($_POST['execute'])) $rz->execute(); else $rz->view();
+						break;
+
+				case 'showrandomizer':
+						if (class_exists('kprandomizer'))
+						{
+							$rz = new kprandomizer();
+							$rz->view();
+						}
+						break;
+						
+				case 'updateoptions':
+						if (db_guinfo('u_access') == 0) search_updatelist_options();
+						break;
+
+				case 'settingsview':
+						if (db_guinfo('u_access') == 0)
+						{
+							isset($_GET['page']) ? $page = $_GET['page'] : $page = 0;
+							isset($_GET['reload']) ? $reload = $_GET['reload'] : $reload = 0;
+							settings_edit($reload, $page);
+						}
+						break;
+				
+				case 'savesettings':
+						if (db_guinfo('u_access') == 0)
+						{
+							isset($_POST['page']) ? $page = $_POST['page'] : $page = 0;
+							settings_save($_POST, $page); 
+							settings_edit(1, $page);
+						}
+						break;
+				
+				case 'performupdate':
+						if (db_guinfo('u_access') == 0) search_updatelist($_POST);
+						break;
+
+				case 'id3edit':
+						if (db_guinfo('u_access') == 0 && $cfg['id3editor']) 
+						{
+							$f2 = new file2($_GET['id3sid']);
+							if ($f2->ifexists()) file_id3editor($f2->fullpath);
+						}
+						break;
+
+				case 'id3save':
+						if (db_guinfo('u_access') == 0 && $cfg['id3editor'])
+						{
+							file_id3editor_save(stripcslashes(base64_decode($_POST['file'])), $_POST);
+							file_id3editor(stripcslashes(base64_decode($_POST['file'])));
+						} 
+						break;
+				
+				case 'showusers':
+						if (db_guinfo('u_access') == 0) show_users();			
+						break;
+
+				case 'userdel':
+						if (db_guinfo('u_access') == 0)
+						{
+								$id = $_GET['id'];
+								if (is_numeric($id)) db_execquery('DELETE FROM '.TBL_USERS.' WHERE u_id = '.$id);
+								show_users();
+						}
+						break;
+				
+				case 'usersave': 
+						if (db_guinfo('u_access') == 0)
+						{
+							if (isset($_POST['submit']))
+							{
+								$id = $_POST['u_id'];
+								if (isset($_POST['passchange']) && $id != -1) $changepw = 1; else $changepw = 0;
+								isset($_POST['booted']) ? $booted = 1 : $booted = 0;
+								isset($_POST['lameperm']) ? $lameperm = 1 : $lameperm = 0;
+								isset($_POST['download']) ? $download = 1 : $download = 0;
+								isset($_POST['allowemail']) ? $allowemail = 1 : $allowemail = 0;							
+								
+								$name = mysql_escape_string($_POST['name']);
+								$login = mysql_escape_string($_POST['login']);
+								$pass = mysql_escape_string($_POST['password']);
+								$comm = mysql_escape_string($_POST['comment']);
+								$access = mysql_escape_string($_POST['access']);
+								if (is_numeric($_POST['udlrate'])) $udlrate = $_POST['udlrate']; else $udlrate = 0;
+
+								if (empty($pass) && $changepw) show_userform($id);
+								else
+								if (empty($name) || empty($login)) show_userform($id,'',$name,$pass,$comm,$login,$access,$download, $udlrate);
+								else
+								{
+									$text = get_lang(262);
+									$pass = md5($pass);
+									if ($id == -1) $query = 'INSERT into '.TBL_USERS.' set u_name = "'.$name.'", u_login = "'.$login.'", u_pass = "'.$pass.'",  u_comment = "'.$comm.'", u_access = '.$access. ', u_allowdownload = "'.$download.'", lang = "'.$setctl->get('default_language').'", udlrate = '.$udlrate.', allowemail = '.$allowemail.', created = '.time(); 
+									else
+									{
+										if ($changepw) 
+										{
+											$text = get_lang(157);
+											db_execquery('UPDATE '.TBL_USERS.' SET u_pass = "'.$pass.'" WHERE u_id = '.$id);
+										}
+										$query = "UPDATE ".TBL_USERS." set u_name = \"$name\", u_login = \"$login\", u_booted = $booted, u_comment = \"$comm\", u_access = $access, u_allowdownload = \"$download\", udlrate = $udlrate, lameperm = $lameperm, allowemail = $allowemail where u_id = $id";
+									}
+									db_execquery($query);
+									if ($id != -1) show_userform($id, $text); else show_users();
+								}								
+							} else show_users();
+						}
+						break;
+				
+				case 'useraction':
+						if (db_guinfo('u_access') == 0)
+						{				
+							if (isset($_POST['newuser'])) show_userform();
+								else
+							if (isset($_POST['refresh'])) show_users();
+						}
+						break;
+
+				case 'useredit':
+						if (db_guinfo('u_access') == 0)
+							show_userform(vernum($_GET['id']));
+						break;
+				
+				case 'userlogout':
+						if (db_guinfo('u_access') == 0)
+						{
+							$id = $_GET['id'];
+							if (is_numeric($id)) if (!$cfg['demomode']) db_execquery('UPDATE '.TBL_USERS.' SET u_sessionkey = 0, u_status = 0 WHERE u_id = '.$id);
+							show_users();
+						}
+						break;
+
+				case 'userhistory':
+						if (db_guinfo('u_access') == 0) show_userhistory(vernum($_GET['id']));
+						break;
+
+				case 'historyview':
+						if (db_guinfo('u_access') == 0) show_userhistory(vernum($_POST['id']), vernum($_POST['length']));
+						break;
+
+				case 'saveuseroptions':
+						$state = save_useroptions($_POST);
+						switch ($state)
+						{
+							case 2: show_useroptions(get_lang(157),true); break;
+							case 3: show_useroptions(get_lang(165),true); break;
+							default: show_useroptions(null,true); break;
+						}
+						break;
+
+				case 'deletefiletype':
+						if (db_guinfo('u_access') == 0)
+						{
+							db_execquery('DELETE from '.TBL_FILETYPES.' WHERE id = '.vernum($_GET['del']));
+							settings_edit(1, 3);
+						}
+						break;
+
+				case 'editfiletype':
+						if (db_guinfo('u_access') == 0) edit_filetype(vernum($_GET['id']));
+						break;		
+
+				case 'storefiletype':
+						if (db_guinfo('u_access') == 0)
+						{
+							if (isset($_POST['extension'])) $extension = $_POST['extension']; else $extension = '';
+							if (isset($_POST['m3u'])) $m3u = 1; else $m3u = 0;
+							if (isset($_POST['search'])) $search = 1; else $search = 0;
+							if (isset($_POST['logaccess'])) $logaccess = 1; else $logaccess = 0;
+							$id = store_filetype(vernum($_POST['id']), $m3u, $search, $logaccess, mysql_escape_string($_POST['mime']), $extension);
+							edit_filetype(vernum($id), true);
+						}
+						break;
+
+				case 'search':
+						if (isset($_POST['onlyid3'])) user_saveoption('defaultid3', 1); else user_saveoption('defaultid3', 0);
+						if (isset($_POST['hitsas'])) user_saveoption('hitsas', verchar($_POST['hitsas']));
+						if (isset($_POST['search'])) user_saveoption('defaultsearch', vernum($_POST['search'])); 
+						
+						if (isset($_POST['searchfor']) && !empty($_POST['searchfor']))
+						{
+							if (isset($_POST['onlyid3'])) $idv3 = 1; else $idv3 = 0;
+							isset($_POST['hitsas']) ? $hitsas = $_POST['hitsas'] : $hitsas = 0;
+							search($_POST['searchfor'], $_POST['search'], $idv3, $hitsas);
+						} else $match = false;
+						break;
+
+				case 'playlist':
+						if (isset($_POST['editplaylist']) || isset($_POST['viewplaylist']))  
+							playlist_editor($_POST['sel_playlist'], $_POST['previous']);
+						else
+						if (isset($_POST['playplaylist']))
+						{
+							if (isset($_POST['sel_playlist']) && is_numeric($_POST['sel_playlist']))
+							{
+								$kp = new kp_playlist($_POST['sel_playlist']);
+								$kp->play();
+							}		
+						}
+						break;
+
+				case 'playlisteditor':
+						if (isset($_POST['saveseq'])) 
+						{
+							playlist_savesequence($_POST['seq'],$_POST['sel_playlist']);
+							playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);
+						} else							
+						if (isset($_POST['saveplaylist']))
+						{
+							if (is_numeric($_POST['sel_playlist']) && !empty($_POST['playlistname']) )
+							{
+								if (isset($_POST['shared'])) $shared = 1; else $shared = 0;
+								if (isset($_POST['shuffle'])) $shuffle = 1; else $shuffle = 0;
+								$id = $_POST['sel_playlist'];
+								if (is_numeric($id))
+								{
+									$name = mysql_escape_string(stripslashes(checkchs($_POST['playlistname'])));						
+									db_execquery('UPDATE '.TBL_PLAYLIST.' SET name = "'.$name.'", public = '.$shared.', status = '.$shuffle.' WHERE listid = '.$id);
+								}
+							}
+							playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);				
+						} else
+						if (isset($_POST['sortplaylist']))
+						{
+							$id = $_POST['sel_playlist'];
+							switch ($_POST['sort'])
+							{					
+								case 0: pl_sortalphabetic($id); break;
+								case 1: pl_sortrandom($id); break;
+								case 2: pl_sortoriginal($id); break;
+								case 3: pl_removeduplicates($id); break;
+							}				
+							playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);
+						} else
+						if (isset($_POST['playplaylist']))
+						{
+							if (isset($_POST['sel_playlist']) && is_numeric($_POST['sel_playlist']))
+							{
+								$kp = new kp_playlist($_POST['sel_playlist']);
+								$kp->play();
+							}			
+						} else
+						if (isset($_POST['deleteplaylist']))
+						{
+							if (is_numeric($_POST['sel_playlist']))
+							{
+								$id = $_POST['sel_playlist'];
+								playlist_delete($id);
+								kplaylist_filelist($_POST['previous'],-1,$_POST['drive']);
+							}
+						} else 
+						if (isset($_POST['playselected']))
+						{
+							kplay_m3uurl(); 	
+							for ($i=0,$c=count($_POST['selected']);$i<$c;$i++)
+							{
+								$row = mysql_fetch_array(db_execquery('SELECT * FROM '.TBL_PLAYLIST_LIST.' WHERE id = '.$_POST['selected'][$i]));
+								kPlay_sendlink2($row['sid']);					
+							}				
+						} else
+						if (isset($_POST['delselected']))
+						{
+							if (count($_POST['selected']) > 0)
+							{
+								for ($i=0;$i<count($_POST['selected']);$i++)
+								{
+									$id = $_POST['selected'][$i];
+									db_execquery('DELETE from '.TBL_PLAYLIST_LIST.' WHERE id = '.$id);
+								}
+								playlist_rewriteseq($_POST['sel_playlist']);
+							}
+							playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);				
+						}
+						break;
+				
+				case 'misc':
+						if (isset($_POST['whatshot'])) whats_hot(db_guinfo('hotrows'));	
+							else
+						if (isset($_POST['whatsnew'])) whats_new(db_guinfo('hotrows'));
+							else
+						if (!empty($_POST['genrelist']))
+						{
+							if (isset($_POST['genreno'])) user_saveoption('defgenre', $_POST['genreno']);
+							genrelist($_POST['genreno']);
+						} else
+						if (isset($_POST['logmeout']))
+						{ 
+							if ($cfg['demomode'] != 1) db_logout($u_cookieid, $phpenv['remote']); 
+							klogon(); 
+						} 
+						break;
+				
+				case 'delsingleplaylist':
+						$plid = $_GET['plid'];
+						if (!empty($_GET['del']))
+						{
+							$id = $_GET['del'];
+							if (is_numeric($id) && is_numeric($plid))
+							{
+								db_execquery('DELETE from '.TBL_PLAYLIST_LIST.' WHERE id = '.$id);					
+								playlist_rewriteseq($plid);
+							}
+						}
+						playlist_editor($plid, $_GET['p']);
+						break;
+				
+				case 'hotselect':
+						if (isset($_GET['artist'])) hotselect($_GET['artist']);	
+						break;				
+				
+				case 'playalbum':
+						$res = fsearch(decode64($_GET['p']), false, $curdrive, 'id,album');
+						kplay_m3uurl();	
+						if (!empty($_GET['ft'])) $ft = stripcslashes($_GET['ft']); else $ft = '';
+						while ($row = mysql_fetch_row($res)) 
+						{
+							if (!empty($ft) && $ft != $row[1]) continue;
+							kPlay_sendlink2($row[0]);
+						}
+						break;
+
+				case 'downloadarchive':
+						if (isset($_POST['mime']) && isset($_POST['file']))
+						{
+							if (!isset($_POST['filename']) || empty($_POST['filename'])) $filename = 'kpdl'.date('hi'); 
+								else $filename = $_POST['filename'];
+						
+							$file = $cfg['archivetemp'] . $_POST['file'];
+							if (file_exists($file) && checkstructure($_POST['file'], false) == 0)
+							{
+								kplay_archivedownload($file, $_POST['mime'], $filename);
+								@unlink($file);								
+							} else 
+							{
+								kprintheader(get_lang(260),0);
+								echo '<form action="'.$PHP_SELF.'" method="get">';
+								echo '<font class="notice">'.get_lang(261).'</font><br/><br/>';
+								echo '<input type="button" value="'.get_lang(27).'" name="close" class="fatbuttom" onclick="javascript: window.close();"/>'; 
+								echo '</form>';
+								kprintend();
+							}
+						}
+				
+				case 'dlall':
+						if (isset($_GET['p']) && isset($_GET['d']) && ALLOWDOWNLOAD && db_guinfo('u_allowdownload') && $cfg['archivemode'])
+						{
+							$kpa = new kparchiver();
+							$res = fsearch(decode64($_GET['p']), false, $_GET['d']);
+							while ($row = mysql_fetch_row($res)) $kpa->setfile($row[0]);								
+							$kpa->execute();
+						}
+						break;
+
+				case 'dlplaylist':
+						if (isset($_GET['pid']) && ALLOWDOWNLOAD && db_guinfo('u_allowdownload') && $cfg['archivemode'])
+						{
+							$kpa = new kparchiver();
+							$kp = new kp_playlist($_GET['pid']);
+							$res = $kp->getres();							
+							while ($row = mysql_fetch_row($res)) $kpa->setfile($row[0]);								
+							$kpa->execute();
+						}
+						break;
+
+				case 'dlselected':
+						if (isset($_POST['filestoarc']) && ALLOWDOWNLOAD && db_guinfo('u_allowdownload') && $cfg['archivemode'])
+						{
+							$kpa = new kparchiver();
+							$fl = explode(';', $_POST['filestoarc']);
+							for ($i=0,$c=count($fl);$i<$c;$i++) if (is_numeric($fl[$i])) $kpa->setfile($fl[$i]);
+							$kpa->execute();
+						}
+						break;
+
+				case 'dlselectedjs':						
+						kprintheader(get_lang(260),0);
+						if (isset($_POST['filestoarc'])) echo $_POST['filestoarc'];
+						?>
+						<form name="arcfiles" action="<?php echo $PHP_SELF; ?>" method="post">
+						<input type="hidden" name="action" value="dlselected"/>
+						<input type="hidden" name="filestoarc" value=""/>
+						<script type="text/javascript">
+						<!--
+						for(var i=0;i<opener.document.psongs.elements.length;i++) if(opener.document.psongs.elements[i].type == "checkbox") if (opener.document.psongs.elements[i].checked == true) 
+							document.arcfiles.filestoarc.value = document.arcfiles.filestoarc.value + opener.document.psongs.elements[i].value + ';';
+						document.arcfiles.submit();
+						//-->
+						</script>
+						</form>
+						<?php
+						kprintend();
+						break;
+
+				case 'listedres':
+						if (isset($_POST['hotoptions'])) 
+						{
+							if (isset($_POST['hotperiod']) && is_numeric($_POST['hotperiod'])) 
+							{
+								$filter = $_POST['hotperiod']; 
+								user_saveoption('hotmode', $filter);
+							} else $filter = 0;
+							whats_hot(db_guinfo('hotrows'), $filter);
+						} else
+						if (isset($_POST['editplaylist']) || isset($_POST['viewplaylist']))  playlist_editor($_POST['sel_playlist'], $_POST['previous']);
+						else
+						if (isset($_POST['addplaylist']))
+						{
+							kprintheader(get_lang(61), 1);
+							if (empty($_POST['selected'])) 
+								echo '<font color="#000000" class="notice">'.get_lang(32).'&nbsp;&nbsp;</font>';
+							else
+							{
+								db_addtoplaylist($_POST['sel_playlist'], $_POST['selected']);
+								echo '<font color="#000000" class="notice">'.get_lang(33).'&nbsp;&nbsp;</font>';
+							}
+							echo '<a href="javascript:history.go(-1)" class="fatbuttom">&nbsp;'.get_lang(34).'&nbsp;</a>';
+							echo '</body></html>';				
+						} else
+						if (isset($_POST['playplaylist']))
+						{
+							if (isset($_POST['sel_playlist']) && is_numeric($_POST['sel_playlist']))
+							{
+								$kp = new kp_playlist($_POST['sel_playlist']);
+								$kp->play();
+							}		
+						} else
+						if (isset($_POST['psongsselected']) || isset($_POST['psongsall']))
+						{
+							if (isset($_POST['psongsselected']))
+							{
+								kplay_m3uurl();
+								if (isset($_POST['selected']))
+									for ($i=0,$c=count($_POST['selected']);$i<$c;$i++) kPlay_sendlink2($_POST['selected'][$i]);
+							} else 
+							if (isset($_POST['psongsall']))
+							{				
+								$res = fsearch(decode64($_POST['previous']), false, $curdrive);
+								kplay_m3uurl();	
+								while ($row = mysql_fetch_row($res)) kPlay_sendlink2($row[0]);
+							} 
+						}					
+						break;
+				
+				default:
+					$match = false;
+					break;	
+			
 			}
-			else
-			if (!empty($_POST['deleteplaylist']))
-			{
-				if (is_numeric($_POST['sel_playlist']))
-				{
-					$id = $_POST['sel_playlist'];
-					playlist_delete($id);
-					kplaylist_filelist($_POST['previous'],-1,$_POST['drive']);
-					die();
-				}
-				playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);				
-			} 
-			else
-			if (!empty($_POST['editplaylist']) || !empty($_POST['viewplaylist']))
-        	{
-			   $pre=$_POST['previous'];
-			   playlist_editor($_POST['sel_playlist'], $pre);			
-			} 
-			else
-			if (!empty($_POST['playselected']))
-			{
-				kplay_m3uurl(); 	
-				for ($i=0,$c=count($_POST['selected']);$i<$c;$i++)
-				{
-					$row = mysql_fetch_array(db_execquery('SELECT * FROM '.TBL_PLAYLIST_LIST.' WHERE id = '.$_POST['selected'][$i]));
-					kPlay_sendlink2($row['sid']);					
-				}				
-			} 
-			else
-			if (!empty($_POST['delselected']))
-			{
-				if (count($_POST['selected']) > 0)
-				{
-					for ($i=0;$i<count($_POST['selected']);$i++)
-					{
-						$id = $_POST['selected'][$i];
-						db_execquery('DELETE from '.TBL_PLAYLIST_LIST.' WHERE id = '.$id);
-					}
-					playlist_rewriteseq($_POST['sel_playlist']);
-				}
-				playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);				
-			} else playlist_editor($_POST['sel_playlist'], $_POST['previous'], $_POST['sort']);
-		} 
-		else
-		if (!empty($_POST['newplaylist']))
-		{
-			if (empty($_POST['name'])) 
-			{ 
-				playlist_new(); 
-			} else
-			{
-				if (@$_POST['shared'] == 'on') $shared=1; else $shared = 0;
-				$added = playlist_createnew($_POST['name'],$shared);
-				kprintheader(get_lang(61), 1);    				
-				echo '<font color="#000000" class="notice">';
-				if ($added) echo get_lang(35); else echo get_lang(137);
-				echo '</font><br/><br/>';
-				echo '<a href="javascript:void(0);" onclick="javascript: window.close(); window.opener.location.reload();"><font color="blue">'.get_lang(27).'</font></a>';
-				if ($added) echo '<font class="notice"> - '.get_lang(36).'</font>';
-				kprintend();
-			}
-		} 
-		else
-		if (isset($_POST['update']) && $_POST['update'] == 'options')
-		{
-			if (db_guinfo('u_access') == 0) search_updatelist($_POST);
+			if ($match) die();
 		}
-		else 
-		{
-			isset($_GET['p']) ? $p = $_GET['p'] : $p = null;
-			isset($_GET['n']) ? $n = $_GET['n'] : $n = null;
-			isset($_GET['d']) ? $d = $_GET['d'] : $d = null;
-			kplaylist_filelist($p, $n, $d);
-		}
+		isset($_GET['p']) ? $p = $_GET['p'] : $p = null;
+		isset($_GET['n']) ? $n = $_GET['n'] : $n = null;
+		isset($_GET['n2']) ? $n2 = $_GET['n2'] : $n2 = null;
+		isset($_GET['d']) ? $d = $_GET['d'] : $d = null;
+		kplaylist_filelist($p, $n, $d, $n2);
+
 	} else
 	{
 		klogon();
