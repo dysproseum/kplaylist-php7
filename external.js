@@ -23,6 +23,16 @@ function findNextSong(obj) {
   }
 }
 
+function setActive(link) {
+  var active = document.querySelectorAll("span.filemarked");
+  for (i=0; i < active.length; i++) {
+    active[i].classList.remove("filemarked");
+    active[i].classList.add("file");
+  }
+  var target = link.parentElement.nextElementSibling.children[0];
+  target.classList.add("filemarked");
+}
+
 function playlist(obj, player) {
   current = obj;
   player_type = obj.className;
@@ -32,6 +42,7 @@ function playlist(obj, player) {
     var link = findNextSong(current);
     player.src=link.href;
     var playPromise = player.play();
+    setActive(link);
 
     // In browsers that don’t yet support this functionality,
     // playPromise won’t be defined.
@@ -77,6 +88,7 @@ function play_html5audio(obj) {
   audio.hidden = false;
   audio.src = obj.href;
   var playPromise = audio.play();
+  setActive(obj);
 
   // In browsers that don’t yet support this functionality,
   // playPromise won’t be defined.
