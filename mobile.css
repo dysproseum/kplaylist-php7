@@ -131,6 +131,14 @@ span.notice {
   margin-left: 3px;
 }
 
+td:has(> input#shoutmessage) {
+  height: 48px;
+  margin-top: -24px;
+}
+/*td > input[type=button].fatbuttom {
+  float: left;
+}*/
+
 /* directory listing */
 .importnant {
   margin-top: 14px;
@@ -229,4 +237,9 @@ form > table > tbody > tr > td > table.box:has(tbody > tr > td.bbox) {
 
 audio::-webkit-media-controls-panel {
   background: lightgray;
+}
+
+/* settings save/close buttons */
+#bottommsg {
+  position: unset !important;
 }
