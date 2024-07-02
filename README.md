@@ -1,14 +1,14 @@
 kPlaylist is a music database that you manage via the web. With kPlaylist you can stream your music (ogg, mp3, wav, wma, etc.), you can upload, make playlists, share, search, download and a lot more.
 
-## Current Status
-The current master branch has been tested with the following versions:
-- Apache 2.4.38 :heavy_check_mark:
-- PHP 7.4.20 :heavy_check_mark:
-- MySQL 5.5.60 :heavy_check_mark:
+<p align="center">
+  <img src="images/screenshots/kent.jpg" />
+</p>
 
-Runs in Docker on Raspberry Pi 3 and newer:
-- tobi312/php:7.4-apache-arm
-- hypriot/rpi-mysql:5.5
+### Updates
+
+* A dedicated docker image is now available: [dysproseum/kplaylist-docker](https://github.com/dysproseum/kplaylist-docker)
+
+* A mobile CSS layout has been created for widths less than 768px.
 
 ### Project History
 
@@ -32,40 +32,38 @@ Runs in Docker on Raspberry Pi 3 and newer:
 | 28 November 2021 | PHP 7.4 end of active support |
 | 28 November 2022 | PHP 7.4 end of security support |
 
-### Future plans:
+See [releases page](https://github.com/dysproseum/kplaylist-php7/releases) for past releases.
+
+#### Future plans:
 - PHP 8 version
-- Dedicated docker image
-
-## Maintainer notes:
-
-#### My use case for maintaining this software
-
-I originally found kPlaylist in 2004 and used it to stream music on Windows XP w/ Winamp at work.
-Due to a new security policy, we could no longer use CDs or USB drives in our workstations.
-
-My 1.5MBps down/0.5MBps cable internet connection could handle 2-4 concurrent streams, depending on the MP3 quality.
-So I made logins for friends and coworkers and it was fun to see what they were listening to from my library.
-
-This was after the days of Napster and while we still played CDs in our cars, some people were starting to buy iPods and other MP3 players.
-It was years before Spotify, Seeqpod or even Pandora would become available.
-
-#### Original server configuration used:
-
-- Pentium 4 256MB RAM
-- Fedora Core 6
-- PHP 4.3/MySQL 4.1
-
-## Customization:
-
-I've tried to maintain as much of the original software as possible. In addition to PHP7 compatibility updates, the following additions have been made:
-- Included example `external.css` and `external.js` files
-- Options to enable playback via html5 audio or video elements from within the browser.
-    - This requires setting the including `external.js` as the "External javascript" value
-    - Find these options under Admin control -> Settings -> Customize
 
 ---
 
-## Installing kPlaylist:
+### Customization
+
+The goal has always been not to modify the original software any more than necessary. In addition to PHP7 compatibility updates, the following additions have been made:
+
+#### HTML5 player
+  - By default, kPlaylist creates M3U playlists that will open in a native media player like Winamp or VLC, as well as support for a flash player or jwplayer. This addition enables native playback via HTML5 player in the browser.
+  - This requires setting `external.js` as the "External javascript" value and `external.css` as the "External CSS" value
+
+#### Mobile layout
+  - This requires setting `mobile.css` as the "Mobile CSS" value
+
+You can find these options under Admin control -> Settings -> Customize
+
+---
+
+### Installing kPlaylist
+
+The current main branch has been tested with the following versions:
+- Apache 2.4.38 :heavy_check_mark:
+- PHP 7.4.20 :heavy_check_mark:
+- MySQL 5.5.60 :heavy_check_mark:
+
+Runs in Docker on Raspberry Pi 3 and newer:
+- tobi312/php:7.4-apache-arm
+- hypriot/rpi-mysql:5.5
 
 The web server can be configured to run either from the document root (ex. http://localhost:8080) or under a directory path (ex. http://localhost:8080/kplaylist/)
 
@@ -101,7 +99,7 @@ Upon first load in the browser, you are greeted with installation options.
 
 Have fun listening to your music via the web ;-)
 
-### Known issues:
+### Known issues
 
 Docker:
 - Download Selected or Download Album as zip not working - needs zip package
@@ -112,8 +110,6 @@ Windows XP/Winamp client:
 - Stream flac not working
 - Streaming flac works using VLC
 
-## More Resources
-
-Homepage: http://www.kplaylist.com/
+### More Resources
 
 Forum: https://groups.google.com/d/forum/kplaylist
