@@ -1,5 +1,7 @@
 /**
- * External JS file for kPlaylist
+ * External JS file for kPlaylist.
+ *
+ * Provides HTML5 player.
  */
 
 var html5player = false;
@@ -8,6 +10,7 @@ var current;
 var listener = false;
 var listener_count = 0;
 
+// Find next playable link in playlist.
 function findNextSong(obj) {
   var this_tr = obj.parentElement.parentElement.parentElement;
   var next_tr = this_tr.nextElementSibling;
@@ -23,16 +26,20 @@ function findNextSong(obj) {
   }
 }
 
-function setActive(link) {
+// Set visual indication of playing song.
+function setActive(link=false) {
   var active = document.querySelectorAll("span.filemarked");
   for (i=0; i < active.length; i++) {
     active[i].classList.remove("filemarked");
     active[i].classList.add("file");
   }
-  var target = link.parentElement.nextElementSibling.children[0];
-  target.classList.add("filemarked");
+  if (link) {
+    var target = link.parentElement.nextElementSibling.children[0];
+    target.classList.add("filemarked");
+  }
 }
 
+// Behavior to play next song in playlist.
 function playlist(obj, player) {
   current = obj;
   player_type = obj.className;
@@ -40,9 +47,12 @@ function playlist(obj, player) {
   listener = function () {
     console.log("Event: playback ended, listener count: " + listener_count);
     var link = findNextSong(current);
-    player.src=link.href;
-    var playPromise = player.play();
-    setActive(link);
+    if (link) {
+      player.src=link.href;
+      var playPromise = player.play();
+      setActive(link);
+    }
+    setActive();
 
     // In browsers that don’t yet support this functionality,
     // playPromise won’t be defined.
