@@ -139,6 +139,11 @@ span.notice {
   margin-left: 3px;
 }
 
+#streams td:has(> a > img) {
+  float: right;
+  margin-right: 4px;
+}
+
 td:has(> input#shoutmessage) {
   height: 48px;
   margin-top: -24px;
