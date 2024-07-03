@@ -111,6 +111,14 @@ span.notice {
   width: 100%;
 }
 
+.boxhotlist .loginkplaylist {
+  font-size: 14px;
+}
+
+.boxhotlist a:hover {
+  font-weight: normal;
+}
+
 .box {
   width: 100%;
 }
