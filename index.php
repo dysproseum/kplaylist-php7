@@ -13813,25 +13813,53 @@ function Kplay_senduser2($sid, $inline=0, $download=false, $tid = 0)
 				if (!$uselame) $sendclen = true;			
 			}
 
-			header('Content-Type: '.$fdesc->mime);
-			header('Content-Range: bytes '.$posfrom.'-');
+			// Override mime type so flac will stream.
+			if (isset($cfg['stream_flac_mime_override']))
+			{
+				header('Content-Type: ' . $cfg['stream_flac_mime_override']);
+			} else
+			{
+				header('Content-Type: '.$fdesc->mime);
+			}
+
 			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 			header('Content-Transfer-Encoding: binary');
 			header('Expires: '. gmdate('D, d M Y H:i ', time()+24*60*60) . ' GMT');
 			header('Pragma: public');
 
-			if ($posfrom > 0)
+			// Set custom streaming buffer size.
+			if (isset($cfg['stream_buffer_size']))
+			{
+				$length = $cfg['stream_buffer_size'];
+			} else
+			{
+				$length = 1024 * 1024;
+			}
+
+			// Fix seeking while streaming.
+			$posto = $posfrom + $length;
+			if ($posto > $clen - 1) {
+				$posto = $clen - 1;
+			}
+			$length = $posto - $posfrom + 1;
+
+			if (isset($_SERVER['HTTP_RANGE']) && ALLOWSEEK)
 			{				
 				header('HTTP/1.1 206 Partial Content', true);
+				header('Content-Range: bytes '.$posfrom.'-'.$posto.'/'.$clen);
+				header('Content-Length: '.$length);
 				kp_fseek($fp, $offsetfp + $posfrom, SEEK_SET, $f2);
 				$bytepos = $offsetfp + $posfrom;
+			}
+			else {
+				header('Content-Range: bytes '.$posfrom.'-');
+				header('Content-Length: '.$clen);
 			}
 
 			if ($sendclen)
 			{
 				$rest = $clen - $posfrom;
 				header('Accept-Ranges: bytes');
-				header('Content-Length: '.$rest);
 			} 
 			
 			// finally STREAM  - no more headers allowed.
