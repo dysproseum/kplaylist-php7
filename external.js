@@ -52,7 +52,9 @@ function playlist(obj, player) {
       var playPromise = player.play();
       setActive(link);
     }
-    setActive();
+    else {
+      setActive();
+    }
 
     // In browsers that don’t yet support this functionality,
     // playPromise won’t be defined.
