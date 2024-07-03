@@ -148,9 +148,13 @@ td:has(> input#shoutmessage) {
   height: 48px;
   margin-top: -24px;
 }
-/*td > input[type=button].fatbuttom {
-  float: left;
-}*/
+
+/* drop admin session */
+table form table td.bbox:has(> a.bbox) {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
 
 /* directory listing */
 .importnant {
