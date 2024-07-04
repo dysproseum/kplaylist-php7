@@ -13813,27 +13813,28 @@ function Kplay_senduser2($sid, $inline=0, $download=false, $tid = 0)
 				if (!$uselame) $sendclen = true;			
 			}
 
+			// Override mime type so flac will stream.
+			if (isset($cfg['stream_flac_mime_override']))
+			{
+				$type = $cfg['stream_flac_mime_override'];
+			} else
+			{
+				$type = $fdesc->mime;
+			}
+
                         // Allow seek on mobile.
                         if ($download) {
                                 $filename = $f2->fullpath;
                                 $length = filesize($filename);
                                 $fp = fopen($filename, "rb");
                                 header("Content-Length: $length");
-                                header("Content-Type: audio/mp3");
+                                header("Content-Type: " . $type);
                                 header('Content-Disposition: attachment; filename="'.$f2->fname.'"');
                                 fpassthru($fp);
                                 exit;
                         }
 
-			// Override mime type so flac will stream.
-			if (isset($cfg['stream_flac_mime_override']))
-			{
-				header('Content-Type: ' . $cfg['stream_flac_mime_override']);
-			} else
-			{
-				header('Content-Type: '.$fdesc->mime);
-			}
-
+			header("Content-Type: $type");
 			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 			header('Content-Transfer-Encoding: binary');
 			header('Expires: '. gmdate('D, d M Y H:i ', time()+24*60*60) . ' GMT');
