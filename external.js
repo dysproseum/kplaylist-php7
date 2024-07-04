@@ -1,5 +1,7 @@
 /**
- * External JS file for kPlaylist
+ * External JS file for kPlaylist.
+ *
+ * Provides HTML5 player.
  */
 
 var html5player = false;
@@ -8,33 +10,51 @@ var current;
 var listener = false;
 var listener_count = 0;
 
+// Find next playable link in playlist.
+function findNextSong(obj) {
+  var this_tr = obj.parentElement.parentElement.parentElement;
+  var next_tr = this_tr.nextElementSibling;
+  var td;
+  var link;
+  while(next_tr) {
+    td = next_tr.children[0];
+    link = td.querySelector("a." + player_type);
+    if (link) {
+      return link;
+    }
+    next_tr = next_tr.nextElementSibling;
+  }
+}
+
+// Set visual indication of playing song.
+function setActive(link=false) {
+  var active = document.querySelectorAll("span.filemarked");
+  for (i=0; i < active.length; i++) {
+    active[i].classList.remove("filemarked");
+    active[i].classList.add("file");
+  }
+  if (link) {
+    var target = link.parentElement.nextElementSibling.children[0];
+    target.classList.add("filemarked");
+  }
+}
+
+// Behavior to play next song in playlist.
 function playlist(obj, player) {
   current = obj;
   player_type = obj.className;
 
   listener = function () {
     console.log("Event: playback ended, listener count: " + listener_count);
-    var this_tr = current.parentElement.parentElement.parentElement;
-    var tbody = this_tr.parentElement;
-    var next_tr = false;
-    for(i=0; i < tbody.children.length; i++) {
-      if (tbody.children[i] == this_tr) {
-        next_tr = tbody.children[i + 1];
-      }
+    var link = findNextSong(current);
+    if (link) {
+      player.src=link.href;
+      var playPromise = player.play();
+      setActive(link);
     }
-    if (!next_tr || next_tr.children.length == 0) {
-      return;
+    else {
+      setActive();
     }
-    var td = next_tr.children[0];
-    var span = false;
-    for(i=1; i < td.children.length; i++) {
-      if (td.children[i].className == "file " + player_type) {
-        span = td.children[i];
-      }
-    }
-    var link = span.children[0];
-    player.src=link.href;
-    var playPromise = player.play();
 
     // In browsers that don’t yet support this functionality,
     // playPromise won’t be defined.
@@ -80,6 +100,7 @@ function play_html5audio(obj) {
   audio.hidden = false;
   audio.src = obj.href;
   var playPromise = audio.play();
+  setActive(obj);
 
   // In browsers that don’t yet support this functionality,
   // playPromise won’t be defined.

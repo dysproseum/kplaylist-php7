@@ -3,6 +3,37 @@ body > table:has(> tbody > tr > td > a > img) {
   display: none;
 }
 
+/* login screen image */
+body > form > table >tbody > tr> td > img {
+  width: 100%;
+  height: 100%;
+}
+
+.tdlogin {
+  padding: 18px;
+}
+
+.tdlogin tr:has(> td > input[type=checkbox]) {
+  border-bottom: none;
+}
+
+.tdlogin td:has(> input[type=checkbox]), .tdlogin td:has(> font) {
+  width: unset;
+}
+
+input[type=checkbox].logonbuttom {
+  margin-left: 10px;
+}
+
+.logonbuttom {
+  font-size: 14px;
+}
+
+.logintext {
+  display: block;
+  margin-top: 10px;
+}
+
 body {
   display: block;
   float: left;
@@ -45,6 +76,13 @@ input[type=text].fatbuttom {
   width: 100%;
 }
 
+/* center stats */
+.smalltext {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
 td.wtext {
   text-align: left;
 }
@@ -60,12 +98,25 @@ td.wtext {
   font-size: 14px;
 }
 
+span.notice {
+  width: 100%;
+  display: block;
+}
+
 .fatbuttom {
   font-size: 14px;
 }
 
 .boxhotlist td {
   width: 100%;
+}
+
+.boxhotlist .loginkplaylist {
+  font-size: 14px;
+}
+
+.boxhotlist a:hover {
+  font-weight: normal;
 }
 
 .box {
@@ -79,9 +130,30 @@ td.wtext {
   height: 9px;
 }
 
+.bboxtable {
+  border-right: 1px solid gray;
+}
+
 .bboxtable td {
   width: unset;
   margin-left: 3px;
+}
+
+#streams td:has(> a > img) {
+  float: right;
+  margin-right: 4px;
+}
+
+td:has(> input#shoutmessage) {
+  height: 48px;
+  margin-top: -24px;
+}
+
+/* drop admin session */
+table form table td.bbox:has(> a.bbox) {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 10px;
 }
 
 /* directory listing */
@@ -90,10 +162,21 @@ td.wtext {
   display: block;
 }
 
-
 /* album image */
 body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > tr > td:has(> img) {
   text-align: center;
+}
+
+/* search result album image */
+body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > tr > td:has(a > img) {
+  text-align: center;
+}
+
+/* left align song listing */
+body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > tr > td:has(input[type=checkbox]) {
+  text-align: left;
+  height: auto;
+  margin-bottom: 4px;
 }
 
 /* exclude hard drive icon */
@@ -101,17 +184,79 @@ body > table > tbody > tr > td > form > table > tbody > tr td > table > tbody > 
   text-align: left;
 }
 
-.file, .finfo {
+/* listing row */
+tr:has(> td > input[type=checkbox]) {
+  border-bottom: 1px dashed lightgray;
+  margin-top: 3px;
+}
+
+/* exclude search listing row */
+form > table > tbody > tr:has(> td > input[type=checkbox]) {
+  border-bottom: none;
+  margin-top: 3px;
+}
+
+/* checkbox */
+table > tbody > tr > td > input[type=checkbox] {
+  display: block;
+  float: left;
+  margin: 1px 4px 4px 0px;
+}
+
+/* exclude top checkboxes */
+form > table > tbody > tr > td > input[type=checkbox] {
+  display: unset;
+  float: unset;
+}
+
+/* directory image */
+table > tbody > tr > td > a.dir > img {
+  display: block;
+  float: left;
+  height: 100%;
+  margin: 0px 0px 4px 0px;
+}
+
+/* directory image */
+table > tbody > tr > td > span.file > a > img {
+  display: block;
+  float: right;
+  height: 100%;
+  margin: 8px 4px 4px 0px;
+  height: 16px;
+}
+
+.dir {
+  margin-bottom: 4px;
+}
+
+.file, .finfo, .filemarked, .dirheadline, .dir, .hot {
   font-size: 14px;
+}
+
+/* bottom boxes */
+form > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td > table.box:has(tbody > tr > td.bbox) {
+  margin-bottom: 10px;
+}
+
+/* exclude top boxes */
+form > table > tbody > tr > td > table.box:has(tbody > tr > td.bbox) {
+  margin-bottom: 0px;
 }
 
 #html5container audio {
   width: 100%;
   position: fixed;
-  bottom: 10px;
+  bottom: 0;
   left: 0;
+  background: lightgray;
 }
 
 audio::-webkit-media-controls-panel {
   background: lightgray;
+}
+
+/* settings save/close buttons */
+#bottommsg {
+  position: unset !important;
 }
