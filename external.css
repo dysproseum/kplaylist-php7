@@ -229,3 +229,7 @@ audio, video {
   width: 300px;
   height: 54px;
 }
+#webamp {
+  position: fixed !important;
+  display: none;
+}
