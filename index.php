@@ -2542,6 +2542,7 @@ class settings
 				'mobilecss'			=> array('', 0),
 				'html5video'			=> array(0,1),
 				'html5audio'			=> array(0,1),
+				'webamp'			=> array(0,1),
 				'ajaxurl'					=> array('', 0),
 				'showupgrade'				=> array(1,1),
 				'showstatistics'			=> array(0, 1),
@@ -2869,6 +2870,7 @@ $setctl->publish('filetemplate');
 $setctl->publish('urlsecurity');
 $setctl->publish('html5video');
 $setctl->publish('html5audio');
+$setctl->publish('webamp');
 $setctl->publish('showlyricslink');
 $setctl->publish('networkmode');
 $setctl->publish('virtualdir');
@@ -8088,6 +8090,7 @@ function settings_save($data, $page)
 				$setctl->set('includeheaders', 0);
 				$setctl->set('html5video', 0);
 				$setctl->set('html5audio', 0);
+				$setctl->set('webamp', 0);
 				$setctl->set('showupgrade', 0);
 				$setctl->set('showstatistics', 0);
 				$setctl->set('albumcover', 0);
@@ -8497,6 +8500,11 @@ function settings_page($page)
 			<tr>
 				<td class="wtext">Enable HTML5 audio player</td>
 				<td class="wtext"><input type="checkbox" value="1" name="html5audio" <?php echo $setctl->getchecked('html5audio'); ?>"/></td>
+				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
+			</tr>
+			<tr>
+				<td class="wtext">Enable Webamp player</td>
+				<td class="wtext"><input type="checkbox" value="1" name="webamp" <?php echo $setctl->getchecked('webamp'); ?>"/></td>
 				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
 			</tr>
 			<tr>
@@ -11277,6 +11285,7 @@ class kpsearch
 		showdir('',get_lang(8, checkchs($this->what, false)),0);
 
 		print_html5container();
+		print_webampcontainer();
 
 		echo '<table width="100%" cellspacing="0" cellpadding="0" border="0">';
 
@@ -14642,6 +14651,17 @@ function print_html5container() {
   echo '</div>';
 }
 
+function print_webampcontainer() {
+  if (!WEBAMP) {
+    return;
+  }
+
+  echo '<div id="app"></div>';
+  echo '<script src="https://unpkg.com/webamp"></script>';
+  echo '<script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>';
+  echo '<script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>';
+}
+
 function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid = -1)
 {
 	global $u_cookieid, $setctl, $cfg, $marksid;
@@ -14700,7 +14720,7 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 		echo '</a></span> ';
 	}
 
-	if (HTML5AUDIO && $pathinfo['extension'] !== 'jpg') {
+	if (HTML5AUDIO || WEBAMP && $pathinfo['extension'] !== 'jpg') {
 		echo '<span class="file html5audio">';
 		if (is_mobile()) {
 			echo '<a title="Play HTML5 audio on mobile" href="'. PHPSELF. "?seek_stream_mobile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return play_html5audio(this);" class="html5audio">';
@@ -15558,6 +15578,7 @@ class kpdir
 		} 
 
                 print_html5container();
+                print_webampcontainer();
 		
 		for ($i=0,$c=count($viewrows);$i<$c;$i++) print_file($viewrows[$i],0,1);
 		return $c;
