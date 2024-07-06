@@ -1,0 +1,46 @@
+?><tr>
+			<td>
+				<table width="90%" cellspacing="2" cellpadding="0" border="0">
+				<tr>
+					<td height="10">DETAILED VIEW</td>
+				</tr>
+				<tr>
+					<td height="100" width="120"><?php echo $imgurl; ?></td>
+					<td width="10"></td>
+					<td class="ainfo" valign="top">
+						<table width="100%" cellspacing="0" cellpadding="0" border="0">
+						<tr>
+							<td width="28">							
+							<a href="<?php echo $href; ?>" <?php echo $onclick; ?> title="<?php echo get_lang(337); ?>" class="dir"><img alt="<?php echo get_lang(337); ?>'" src="<?php echo getimagelink('play.gif'); ?>" border="0"/></a></td>						
+							<td><a href="<?php echo $dirurl; ?>" class="dir"><?php echo $cname; ?></a></td>
+						</tr>
+						</table>
+						<table width="100%" cellspacing="0" cellpadding="0" border="0">
+						<tr>
+							<td width="3"></td>
+							<td>
+								<table width="100%" cellspacing="0" cellpadding="0" border="0">
+								<tr>
+									<td height="6"></td>
+								</tr>
+								<tr>
+									<td width="80"><?php echo get_lang(142); ?></td><td><?php echo $ainf['artist']; ?></td>
+								</tr>						
+								<tr>
+									<td width="80"><?php echo get_lang(145); ?></td><td><?php if (is_numeric($ainf['year']) && $ainf['year'] != 0) echo $ainf['year']; ?></td>
+								</tr>
+								<tr>
+									<td width="80"><?php echo get_lang(147); ?></td><td><?php echo checkchs($ainf['genre']); ?></td>
+								</tr>
+								<tr>
+									<td width="80"><?php echo get_lang(336); ?></td><td><?php echo get_lang(151, $ainf['length'], $ainf['titles']); ?></td>
+								</tr>
+								</table>
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>

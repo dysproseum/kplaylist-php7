@@ -1,0 +1,16 @@
+	?>
+	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<tr>
+		<td colspan="2" align="left">
+			<font class="importnant">DIRHEADER<b><?php echo $dirlink; ?>&nbsp;</b></font><?php echo $ximg; ?>
+		</td>
+	</tr>
+	<tr><td height="7"></td></tr>
+	<tr>
+		<td width="80%" height="1" bgcolor="#CCCCCC"></td>
+		<td width="20%"></td>
+	</tr>
+	<tr>
+		<td height="8"></td>
+	</tr>
+	</table>
