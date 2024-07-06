@@ -3038,7 +3038,7 @@ class kpmysqltable
 			'defstationid'		=> array('INT', 4, 1, '\'0\''), 
 			'defaultsearch'		=> array('INT', 1, 1,'\'0\''),
 			'partymode'			=> array('CHAR', 1, 1, '\'0\''), 
-			'theme'				=> array('INT', 4, 1, '\'1\''),
+			'theme'				=> array('BIGINT', 4, 1, '\'1\''),
 			'lockedtime'		=> array('INT', 8, 1, '\'0\''),
 			'hotrows'			=> array('INT', 4, 1,'\'21\''),
 			'searchrows'		=> array('INT', 4, 1, '\'21\''),
