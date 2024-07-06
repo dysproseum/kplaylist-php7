@@ -1,0 +1,29 @@
+		
+	
+	$upload = '<input type="button" name="upload" onclick="'.jswin('upload', '?action=fupload', 220, 520).'" value="'.get_lang(69).'" class="fatbuttom"/>';
+	$httpq  = '<input type="submit" onclick="javascript: if (!anyselected()) { alert('.addsq().get_lang(159).addsq().'); return false; }" name="httpqselected" value="'.get_lang(68).'" class="fatbuttom"/>';
+	
+	$selectallcode='<input type="button" value="+" class="fatbuttom" onclick="javascript: selectall();"/>&nbsp;&nbsp;<input type="button" value="-" class="fatbuttom" onclick="javascript: disselectall();"/>&nbsp;&nbsp;<input type="button" value="-+" class="fatbuttom" onclick="javascript: kptoggle();"/>';
+	
+	?>
+	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<tr><td height="8">END MP3 TABLE</td></tr>
+	<tr>
+	<td>
+		<table border="0" cellspacing="0" cellpadding="0">	
+		<tr>
+		<?php
+		
+		if ($files > 0 || $dirs > 0) echo '<td align="left">'.blackbox(get_lang(73), $selectallcode).'</td><td width="5"></td>';
+		if (strlen($playbts) > 0) echo '<td align="left"> '.blackbox(get_lang(74), $playbts).'</td><td width="5"></td>';
+		if ($archivedl && ($files > 0 || $dirs > 0)) echo '<td align="left"> '.blackbox(get_lang(117), $dlbts).'</td><td width="5"></td>';
+
+		echo '<td align="left">'.blackbox(get_lang(75), $playlistbts).'</td><td width="5"></td>';
+		if (ENABLEUPLOAD) echo '<td align="left">'.blackbox(get_lang(234), $upload).'</td>';
+	
+		if ($cfg['httpq_support'] && ($files > 0 || $dirs > 0)) echo '<td width="5"></td><td align="left">'.blackbox(get_lang(332), $httpq).'</td>';
+
+		?>
+		</tr>
+	</table>
+	</td></tr></table>
