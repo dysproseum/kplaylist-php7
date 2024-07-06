@@ -1,0 +1,11 @@
+	?>-- THEME: NEEDUPDATE --<table width="90%" bgcolor="#BBCCCC" cellpadding="8" cellspacing="8" border="1">
+			<tr>
+				<td class="importnant"><h3>Needs update</h3>
+				Due to changes in the search database, you need to run a complete update. Click "Update" on the admin bar and select "Rebuild ID3".
+				<br/><br/>
+				Reload this page when done. (F5)
+				<br/><br/>
+				</td>
+			</tr>
+			</table>
+

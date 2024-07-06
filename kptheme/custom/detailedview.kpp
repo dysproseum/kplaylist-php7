@@ -2,7 +2,7 @@
 			<td>
 				<table width="90%" cellspacing="2" cellpadding="0" border="0">
 				<tr>
-					<td height="10">DETAILED VIEW</td>
+					<td height="10">-- THEME: DETAILEDVIEW --</td>
 				</tr>
 				<tr>
 					<td height="100" width="120"><?php echo $imgurl; ?></td>
