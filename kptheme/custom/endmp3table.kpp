@@ -6,8 +6,9 @@
 	$selectallcode='<input type="button" value="+" class="fatbuttom" onclick="javascript: selectall();"/>&nbsp;&nbsp;<input type="button" value="-" class="fatbuttom" onclick="javascript: disselectall();"/>&nbsp;&nbsp;<input type="button" value="-+" class="fatbuttom" onclick="javascript: kptoggle();"/>';
 	
 	?>
+        -- THEME: ENDMP3TABLE --
 	<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr><td height="8">END MP3 TABLE</td></tr>
+	<tr><td height="8"></td></tr>
 	<tr>
 	<td>
 		<table border="0" cellspacing="0" cellpadding="0">	

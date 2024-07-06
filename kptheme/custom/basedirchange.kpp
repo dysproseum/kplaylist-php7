@@ -1,0 +1,12 @@
+	?><table width="90%" bgcolor="#BBCCCC" cellpadding="8" cellspacing="8" border="1">
+			<tr>
+				<td class="importnant"><h3>Base directory changed</h3>
+				-- THEME: BASEDIRCHANGE -- The base dir setting was changed. Please click the \'Update\' button on the admin menu to perform
+				an update against the music sources. 
+				<br/><br/>
+				Reload this page when done. (F5)
+				<br/><br/>
+				</td>
+			</tr>
+			</table>
+
