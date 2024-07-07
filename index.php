@@ -14675,26 +14675,6 @@ function print_file($sid, $showlink=0, $includeabsolute=0, $f2=false, $smarksid 
 		$link = $f2->mklink();
 	}
 
-	$pathinfo = pathinfo($f2->fname);
-	if (HTML5VIDEO && $pathinfo['extension'] !== 'jpg') {
-		echo '<span class="file html5video">';
-		echo '<a title="Play HTML5 video" href="'. PHPSELF. "?downloadfile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return play_html5video(this);" class="html5video">';
-		echo '<img src="images/html5video.gif" alt="Play HTML5 video" border="0" />';
-		echo '</a></span> ';
-	}
-
-	if (HTML5AUDIO || WEBAMP && $pathinfo['extension'] !== 'jpg') {
-		echo '<span class="file html5audio">';
-		if (is_mobile()) {
-			echo '<a title="Play HTML5 audio on mobile" href="'. PHPSELF. "?seek_stream_mobile=".$sid.'&amp;c='.$u_cookieid.$urlextra.'" onclick="return play_html5audio(this);" class="html5audio">';
-		}
-		else {
-			echo '<a title="Play HTML5 audio" href="'. PHPSELF. "?seek_stream=".$sid.'&amp;c='.$u_cookieid.$urlextra.'&file=.mp3" onclick="return play_html5audio(this);" class="html5audio">';
-		}
-		echo '<img src="images/html5audio.gif" alt="Play HTML5 audio" border="0" />';
-		echo '</a></span> ';
-	}
-
 	echo file_parse($f2, $link, $useclass);
 	echo '</td></tr>';
 }

@@ -1,13 +1,10 @@
-// HTML5 player container.
+// HTML5 player type.
+$player_type = "audio";
+// $player_type = "video";
 
-  echo '<div id="html5container">';
-  if (HTML5VIDEO) {
-    echo '<video id="html5video" controls hidden="true"></video>';
-  }
-  if (HTML5AUDIO) {
-    echo '<audio id="html5audio" controls hidden="true"></audio>';
-  }
-  echo '</div>';
+echo '<div id="html5container">';
+echo '<' . $player_type . ' id="html5' . $player_type . '" controls hidden="true"></video>';
+echo '</div>';
 				?>
 				<table width="100%" border="0" align="left" cellspacing="0" cellpadding="0">
 				<tr>
