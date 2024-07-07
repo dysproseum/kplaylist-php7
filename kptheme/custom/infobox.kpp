@@ -1,0 +1,239 @@
+	
+	
+	$trheight = 14;
+	$boxwidth = 245;
+	?>	
+	<table width="100%" cellspacing="0" cellpadding="0" border="0">
+	<tr>
+		<td valign="top" align="left">
+		<?php
+		if ($setctl->get('showupgrade')) 
+		{
+			?><a title="<?php echo get_lang(120); ?>" href="http://www.kplaylist.net/?ver=<?php echo $app_ver; ?>&amp;build=<?php echo $app_build; ?>" target="_blank">
+			<font color="#CCCCCC"><?php echo get_lang(78); ?></font></a><br/><?php
+		} 
+		?>
+		<a title="<?php echo get_lang(79); ?>" href="<?php echo $homepage; ?>" target="_blank"><img alt="<?php echo get_lang(79); ?>" src="<?php echo getimagelink('kplaylist.gif'); ?>" border="0"/><span class="notice">v<?php echo $app_ver.' '.$app_build; ?></span></a>
+		</td>
+	</tr>
+	<tr>
+		<td height="6">-- THEME: INFOBOX --</td>
+	</tr>
+	<tr>
+		<td>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0">
+		<tr>
+			<td width="15"></td>
+			<td>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<tr>
+					<td>
+						<form style="margin:0;padding:0" name="search" action="<?php echo PHPSELF; ?>" method="post">
+						<input type="hidden" name="action" value="search"/>
+						<table width="100%" border="0" cellspacing="0" cellpadding="0">
+						<?php
+						if ($setctl->get('showstatistics'))
+						{
+							?>
+							<tr><td height="4"></td></tr>
+							<tr><td align="left"><font class="smalltext">&nbsp;<?php echo compute_statistics(); ?></font></td></tr>
+							<tr><td height="8"></td></tr>
+							<?php
+						}
+						?>		
+						<tr>
+							<td align="left"><input type="text" name="searchtext" id="searchtext" value='<?php echo frm_getwww('searchtext'); ?>' maxlength="150" size="46" class="fatbuttom"/></td>	
+						</tr>
+						<tr>
+							<td height="5"></td>
+						</tr>
+						<tr>
+							<td align="left">
+								<input type="radio" name="searchwh" value="0" <?php if ($valuser->get('defaultsearch')=='0') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(81); ?>&nbsp;</font>
+								<input type="radio" name="searchwh" value="1" <?php if ($valuser->get('defaultsearch')=='1') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(82); ?>&nbsp;</font>
+								<input type="radio" name="searchwh" value="2" <?php if ($valuser->get('defaultsearch')=='2') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(83); ?>&nbsp;</font>
+								<input type="radio" name="searchwh" value="3" <?php if ($valuser->get('defaultsearch')=='3') echo 'checked="checked"';?>/><font class="notice"><?php echo get_lang(67); ?></font>
+							</td>		
+						</tr>
+						<tr>
+							<td height="5"></td>
+						</tr>
+						<tr>
+							<td align="left">
+								<input type="checkbox" name="onlyid3" value="1" <?php if ($valuser->get('defaultid3')) echo ' checked="checked"'; ?>/>
+								<font class="notice"><?php echo get_lang(80); ?></font>
+								<input type="checkbox" name="orsearch" value="1" <?php if ($valuser->get('orsearch')) echo ' checked="checked"'; ?>/>
+								<font class="notice"><?php echo get_lang(306); ?></font>&nbsp;
+								<select name="hitsas" class="fatbuttom">
+								<option value="0"<?php if ($valuser->get('hitsas') == 0) echo ' selected="selected"'; ?>><?php echo get_lang(185); ?></option>
+								<option value="1"<?php if ($valuser->get('hitsas') == 1) echo ' selected="selected"'; ?>><?php echo get_lang(186); ?></option>
+								</select>								
+							</td>		
+						</tr>
+						<tr>
+							<td height="5"></td>
+						</tr>
+						<tr>
+							<td align="left"><input type="submit" name="startsearch" value="<?php echo get_lang(5); ?>" class="fatbuttom"/></td>
+						</tr>		
+						<?php trspace($trheight); ?>
+						<tr>
+							<td align="left">
+							<script type="text/javascript">
+								<!--
+								d = document.getElementById('searchtext');
+								d.focus();
+								-->
+							</script>
+							<?php 
+								$ha = new hotalbum();
+								blackbox(get_lang(84), $ha->html(), 0, true, 'boxhotlist', 'left', $boxwidth); 
+							?>
+							</td>
+						</tr>
+						</table>
+						</form>
+						<table width="100%" border="0" cellspacing="0" cellpadding="0">
+						<?php if (class_exists('kbulletin') && BULLETIN)
+						{
+						trspace($trheight);
+						?>						
+						<tr>
+							<td><?php 
+									$kb = new kbulletin();
+									blackbox(get_lang(268), $kb->getlatest(), 0, false, 'box', 'left', $boxwidth); ?>
+								</td>
+						</tr>
+						<?php
+						}		
+						if (SHOUTBOX)
+						{
+							trspace($trheight);
+							?>
+							<tr>
+								<td><?php 
+										blackbox(get_lang(364), $kpshout->show(), 0, false, 'box', 'left', $boxwidth); ?>
+									</td>
+							</tr>
+
+							<tr>
+								<td height="5"></td>
+							</tr>						
+							<tr>
+								<td>								
+								&nbsp;<input type="text" id="shoutmessage" name="shoutmessage" value="" maxlength="128" size="30" class="fatbuttom"/>&nbsp;
+								<input type="button" name="submitmessage" onclick="KPlaylist.Shout.submitMessage(document.getElementById('shoutmessage'));" class="fatbuttom" value="<?php echo get_lang(365); ?>"/>													
+								</td>
+							</tr>
+							
+							<?php
+							}	
+											
+						trspace($trheight);
+						?>
+						<tr>
+							<td><?php 
+									blackbox(get_lang(286), $ca->show(), 0, false, 'box', 'left', $boxwidth); ?>
+								</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				<?php
+	
+				$plshared = pl_shared(75);
+				if (!empty($plshared))
+				{
+					trspace($trheight);
+					?>
+					<tr>
+					<td>
+					<form style="margin:0;padding:0" name="sharedplaylist" action="<?php echo PHPSELF; ?>" method="post">
+					<table width="100%" border="0" cellspacing="0" cellpadding="0">
+					<tr><td><?php echo blackbox(get_lang(86), $plshared, 0, false, 'box', 'left', $boxwidth); ?></td></tr>
+					</table>
+					</form>
+					</td>
+					</tr>
+					<?php 
+				}
+				?>
+
+				<tr>
+				<td>
+				<form style="margin:0;padding:0" name="misc" action="<?php echo PHPSELF?>" method="post">
+				<input type="hidden" name="action" value="misc"/>
+				<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<?php					
+					if ($valuser->isadmin())
+					{
+						trspace($trheight);
+						?>
+						<tr>
+							<td align="left">
+						<?php
+						$admincode = '&nbsp;<input type="button" name="action" value="'.get_lang(87).'" class="fatbuttom" onclick="'.jswinscroll('Users', '?action=showusers',425,695).'"/> ';			
+						$admincode .= '<input type="button" name="updatesearch" value="'.get_lang(15).'" class="fatbuttom" onclick="'.jswinscroll('Update', '?action=updateoptions').'"/> ';
+						$admincode .= '<input type="button" name="settings" value="'.get_lang(126).'" class="fatbuttom" onclick="'.jswin('Settings','?action=settingsview',460,685).'"/>';
+						
+						$dropadmin = '<a class="bbox" onclick="javascript: if (!confirm('.addsq().get_lang(313).addsq().')) return false;" href="'.PHPSELF.'?action=dropadmin&amp;p='.$runinit['pdir64'].'&amp;d='.$runinit['drive'].'">x</a>&nbsp;';		
+	
+						echo blackbox(get_lang(88),$admincode, 0, false, 'box', 'left', $boxwidth, $dropadmin); ?>
+						</td></tr>
+					<?php 
+					} 
+					
+					if ($valuser->isadmin() && $cfg['radio'])
+					{
+						trspace($trheight);
+						
+						$kpr = new kpradio();
+						
+						$radiocode = $kpr->selectstations();
+						if (strlen($radiocode) > 0)
+									$radiocode .= '&nbsp;<input type="button" name="editradio" onclick="'.jswin('radioedite', '?action=radio_editjs', 165, 475).'" value="'.get_lang(71).'" class="fatbuttom"/>';
+	
+
+							$radiocode .= '&nbsp;<input type="button" name="newradio" onclick="'.jswin('radioeditn', '?action=radio_new&amp;stationid=0', 165, 475).'" value="'.get_lang(72).'" class="fatbuttom"/>';
+
+						
+						?>
+							<tr><td><?php echo blackbox(get_lang(343), '&nbsp;'.$radiocode, 0, false, 'box', 'left', $boxwidth); ?></td></tr>
+						<?php 
+					}	
+
+
+					$othercode = '&nbsp;<input type="submit" name="whatsnew" value="'.get_lang(89).'" class="fatbuttom"/>&nbsp;';
+					$othercode .= '<input type="submit" name="whatshot" value="'.get_lang(90).'" class="fatbuttom"/>&nbsp;';
+
+					$usermisc = '&nbsp;<input type="submit" name="logmeout" value="'.get_lang(91).'" onclick="javascript: if (!confirm('.addsq().get_lang(210).addsq().')) return false;" class="fatbuttom"/> ';
+					if ($valuser->get('u_access') != 2) $usermisc .= '<input type="button" name="editoptions" value="'.get_lang(92).'" class="fatbuttom" '. 'onclick="'.jswin('Options', '?action=editoptions',380,590).'"/> ';
+					$usermisc .= '<input type="button" name="randomizer" value="'.get_lang(212).'" class="fatbuttom" '. 'onclick="'.jswin('Randomizer', '?action=showrandomizer',380,550).'"/>';
+
+					trspace($trheight);
+
+					?>
+					<tr><td><?php echo blackbox(get_lang(93), $othercode, 0, false, 'box', 'left', $boxwidth); ?></td></tr>
+
+					<?php 
+					
+					trspace($trheight);
+
+					$genres = '&nbsp;'.genre_select(true,$valuser->get('defgenre'));
+					$genres .= '&nbsp;<input type="submit" class="fatbuttom" name="genrelist" value="'.get_lang(154).'"/>';
+					?>
+					<tr><td><?php echo blackbox(get_lang(147), $genres,1, false, 'box', 'left', $boxwidth); ?></td></tr>
+
+					<?php trspace($trheight); ?>
+					<tr><td><?php echo blackbox(get_lang(94), $usermisc,1, false, 'box', 'left', $boxwidth); ?></td></tr>
+				</table>
+				</form>
+				</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	</table>
+	</td>
+	</tr>
+</table>

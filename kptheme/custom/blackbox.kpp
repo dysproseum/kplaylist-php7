@@ -1,0 +1,13 @@
+
+	$mix = '<table class="'.$class.'" border="0" cellspacing="0" cellpadding="0"';
+	if ($width != 0) $mix .= ' width="'.$width.'"';
+	$mix .= 
+	'><tr><td height="13" valign="top" class="bbox">-- THEME: BLACKBOX --<b>&nbsp;'.$title.'&nbsp;</b></td><td class="bbox" align="right">'.$extra.'</td></tr><tr><td colspan="2" class="notice">'.
+	'<table class="bboxtable" border="0" cellspacing="0" cellpadding="0" width="100%">';
+	$mix .= '<tr><td height="6"></td></tr>'.
+	'<tr><td width="3"></td><td ';
+	if ($nowrap) $mix .= 'nowrap="nowrap" ';
+	$mix .= '>'.$code.'</td><td width="3"></td></tr><tr><td height="4"></td></tr></table>'.
+	'</td></tr></table>';
+	if (!$returncode) echo $mix; else return($mix);
+	

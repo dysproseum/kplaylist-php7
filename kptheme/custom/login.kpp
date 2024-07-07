@@ -1,0 +1,109 @@
+
+?>
+<form style="margin:0;padding:0" method="post" action="<?php if (HTTPS_REQ_MET) echo PHPSELF;?>">
+<input type="hidden" name="l_uri" value="<?php echo geturi(); ?>"/>
+<p>&nbsp;</p>
+<table width="600" border="0" cellspacing="0" cellpadding="0" align="center">
+	<tr>
+	<td align="left"><a href="http://www.kplaylist.net/"><font class="loginkplaylist">www.kplaylist.net</font></a></td>
+	</tr>
+	<tr>
+		<td height="5"></td>
+	</tr>
+	<tr>
+		<td colspan="3"><img src="<?php echo getimagelink('login.jpg'); ?>" height="327" width="600" alt="kPlaylist v<?php echo $app_ver; ?> build <?php echo $app_build; ?>"/></td>
+	</tr>
+	<tr>
+		<td height="3" bgcolor="#AAAAAA"></td>
+	</tr>
+	<tr>
+		<td height="12" width="600" valign="top">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tdlogin">
+				<tr>
+					<td height="10">-- THEME: LOGIN --</td>
+				</tr>
+				<tr>
+					<td width="2%"></td>
+					<td width="20%"><font class="text"><?php echo get_lang(37); ?></font></td>
+					<td width="30%"><input type="text" id="l_username" name="l_username" tabindex="1" maxlength="30" size="15" class="logonbuttom"/></td>
+					<td width="48%"></td>
+				</tr>
+				<tr>
+					<td height="3"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><font class="text"><?php echo get_lang(38); ?></font></td>
+					<td>
+						<input type="password" name="l_password" tabindex="2" maxlength="30" size="15" class="logonbuttom"/>
+					</td>
+				</tr>
+				<tr>
+					<td height="3"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><font class="text"><?php echo get_lang(287); ?></font></td>
+					<td><input type="checkbox" name="l_rememberme" tabindex="4" value="1" class="logonbuttom"/></td>
+				</tr>
+				<tr>
+					<td height="8"></td>
+				</tr>
+				<tr>
+					<td></td>					
+					<td colspan="3">
+					<table width="100%" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+						<td width="30%">
+						<?php 
+						if (HTTPS_REQ_MET)
+						{
+							?><input type="submit" name="l_submit" tabindex="3" value="<?php echo get_lang(40); ?>" class="logonbuttom" />
+							<?php
+							if (USERSIGNUP) 
+							{ 
+								?><input type="button" name="l_signup" tabindex="5" onclick="newwin('Users', '<?php echo PHPSELF; ?>?l_signup=1', 195, 350);" value="<?php echo get_lang(158); ?>" class="logonbuttom" /><?php 
+							}
+						} else { ?><a href="https://<?php echo $phpenv['streamlocation']; ?>"><font class="logintext"><?php echo get_lang(41); ?></font></a><?php }
+						?>
+						</td>
+						<td valign="bottom" align="right"><font class="logintext"><?php echo get_lang(39); ?>&nbsp;&nbsp;</font></td>
+					</tr>
+					</table>
+					</td>
+				</tr>
+				<?php if (!empty($msg))
+				{
+					?>
+					<tr>
+						<td height="10"></td>
+					</tr>
+					<tr>
+						<td></td><td colspan="2"><font class="logintext"><?php echo $msg; ?></font></td>
+					</tr>
+					<?php
+				}
+				?>
+				<tr>
+					<td height="10"></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+</form>
+<script type="text/javascript">
+	<!--
+	d = document.getElementById('l_username');	
+	d.focus();	
+	-->
+</script>
+<table width="610" border="0" cellspacing="0" cellpadding="0" align="center">
+<tr><td height="7"></td></tr>
+<tr>
+	<td align="right">
+		<a href="http://validator.w3.org/check/referer">
+		<img src="<?php echo getimagelink('w3c_xhtml_valid.gif'); ?>" border="0" alt="Valid XHTML 1.0!" height="31" width="88"/></a>
+	</td>
+</tr>
+</table>
