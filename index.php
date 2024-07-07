@@ -1653,19 +1653,20 @@ function kprintcss()
 			}
 		}
 
-		if (function_exists('kpdefcss'))
-		{
-			?>
-			<style type="text/css">
-			<?php kpdefcss(); ?>
-			</style>
-			<?php
-		}
-
 		$css = $setctl->get('externalcss'); 
 		if (strlen($css) > 0)
 		{
 			echo '<link href="'.$css.'" rel="stylesheet" type="text/css"/>';
+		} else
+		{
+			if (function_exists('kpdefcss'))
+			{
+				?>
+				<style type="text/css">
+				<?php kpdefcss(); ?>
+				</style>
+				<?php
+			}
 		}
 
 		$css = $setctl->get('mobilecss');
