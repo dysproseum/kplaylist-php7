@@ -2536,8 +2536,6 @@ class settings
 				'disksync'					=> array(1, 1),
 				'externaljavascript'		=> array('', 0),
 				'mobilecss'			=> array('', 0),
-				'html5video'			=> array(0,1),
-				'html5audio'			=> array(0,1),
 				'ajaxurl'					=> array('', 0),
 				'showupgrade'				=> array(1,1),
 				'showstatistics'			=> array(0, 1),
@@ -2863,8 +2861,6 @@ $setctl->publish('disksync');
 $setctl->publish('bulletin');
 $setctl->publish('filetemplate');
 $setctl->publish('urlsecurity');
-$setctl->publish('html5video');
-$setctl->publish('html5audio');
 $setctl->publish('showlyricslink');
 $setctl->publish('networkmode');
 $setctl->publish('virtualdir');
@@ -8082,8 +8078,6 @@ function settings_save($data, $page)
 
 			case 1:
 				$setctl->set('includeheaders', 0);
-				$setctl->set('html5video', 0);
-				$setctl->set('html5audio', 0);
 				$setctl->set('showupgrade', 0);
 				$setctl->set('showstatistics', 0);
 				$setctl->set('albumcover', 0);
@@ -8483,16 +8477,6 @@ function settings_page($page)
 			<tr>
 				<td class="wtext"><?php echo get_lang(196); ?></td>
 				<td class="wtext"><input type="text" class="fatbuttom" name="externaljavascript" maxlength="50" size="50" value="<?php echo $setctl->get('externaljavascript'); ?>"/></td>
-				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
-			</tr>
-			<tr>
-				<td class="wtext">Enable HTML5 video player</td>
-				<td class="wtext"><input type="checkbox" value="1" name="html5video" <?php echo $setctl->getchecked('html5video'); ?>/></td>
-				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
-			</tr>
-			<tr>
-				<td class="wtext">Enable HTML5 audio player</td>
-				<td class="wtext"><input type="checkbox" value="1" name="html5audio" <?php echo $setctl->getchecked('html5audio'); ?>"/></td>
 				<td class="wtext"><?php echo helplink('externaljavascript'); ?></td>
 			</tr>
 			<tr>
