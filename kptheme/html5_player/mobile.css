@@ -1,0 +1,13 @@
+/* html5_player kplaylist theme - mobile */
+
+#html5container audio {
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background: lightgray;
+}
+
+audio::-webkit-media-controls-panel {
+  background: lightgray;
+}
