@@ -7,6 +7,7 @@ $cfg['laststreamscount'] = 12;
 $cfg['window_x'] = 420;
 $cfg['window_y'] = 420;
 $cfg['enablegetid3'] = 1;
+$cfg['getid3include'] = 'getid3/getid3/getid3.php';
 
 // Database connection.
 $cfg['db_host'] = 'localhost';
