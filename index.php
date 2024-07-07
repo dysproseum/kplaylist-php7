@@ -1512,10 +1512,7 @@ function kprintheader($title='', $ajax=0, $addonload='')
 		ajax($cfg['livestreamajax'], SHOUTBOX);
 	}
 
-	jsfunctions();
-	if (strlen($extjs) > 0) {
-		echo '<script type="text/javascript" src="'.$extjs.'"></script>';
-	}
+	if (strlen($extjs) == 0) jsfunctions(); else echo '<script type="text/javascript" src="'.$extjs.'"></script>';
 
 	if ($setctl->get('includeheaders', 1, 1))
 	{
