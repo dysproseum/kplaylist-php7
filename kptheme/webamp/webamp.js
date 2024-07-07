@@ -1,29 +1,18 @@
 let webAmp;
 
-// Example json.
-var example = [
-  {
-    metaData: {
-      title: "We Are Going To Eclecfunk Your Ass",
-      artist: "Eclectek",
-    },
-    url: "https://raw.githubusercontent.com/captbaritone/webamp-music/4b556fbf/Eclectek_-_02_-_We_Are_Going_To_Eclecfunk_Your_Ass.mp3",
-    duration: 190.093061,
-  },
-];
-
 function getAllTracks() {
-  var x = document.querySelectorAll("span.file:has(> a.html5audio)");
+  var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
+  for(i=0; i<x.length; i++) {
+    x[i].href = x[i].href.replace('sid', 'streamsid');
+  }
   var tracks = [];
   for(i=0; i<x.length; i++) {
-    var t = x[i].nextElementSibling;
-    var a = x[i].children[0];
     var track = {
       metaData: {
-        title: t.innerText,
-        artist: t.title,
+        title: x[i].innerText,
+        artist: x[i].title,
       },
-      url: a.href,
+      url: x[i].href,
     };
     tracks.push(track);
   }
@@ -32,23 +21,19 @@ function getAllTracks() {
 
 function getSelectedTracks() {
   var x = document.querySelectorAll('form[name=psongs] input[type=checkbox]:checked');
-console.log(x);
   var tracks = [];
   for(i=0; i<x.length; i++) {
     var y = x[i].nextElementSibling;
-    var t = y.nextElementSibling;
-console.log(t);
-    var a = y.children[0];
+    var a = y.nextElementSibling;
     var track = {
       metaData: {
-        title: t.innerText,
-        artist: t.title,
+        title: a.innerText,
+        artist: a.title,
       },
-      url: a.href,
+      url: a.href.replace('sid', 'streamsid'),
     };
     tracks.push(track);
   }
-console.log(tracks);
   return tracks;
 }
 
