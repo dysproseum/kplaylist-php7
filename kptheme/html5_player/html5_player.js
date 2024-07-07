@@ -163,7 +163,7 @@ function play_html5video(obj) {
 function getAllTracks() {
   var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
   for(i=0; i<x.length; i++) {
-    x[i].href = x[i].href.replace('sid', 'seek_stream');
+    x[i].href = x[i].href.replace('sid', 'streamsid');
   }
   return x;
 }
