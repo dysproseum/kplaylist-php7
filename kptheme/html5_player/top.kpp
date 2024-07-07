@@ -1,0 +1,26 @@
+// HTML5 player container.
+
+  echo '<div id="html5container">';
+  if (HTML5VIDEO) {
+    echo '<video id="html5video" controls hidden="true"></video>';
+  }
+  if (HTML5AUDIO) {
+    echo '<audio id="html5audio" controls hidden="true"></audio>';
+  }
+  echo '</div>';
+				?>
+				<table width="100%" border="0" align="left" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="320" valign="top">
+					<?php infobox(); ?></td>
+
+<script src="kptheme/html5_player/html5_player.js"></script>
+<link href="kptheme/html5_player/html5_player.css" rel="stylesheet" type="text/css" />
+<link href='kptheme/html5_player/mobile.css' rel='stylesheet' media='only screen and (max-width: 768px)' type='text/css' />
+					<td align="left" valign="top">
+						<?php if ($this->form) $this->form(); ?>
+						<table width="100%" border="0" cellpadding="0" cellspacing="0">
+						<tr><td height="5"></td></tr>
+						<tr>
+						<td>						
+				

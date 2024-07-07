@@ -244,18 +244,6 @@ form > table > tbody > tr > td > table.box:has(tbody > tr > td.bbox) {
   margin-bottom: 0px;
 }
 
-#html5container audio {
-  width: 100%;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  background: lightgray;
-}
-
-audio::-webkit-media-controls-panel {
-  background: lightgray;
-}
-
 /* settings save/close buttons */
 #bottommsg {
   position: unset !important;
