@@ -12,13 +12,13 @@ var listener_count = 0;
 
 // Find next playable link in playlist.
 function findNextSong(obj) {
-  var this_tr = obj.parentElement.parentElement.parentElement;
+  var this_tr = obj.parentElement.parentElement;
   var next_tr = this_tr.nextElementSibling;
   var td;
   var link;
   while(next_tr) {
     td = next_tr.children[0];
-    link = td.querySelector("a." + player_type);
+    link = td.querySelector("a:has(span)");
     if (link) {
       return link;
     }
@@ -34,7 +34,7 @@ function setActive(link=false) {
     active[i].classList.add("file");
   }
   if (link) {
-    var target = link.parentElement.nextElementSibling.children[0];
+    var target = link.children[0];
     target.classList.add("filemarked");
   }
 }
@@ -42,7 +42,6 @@ function setActive(link=false) {
 // Behavior to play next song in playlist.
 function playlist(obj, player) {
   current = obj;
-  player_type = obj.className;
 
   listener = function () {
     console.log("Event: playback ended, listener count: " + listener_count);
@@ -159,3 +158,44 @@ function play_html5video(obj) {
 
   return false;
 }
+
+// Get songs and replace link with stream url.
+function getAllTracks() {
+  var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
+  for(i=0; i<x.length; i++) {
+    x[i].href = x[i].href.replace('sid', 'seek_stream');
+  }
+  return x;
+}
+
+// Override song links to start player.
+window.addEventListener("load", function() {
+  var x = getAllTracks();
+  var player = document.getElementById('html5audio');
+  for(i=0; i<x.length; i++) {
+    x[i].addEventListener("click", function(e) {
+      e.preventDefault();
+
+      playlist(this, player);
+      player.pause();
+      player.hidden = false;
+      player.src = this.href;
+      var playPromise = player.play();
+      setActive(this);
+
+      // In browsers that don’t yet support this functionality,
+      // playPromise won’t be defined.
+      if (playPromise !== undefined) {
+        playPromise.then(function() {
+          // Automatic playback started!
+        }).catch(function(error) {
+          // Automatic playback failed.
+          // Show a UI element to let the user manually start playback.
+          console.log(error);
+        });
+      }
+
+      return false;
+    });
+  }
+});
