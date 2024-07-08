@@ -2,9 +2,6 @@ let webAmp;
 
 function getAllTracks() {
   var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
-  for(i=0; i<x.length; i++) {
-    x[i].href = x[i].href.replace('sid', 'streamsid');
-  }
   var tracks = [];
   for(i=0; i<x.length; i++) {
     var track = {
@@ -25,37 +22,51 @@ function getSelectedTracks() {
   for(i=0; i<x.length; i++) {
     var y = x[i].nextElementSibling;
     var a = y.nextElementSibling;
+    if (a.href.indexOf('index.php?pwd') != -1) {
+      a = y.nextElementSibling.nextElementSibling;
+    }
+
     var track = {
       metaData: {
         title: a.innerText,
         artist: a.title,
       },
-      url: a.href.replace('sid', 'streamsid'),
+      url: a.href,
     };
     tracks.push(track);
   }
   return tracks;
 }
 
+// Get songs and replace link with stream url.
+function getSongListing() {
+  var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
+  for(i=0; i<x.length; i++) {
+    x[i].href = x[i].href.replace('index.php?sid', 'index.php?streamsid');
+  }
+  return x;
+}
+
 window.addEventListener("load", function() {
   // Play Album.
   var p = document.getElementsByName("psongsall");
   var q = p[0];
-  q.addEventListener("click", function(e) {
-    e.preventDefault();
-  
-    var tracks = getAllTracks();
-    webAmp.setTracksToPlay(tracks);
-    return false;
-  });
+  if (q) {
+    q.addEventListener("click", function(e) {
+      e.preventDefault();
+
+      var tracks = getAllTracks();
+      webAmp.setTracksToPlay(tracks);
+      return false;
+    });
+  }
   
   // Play selected.
   var r = document.getElementsByName("psongsselected");
   var s = r[0];
   s.addEventListener("click", function(e) {
     e.preventDefault();
-  
-    // @todo get selected tracks.
+
     var tracks = getSelectedTracks();
     if (tracks.length > 0) {
       webAmp.setTracksToPlay(tracks);
@@ -63,8 +74,28 @@ window.addEventListener("load", function() {
     return false;
   });
 
+  // Override song links to start player.
+  var x = getSongListing();
+  for(i=0; i<x.length; i++) {
+    x[i].addEventListener("click", function(e) {
+      e.preventDefault();
+
+      var tracks = [];
+      var track = {
+        metaData: {
+          title: this.innerText,
+          artist: this.title,
+        },
+        url: this.href,
+      };
+      tracks.push(track);
+      webAmp.setTracksToPlay(tracks);
+
+      return false;
+    });
+  }
+
   const app = document.getElementById("app");
-//  webAmp = new Webamp();
   webAmp = new Webamp({
     windowLayout: {
       main: {
