@@ -8,8 +8,6 @@ kPlaylist is a music database that you manage via the web. With kPlaylist you ca
 
 * A dedicated docker image is now available: [dysproseum/kplaylist-docker](https://github.com/dysproseum/kplaylist-docker)
 
-* A mobile CSS layout has been created for widths less than 768px.
-
 ### Project History
 
 | Date | Description |
@@ -43,18 +41,26 @@ See [releases page](https://github.com/dysproseum/kplaylist-php7/releases) for p
 
 The goal has always been not to modify the original software any more than necessary. In addition to PHP7 compatibility updates, the following additions have been made:
 
-#### HTML5 player
-  - By default, kPlaylist creates M3U playlists that will open in a native media player like Winamp or VLC, as well as support for a flash player or jwplayer. This addition enables native playback via HTML5 player in the browser.
-  - This requires setting `external.js` as the "External javascript" value and `external.css` as the "External CSS" value
+**In-browser playback:** By default, kPlaylist creates M3U playlists that will open in a native media player like Winamp or VLC, as well as support for a flash player or jwplayer.
 
-#### Mobile layout
-  - This requires setting `mobile.css` as the "Mobile CSS" value
+This addition enables native playback in the browser with two new themes:
+  - The HTML5 player uses the native browser `<audio>` or `<video>` tags.
+  - The webamp player has been integrated.
 
-You can find these options under Admin control -> Settings -> Customize
+You can set the theme per-user under My -> Options -> Style.
+
+**Mobile layout:** It's now easier to use kPlaylist from mobile devices.
+
+  - The mobile layout has been created for widths less than 768px.
+  - This requires setting `mobile.css` as the "Mobile CSS" value.
+
+You can find these options under Admin control -> Settings -> Customize.
 
 ---
 
 ### Installing kPlaylist
+
+You will want to have a web server such as Apache or nginx, as well as a MySQL server already installed, or use the tested Docker images.
 
 The current main branch has been tested with the following versions:
 - Apache 2.4.38 :heavy_check_mark:
@@ -66,8 +72,6 @@ Runs in Docker on Raspberry Pi 3 and newer:
 - hypriot/rpi-mysql:5.5
 
 The web server can be configured to run either from the document root (ex. http://localhost:8080) or under a directory path (ex. http://localhost:8080/kplaylist/)
-
-You will want to have a web server such as Apache or nginx, as well as a MySQL server already installed, or use the tested Docker images.
 
 Copy the `example.kpconfig.php` to `kpconfig.php` to place the database credentials. Otherwise, these can be entered in the installation wizard and kPlaylist will attempt to create the file.
 
@@ -99,16 +103,7 @@ Upon first load in the browser, you are greeted with installation options.
 
 Have fun listening to your music via the web ;-)
 
-### Known issues
-
-Docker:
-- Download Selected or Download Album as zip not working - needs zip package
-    - tar works, zip inbuilt works
-    - Consider changing the default under My -> Options if the zip binary is not available
-
-Windows XP/Winamp client:
-- Stream flac not working
-- Streaming flac works using VLC
+---
 
 ### More Resources
 
