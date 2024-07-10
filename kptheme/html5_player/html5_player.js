@@ -35,14 +35,19 @@ function findNextSong(obj) {
 
 // Set visual indication of playing song.
 function setActive(link=false) {
-  var active = document.querySelectorAll("span.filemarked");
+  var active = document.querySelectorAll("span.filemarked, a.filemarked");
   for (i=0; i < active.length; i++) {
     active[i].classList.remove("filemarked");
     active[i].classList.add("file");
   }
   if (link) {
     var target = link.children[0];
-    target.classList.add("filemarked");
+    if (target) {
+      target.classList.add("filemarked");
+    }
+    else {
+      link.classList.add("filemarked");
+    }
   }
 }
 
@@ -99,6 +104,17 @@ function getSelectedTracks() {
 // Get songs and replace link with stream url.
 function getAllTracks() {
   var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
+  for(i=0; i<x.length; i++) {
+    x[i].href = x[i].href.replace('index.php?sid', 'index.php?streamsid');
+  }
+  return x;
+}
+
+// Get last streams
+// * needs $cfg['livestreamajax'] = 0;
+// * or else the changes will get replaced.
+function getLastStreams() {
+  var x = document.querySelectorAll("#streams a.wtext");
   for(i=0; i<x.length; i++) {
     x[i].href = x[i].href.replace('index.php?sid', 'index.php?streamsid');
   }
@@ -184,6 +200,35 @@ window.addEventListener("load", function() {
       player.pause();
       player.hidden = false;
       player.src = this.href;
+      var playPromise = player.play();
+      setActive(this);
+
+      // In browsers that don’t yet support this functionality,
+      // playPromise won’t be defined.
+      if (playPromise !== undefined) {
+        playPromise.then(function() {
+          // Automatic playback started!
+        }).catch(function(error) {
+          // Automatic playback failed.
+          // Show a UI element to let the user manually start playback.
+          console.log(error);
+        });
+      }
+
+      return false;
+    });
+  }
+
+  // Last streams.
+  x = getLastStreams();
+  for(i=0; i<x.length; i++) {
+    x[i].addEventListener("click", function(e) {
+      e.preventDefault();
+
+      checkedOnly = false;
+      player.pause();
+      player.src = this.href;
+      player.hidden = false;
       var playPromise = player.play();
       setActive(this);
 
