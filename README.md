@@ -41,11 +41,11 @@ See [releases page](https://github.com/dysproseum/kplaylist-php7/releases) for p
 
 The goal has always been not to modify the original software any more than necessary. In addition to PHP7 compatibility updates, the following additions have been made:
 
-**In-browser playback:** By default, kPlaylist creates M3U playlists that will open in a native media player like Winamp or VLC, as well as support for a flash player or jwplayer.
+**In-browser playback:** By default, kPlaylist creates M3U playlists that open in a media player like Winamp or VLC, as well as support for a flash player or jwplayer.
 
 This addition enables native playback in the browser with two new themes:
-  - The HTML5 player uses the native browser `<audio>` or `<video>` tags.
-  - The webamp player has been integrated.
+  - The **HTML5 player** uses the native browser `<audio>` or `<video>` tags.
+  - The **[Webamp player](https://github.com/captbaritone/webamp)**, a reimplementation of Winamp 2.9 in HTML5 and JavaScript, has been integrated.
 
 You can set the theme per-user under My -> Options -> Style.
 
