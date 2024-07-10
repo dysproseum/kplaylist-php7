@@ -370,7 +370,6 @@ window.addEventListener("load", function() {
   });
 
   var webAmpPromise = webAmp.renderWhenReady(app);
-return;
   webAmpPromise.then(function(result) {
     setTimeout(function() {
 
