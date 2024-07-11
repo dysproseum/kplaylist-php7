@@ -58,12 +58,6 @@ function getLastStreams() {
   return x;
 }
 
-// Get randomizer tracks.
-function getRandomizerTracks() {
-  var x = document.querySelector("form.randomizer #selids");
-  return x.children;
-}
-
 window.addEventListener("load", function() {
   // Play Album.
   var p = document.getElementsByName("psongsall");
@@ -89,24 +83,6 @@ window.addEventListener("load", function() {
       if (tracks.length > 0) {
         webAmp.setTracksToPlay(tracks);
       }
-      return false;
-    });
-  }
-
-  // Randomizer.
-  // @todo needs js include in form[name=randomizer].
-  var p = document.getElementsByName("input[name=playselected]");
-  var q = p[0];
-  if (q) {
-    q.addEventListener("click", function(e) {
-      e.preventDefault();
-
-      var tracks = getRandomizerTracks();
-      var sid = tracks[0].value;
-      var title = tracks[0].innerText;
-
-      webAmp.setTracksToPlay(tracks);
-
       return false;
     });
   }
@@ -404,3 +380,8 @@ window.addEventListener("load", function() {
   });
 
 });
+
+// Randomizer.
+window.webampParentFunction = function(tracks) {
+  webAmp.setTracksToPlay(tracks);
+}
