@@ -42,7 +42,7 @@ function getSelectedTracks() {
 function getSongListing() {
   var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
   for(i=0; i<x.length; i++) {
-    x[i].href = x[i].href.replace('index.php?sid', 'index.php?streamsid');
+    x[i].href = x[i].href.replace('index.php?sid', 'index.php?seek_stream');
   }
   return x;
 }

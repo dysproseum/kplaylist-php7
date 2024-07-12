@@ -105,7 +105,7 @@ function getSelectedTracks() {
 function getAllTracks() {
   var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
   for(i=0; i<x.length; i++) {
-    x[i].href = x[i].href.replace('index.php?sid', 'index.php?streamsid');
+    x[i].href = x[i].href.replace('index.php?sid', 'index.php?seek_stream');
   }
   return x;
 }
@@ -116,7 +116,7 @@ function getAllTracks() {
 function getLastStreams() {
   var x = document.querySelectorAll("#streams a.wtext");
   for(i=0; i<x.length; i++) {
-    x[i].href = x[i].href.replace('index.php?sid', 'index.php?streamsid');
+    x[i].href = x[i].href.replace('index.php?sid', 'index.php?seek_stream');
   }
   return x;
 }

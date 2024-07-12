@@ -5764,12 +5764,10 @@ class caction
 		global $runinit;
 		if ($runinit['astream'])
 		{
-			$ids = array();
-			$res = db_list_processes();
-			while ($row = db_fetch_assoc($res)) $ids[$row['Id']] = true;
-			db_free($res);
+			$ids = db_list_processes();
 			$res = db_execquery('SELECT h_id, mid FROM '.TBL_MHISTORY.' WHERE active = 1');
-			if ($res) while ($row = db_fetch_assoc($res)) if (!isset($ids[$row['mid']])) db_execquery('UPDATE '.TBL_MHISTORY.' SET active = 0 WHERE h_id = '.$row['h_id']);
+			$timeout = time() - 30;
+			if ($res) while ($row = db_fetch_assoc($res)) if (!isset($ids[$row['mid']])) db_execquery('UPDATE '.TBL_MHISTORY.' SET active = 0 WHERE h_id = '.$row['h_id'].' AND utime < '.$timeout);
 		}
 	}
 
@@ -9153,7 +9151,7 @@ function addhistory($u_id, $sid, $tid = 0)
 function updateactive($id)
 {	
 	global $runinit;
-	if ($runinit['astream']) db_execquery('UPDATE '.TBL_MHISTORY.' SET active = 1, mid = '.db_thread_id().' WHERE h_id = '.$id);
+	if ($runinit['astream']) db_execquery('UPDATE '.TBL_MHISTORY.' SET active = 1, mid = '.db_thread_id().', utime='.time().' WHERE h_id = '.$id);
 }
 
 function updatehistory($id, $pos, $fpos)
@@ -13590,7 +13588,7 @@ function playresource2($sid)
 
 function seek_stream($sid)
 {
-	global $cfg;
+	global $cfg, $u_id;
 
 	$f2 = new file2($sid, true);
 	$fdesc = new filedesc($f2->fname);
@@ -13638,14 +13636,40 @@ function seek_stream($sid)
 	header('Accept-Ranges: bytes');
 	header('Content-Length: ' . $length);
 
+	// Poll to music history table for last streams.
+	$upc = 0;
+	$tid = 0;
+	$lastux = getlasthistory($sid, $u_id);
+
+	if ($offset == 0) {
+		if (($lastux + 5) <= time()) {
+			search_updatevote($sid);
+			if ($u_id && $fdesc->logaccess) {
+				$hid = addhistory($u_id, $sid, $tid);
+			}
+		} else {
+			$hid = getlasthistory($sid, $u_id, true);
+		}
+	}
+	if ($offset > 0) {
+		$hid = getlasthistory($sid, $u_id, true);
+	}
+
+	updateactive($hid);
+	$ph = new pollhid($hid, $f2->fsize, $offset);
+
+	// Read file.
 	$fp = fopen($f2->fullpath, 'rb');
 	fseek($fp, $offset);
 	while (!feof($fp))
 	{
 	        $buffer = fread($fp, 32 * 1024);
 	        print $buffer;
+                $upc += strlen($buffer);
+		$ph->poll($upc);
 	}
 	fclose($fp);
+	$ph->poll($upc, true);
 	exit;
 }
 
