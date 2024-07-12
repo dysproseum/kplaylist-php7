@@ -2378,7 +2378,8 @@ function db_execquery($query, $fast=false)
 
 function db_thread_id()
 {
-	return mysql_thread_id();
+	global $mysqli;
+	return $mysqli->thread_id;
 }
 
 function db_fetch_assoc($res)
@@ -2409,7 +2410,13 @@ function db_free($res)
 
 function db_list_processes()
 {
-	return mysql_list_processes();
+	global $mysqli;
+	$ids = array();
+        $res = db_execquery("show processlist");
+	while($row = db_fetch_row($res)) {
+		$ids[$row[0]]= true;
+        }
+	return $ids;
 }
 
 function db_execcheck($query)
@@ -2875,7 +2882,7 @@ if ($win32 && !isphp5()) define('STR_ENGINE', false);
 
 $runinit = array('pdir' => '', 'pdir64' => '', 'drive' => 0, 'astream' => 1);
 
-if (!function_exists('mysql_list_processes') || !function_exists('mysql_thread_id')) $runinit['astream'] = 0;
+if (!function_exists('db_list_processes') || !function_exists('db_thread_id')) $runinit['astream'] = 0;
 
 // general - used as globals
 
