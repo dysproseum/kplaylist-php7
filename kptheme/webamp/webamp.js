@@ -1,5 +1,16 @@
 let webAmp;
 
+// Get session value for playback.
+function getCookie(name) {
+  var x = document.cookie.split(';');
+  for(i=0; i<x.length; i++) {
+    var parts = x[i].split('=');
+    if (parts[0] == name) {
+      return parts[1];
+    }
+  }
+}
+
 function getAllTracks() {
   var x = document.querySelectorAll("form[name=psongs] a:has(> span)");
   var tracks = [];
@@ -395,6 +406,17 @@ window.addEventListener("load", function() {
 });
 
 // Randomizer.
-window.webampParentFunction = function(tracks) {
+window.playerParentFunction = function(tracks) {
+  var cookie = getCookie('kplaylist');
+  for(i=0; i<tracks.length; i++) {
+    var track = {
+      metaData: {
+        title: x[i].innerText,
+        artist: x[i].title,
+      },
+      url: 'index.php?seek_stream=' + x[i].value + '&c=' + cookie,
+    };
+    tracks.push(track);
+  }
   webAmp.setTracksToPlay(tracks);
 }
