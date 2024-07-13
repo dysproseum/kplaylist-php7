@@ -8,9 +8,34 @@ var player;
 var current;
 var listener = false;
 var checkedOnly = true;
+var trackListing = [];
+
+// Get session value for playback.
+function getCookie(name) {
+  var x = document.cookie.split(';');
+  for(i=0; i<x.length; i++) {
+    var parts = x[i].split('=');
+    if (parts[0] == name) {
+      return parts[1];
+    }
+  }
+}
 
 // Find next playable link in playlist.
 function findNextSong(obj) {
+  // Randomizer.
+  if (trackListing.length > 0) {
+    for (i=0; i<trackListing.length; i++) {
+      if (trackListing[i] == obj) {
+        if (trackListing[i + 1]) {
+          return trackListing[i + 1];
+        }
+      }
+    }
+    return false;
+  }
+
+  // Song listing.
   var this_tr = obj.parentElement.parentElement;
   var next_tr = this_tr.nextElementSibling;
   var td;
@@ -40,7 +65,7 @@ function setActive(link=false) {
     active[i].classList.remove("filemarked");
     active[i].classList.add("file");
   }
-  if (link) {
+  if (link && link.children) {
     var target = link.children[0];
     if (target) {
       target.classList.add("filemarked");
@@ -58,10 +83,14 @@ function playlist(obj, player) {
   listener = function () {
     console.log("Event: playback ended");
     var link = findNextSong(current);
-    if (link) {
+    if (link.href) {
       player.src=link.href;
       var playPromise = player.play();
       setActive(link);
+    }
+    else if (link) {
+      player.src=link;
+      var playPromise = player.play();
     }
     else {
       setActive();
@@ -261,3 +290,31 @@ window.addEventListener("load", function() {
   }
 
 });
+
+// Randomizer.
+window.playerParentFunction = function(tracks) {
+  var cookie = getCookie('kplaylist');
+
+  for(i=0; i<tracks.length; i++) {
+   var url ='index.php?seek_stream=' + tracks[i].value + '&c=' + cookie;
+   trackListing.push(url);
+  }
+
+  playlist(trackListing[0], player);
+  player.pause();
+  player.hidden = false;
+  player.src=trackListing[0];
+  var playPromiise = player.play();
+
+  // In browsers that don’t yet support this functionality,
+  // playPromise won’t be defined.
+  if (playPromise !== undefined) {
+    playPromise.then(function() {
+      // Automatic playback started!
+    }).catch(function(error) {
+      // Automatic playback failed.
+      // Show a UI element to let the user manually start playback.
+      console.log(error);
+    });
+  }
+}
