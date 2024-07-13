@@ -111,15 +111,47 @@ function getAllTracks() {
 }
 
 // Get last streams
-// * needs $cfg['livestreamajax'] = 0;
-// * or else the changes will get replaced.
 function getLastStreams() {
-  var x = document.querySelectorAll("#streams a.wtext");
+  var x = document.querySelectorAll("#streams a.wtext, #streams a.filemarked");
   for(i=0; i<x.length; i++) {
     x[i].href = x[i].href.replace('index.php?sid', 'index.php?seek_stream');
   }
   return x;
 }
+
+// Callback function to execute when mutations are observed.
+const callback = (mutationList, observer) => {
+  for (const mutation of mutationList) {
+    if (mutation.type === "childList") {
+      x = getLastStreams();
+      for(i=0; i<x.length; i++) {
+        x[i].addEventListener("click", function(e) {
+          e.preventDefault();
+
+          checkedOnly = false;
+          player.pause();
+          player.src = this.href;
+          player.hidden = false;
+          var playPromise = player.play();
+          setActive(this);
+
+          // In browsers that don’t yet support this functionality,
+          // playPromise won’t be defined.
+          if (playPromise !== undefined) {
+            playPromise.then(function() {
+              // Automatic playback started!
+            }).catch(function(error) {
+              // Automatic playback failed.
+              // Show a UI element to let the user manually start playback.
+              console.log(error);
+            });
+          }
+          return false;
+        });
+      }
+    }
+  }
+};
 
 window.addEventListener("load", function() {
   player = document.getElementById('html5player');
@@ -189,6 +221,15 @@ window.addEventListener("load", function() {
     return false;
   });
 
+  // Last streams.
+  const targetNode = document.getElementById("streams");
+  const config = { attributes: true, childList: true, subtree: true };
+  const observer = new MutationObserver(callback);
+  observer.observe(targetNode, config);
+
+  // Later, you can stop observing
+  // observer.disconnect();
+
   // Override song links to start player.
   var x = getAllTracks();
   for(i=0; i<x.length; i++) {
@@ -219,32 +260,4 @@ window.addEventListener("load", function() {
     });
   }
 
-  // Last streams.
-  x = getLastStreams();
-  for(i=0; i<x.length; i++) {
-    x[i].addEventListener("click", function(e) {
-      e.preventDefault();
-
-      checkedOnly = false;
-      player.pause();
-      player.src = this.href;
-      player.hidden = false;
-      var playPromise = player.play();
-      setActive(this);
-
-      // In browsers that don’t yet support this functionality,
-      // playPromise won’t be defined.
-      if (playPromise !== undefined) {
-        playPromise.then(function() {
-          // Automatic playback started!
-        }).catch(function(error) {
-          // Automatic playback failed.
-          // Show a UI element to let the user manually start playback.
-          console.log(error);
-        });
-      }
-
-      return false;
-    });
-  }
 });

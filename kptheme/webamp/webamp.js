@@ -47,16 +47,41 @@ function getSongListing() {
   return x;
 }
 
-// Get last streams
-// * needs $cfg['livestreamajax'] = 0;
-// * or else the changes will get replaced.
+// Get last streams.
 function getLastStreams() {
-  var x = document.querySelectorAll("#streams a.wtext");
+  var x = document.querySelectorAll("#streams a.wtext, #streams a.filemarked");
   for(i=0; i<x.length; i++) {
     x[i].href = x[i].href.replace('index.php?sid', 'index.php?streamsid');
   }
   return x;
 }
+
+// Callback function to execute when mutations are observed.
+const callback = (mutationList, observer) => {
+  for (const mutation of mutationList) {
+    if (mutation.type === "childList") {
+      x = getLastStreams();
+      for(i=0; i<x.length; i++) {
+        x[i].addEventListener("click", function(e) {
+          e.preventDefault();
+
+          var tracks = [];
+          var track = {
+            metaData: {
+              title: this.innerText,
+              artist: this.title,
+            },
+            url: this.href,
+          };
+          tracks.push(track);
+          webAmp.setTracksToPlay(tracks);
+
+          return false;
+        });
+      }
+    }
+  }
+};
 
 window.addEventListener("load", function() {
   // Play Album.
@@ -109,25 +134,13 @@ window.addEventListener("load", function() {
   }
 
   // Last streams.
-  x = getLastStreams();
-  for(i=0; i<x.length; i++) {
-    x[i].addEventListener("click", function(e) {
-      e.preventDefault();
+  const targetNode = document.getElementById("streams");
+  const config = { attributes: true, childList: true, subtree: true };
+  const observer = new MutationObserver(callback);
+  observer.observe(targetNode, config);
 
-      var tracks = [];
-      var track = {
-        metaData: {
-          title: this.innerText,
-          artist: this.title,
-        },
-        url: this.href,
-      };
-      tracks.push(track);
-      webAmp.setTracksToPlay(tracks);
-
-      return false;
-    });
-  }
+  // Later, you can stop observing
+  // observer.disconnect();
 
   // Initialize webamp.
   const app = document.getElementById("app");
