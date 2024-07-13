@@ -94,6 +94,12 @@ td.wtext {
   padding-left: 3px;
 }
 
+#streams .filemarked {
+  display: block;
+  padding-left: 3px;
+  margin-bottom: 2px;
+}
+
 .notice {
   font-size: 14px;
 }
