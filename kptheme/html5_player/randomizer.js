@@ -1,4 +1,4 @@
-/* kPlaylist: webamp theme supplemental include */
+/* kPlaylist: html5_player theme supplemental include */
 
 // Get randomizer tracks.
 function getRandomizerTracks() {

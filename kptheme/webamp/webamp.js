@@ -62,7 +62,7 @@ function getSongListing() {
 function getLastStreams() {
   var x = document.querySelectorAll("#streams a.wtext, #streams a.filemarked");
   for(i=0; i<x.length; i++) {
-    x[i].href = x[i].href.replace('index.php?sid', 'index.php?streamsid');
+    x[i].href = x[i].href.replace('index.php?sid', 'index.php?seek_stream');
   }
   return x;
 }
