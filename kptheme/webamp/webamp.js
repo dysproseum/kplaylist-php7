@@ -1,4 +1,3 @@
-let webAmp;
 let childCallbacks = [];
 
 function getAllTracks() {
@@ -159,6 +158,11 @@ window.addEventListener("load", function() {
   // observer.disconnect();
 
 });
+
+// Get theme.
+window.getTheme = function() {
+  return theme;
+}
 
 // Randomizer.
 window.playerParentFunction = function(tracks) {

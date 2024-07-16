@@ -4,11 +4,11 @@
  * Provides HTML5 player.
  */
 
-var player;
 var current;
 var listener = false;
 var checkedOnly = true;
 var trackListing = [];
+var childCallbacks = [];
 
 // Get session value for playback.
 function getCookie(name) {
@@ -77,42 +77,8 @@ function setActive(link=false) {
 }
 
 // Behavior to play next song in playlist.
-function playlist(obj, player) {
+function playlist(obj) {
   current = obj;
-
-  listener = function () {
-    console.log("Event: playback ended");
-    var link = findNextSong(current);
-    if (link.href) {
-      player.src=link.href;
-      var playPromise = player.play();
-      setActive(link);
-    }
-    else if (link) {
-      player.src=link;
-      var playPromise = player.play();
-    }
-    else {
-      setActive();
-    }
-
-    // In browsers that don’t yet support this functionality,
-    // playPromise won’t be defined.
-    if (playPromise !== undefined) {
-      playPromise.then(function() {
-        // Automatic playback started!
-      }).catch(function(error) {
-        // Automatic playback failed.
-        // Show a UI element to let the user manually start playback.
-        console.log(error);
-      });
-    }
-    current = link;
-  };
-
-  player.addEventListener('ended', listener);
-
-  return false;
 }
 
 // Get selected tracks.
@@ -158,23 +124,12 @@ const callback = (mutationList, observer) => {
           e.preventDefault();
 
           checkedOnly = false;
-          player.pause();
-          player.src = this.href;
-          player.hidden = false;
-          var playPromise = player.play();
+          for (var i=0; i < childCallbacks.length; i++){
+            var callback = childCallbacks[i];
+            callback(this.href);
+          }
           setActive(this);
 
-          // In browsers that don’t yet support this functionality,
-          // playPromise won’t be defined.
-          if (playPromise !== undefined) {
-            playPromise.then(function() {
-              // Automatic playback started!
-            }).catch(function(error) {
-              // Automatic playback failed.
-              // Show a UI element to let the user manually start playback.
-              console.log(error);
-            });
-          }
           return false;
         });
       }
@@ -182,8 +137,28 @@ const callback = (mutationList, observer) => {
   }
 };
 
+// Player callback.
+function indexFrame(obj) {
+  // First call may pass null argument.
+  if (!obj) {
+    return current;
+  }
+  else {
+    var song = findNextSong(obj);
+    playlist(song);
+    setActive(song);
+    return song;
+  }
+}
+
 window.addEventListener("load", function() {
-  player = document.getElementById('html5player');
+  childCallbacks = parent.getPlayerCallbacks();
+
+  // Register callback.
+  if (parent && parent.registerIndexChild){
+    console.log('Registering with parent (index)');
+    parent.registerIndexChild(indexFrame);
+  }
 
   // Play Album.
   var p = document.getElementsByName("psongsall");
@@ -195,24 +170,12 @@ window.addEventListener("load", function() {
       var tracks = getAllTracks();
 
       checkedOnly = false;
-      playlist(tracks[0], player);
-      player.pause();
-      player.hidden = false;
-      player.src = tracks[0].href;
-      var playPromise = player.play();
-      setActive(tracks[0]);
-
-      // In browsers that don’t yet support this functionality,
-      // playPromise won’t be defined.
-      if (playPromise !== undefined) {
-        playPromise.then(function() {
-          // Automatic playback started!
-        }).catch(function(error) {
-          // Automatic playback failed.
-          // Show a UI element to let the user manually start playback.
-          console.log(error);
-        });
+      playlist(tracks[0]);
+      for (var i=0; i < childCallbacks.length; i++){
+        var callback = childCallbacks[i];
+        callback(tracks[0].href);
       }
+      setActive(tracks[0]);
 
       return false;
     });
@@ -227,24 +190,13 @@ window.addEventListener("load", function() {
     var tracks = getSelectedTracks();
     if (tracks.length > 0) {
       checkedOnly = true;
-      playlist(tracks[0], player);
-      player.pause();
-      player.hidden = false;
-      player.src = tracks[0].href;
-      var playPromise = player.play();
+      playlist(tracks[0]);
+      for (var i=0; i < childCallbacks.length; i++){
+        var callback = childCallbacks[i];
+        callback(tracks[0].href);
+      }
       setActive(tracks[0]);
 
-      // In browsers that don’t yet support this functionality,
-      // playPromise won’t be defined.
-      if (playPromise !== undefined) {
-        playPromise.then(function() {
-          // Automatic playback started!
-        }).catch(function(error) {
-          // Automatic playback failed.
-          // Show a UI element to let the user manually start playback.
-          console.log(error);
-        });
-      }
     }
 
     return false;
@@ -266,30 +218,23 @@ window.addEventListener("load", function() {
       e.preventDefault();
 
       checkedOnly = false;
-      playlist(this, player);
-      player.pause();
-      player.hidden = false;
-      player.src = this.href;
-      var playPromise = player.play();
-      setActive(this);
-
-      // In browsers that don’t yet support this functionality,
-      // playPromise won’t be defined.
-      if (playPromise !== undefined) {
-        playPromise.then(function() {
-          // Automatic playback started!
-        }).catch(function(error) {
-          // Automatic playback failed.
-          // Show a UI element to let the user manually start playback.
-          console.log(error);
-        });
+      playlist(this);
+      for (var i=0; i < childCallbacks.length; i++){
+        var callback = childCallbacks[i];
+        callback(this.href);
       }
+      setActive(this);
 
       return false;
     });
   }
 
 });
+
+// Get theme.
+window.getTheme = function() {
+  return theme;
+}
 
 // Randomizer.
 window.playerParentFunction = function(tracks) {
@@ -300,21 +245,9 @@ window.playerParentFunction = function(tracks) {
    trackListing.push(url);
   }
 
-  playlist(trackListing[0], player);
-  player.pause();
-  player.hidden = false;
-  player.src=trackListing[0];
-  var playPromiise = player.play();
-
-  // In browsers that don’t yet support this functionality,
-  // playPromise won’t be defined.
-  if (playPromise !== undefined) {
-    playPromise.then(function() {
-      // Automatic playback started!
-    }).catch(function(error) {
-      // Automatic playback failed.
-      // Show a UI element to let the user manually start playback.
-      console.log(error);
-    });
+  playlist(trackListing[0]);
+  for (var i=0; i < childCallbacks.length; i++){
+    var callback = childCallbacks[i];
+    callback(trackListing[0]);
   }
 }
