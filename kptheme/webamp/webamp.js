@@ -87,7 +87,7 @@ const callback = (mutationList, observer) => {
 };
 
 window.addEventListener("load", function() {
-  childCallbacks = parent.getCallbacks();
+  childCallbacks = parent.getPlayerCallbacks();
   // Play Album.
   var p = document.getElementsByName("psongsall");
   var q = p[0];

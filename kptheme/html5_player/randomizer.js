@@ -1,5 +1,16 @@
 /* kPlaylist: html5_player theme supplemental include */
 
+// Get session value for playback.
+function getCookie(name) {
+  var x = document.cookie.split(';');
+  for(i=0; i<x.length; i++) {
+    var parts = x[i].split('=');
+    if (parts[0] == name) {
+      return parts[1];
+    }
+  }
+}
+
 // Get randomizer tracks.
 function getRandomizerTracks() {
   var x = document.querySelectorAll("form[name=randomizer] #selids option");
@@ -8,6 +19,7 @@ function getRandomizerTracks() {
 
 // Set up randomizer behavior.
 window.addEventListener("load", function() {
+  var cookie = getCookie("kplaylist");
   var p = document.getElementsByName("playselected");
   var q = p[0];
   if (q) {
@@ -15,7 +27,14 @@ window.addEventListener("load", function() {
       e.preventDefault();
 
       var tracks = getRandomizerTracks();
-      window.opener.playerParentFunction(tracks);
+      var trackListing = [];
+      const url = window.location.href.replace('kptheme/html5_player/player.php', 'index.php');
+      for(i=0; i<tracks.length; i++) {
+        var uri ='index.php?seek_stream=' + tracks[i].value + '&c=' + cookie;
+        uri = url.replace('index.php', uri);
+        trackListing.push(uri);
+      }
+      window.opener.playerParentFunction(trackListing);
 
       return false;
     });
