@@ -4,48 +4,9 @@
  * Provides HTML5 player.
  */
 
-var current;
 var listener = false;
 var checkedOnly = true;
-var trackListing = [];
 var childCallbacks = [];
-
-// Find next playable link in playlist.
-function findNextSong(obj) {
-  // Randomizer.
-  if (trackListing.length > 0) {
-    for (i=0; i<trackListing.length; i++) {
-      if (trackListing[i] == obj) {
-        if (trackListing[i + 1]) {
-          return trackListing[i + 1];
-        }
-      }
-    }
-    return false;
-  }
-
-  // Song listing.
-  var this_tr = obj.parentElement.parentElement;
-  var next_tr = this_tr.nextElementSibling;
-  var td;
-  var link;
-  while(next_tr) {
-    td = next_tr.children[0];
-
-    if (checkedOnly) {
-      checked = td.querySelector("input[type=checkbox]:checked");
-      if (checked.length == 0) {
-        continue;
-      }
-    }
-
-    link = td.querySelector("a:has(span)");
-    if (link) {
-      return link;
-    }
-    next_tr = next_tr.nextElementSibling;
-  }
-}
 
 // Set visual indication of playing song.
 function setActive(link=false) {
@@ -63,11 +24,6 @@ function setActive(link=false) {
       link.classList.add("filemarked");
     }
   }
-}
-
-// Behavior to play next song in playlist.
-function playlist(obj) {
-  current = obj;
 }
 
 // Get selected tracks.
@@ -115,7 +71,7 @@ const callback = (mutationList, observer) => {
           checkedOnly = false;
           for (var i=0; i < childCallbacks.length; i++){
             var callback = childCallbacks[i];
-            callback(this.href);
+            callback([this.href]);
           }
           setActive(this);
 
@@ -133,9 +89,7 @@ function indexFrame(obj) {
     return current;
   }
   else {
-    var song = findNextSong(obj);
-    playlist(song);
-    setActive(song);
+    var song = getLastStreams();
     return song;
   }
 }
@@ -157,12 +111,15 @@ window.addEventListener("load", function() {
       e.preventDefault();
 
       var tracks = getAllTracks();
+      var trackListing = [];
+      for (var i=0; i<tracks.length; i++) {
+        trackListing.push(tracks[i].href);
+      }
 
       checkedOnly = false;
-      playlist(tracks[0]);
       for (var i=0; i < childCallbacks.length; i++){
         var callback = childCallbacks[i];
-        callback(tracks[0].href);
+        callback(trackListing);
       }
       setActive(tracks[0]);
 
@@ -172,24 +129,30 @@ window.addEventListener("load", function() {
 
   // Play selected.
   var r = document.getElementsByName("psongsselected");
-  var s = r[0];
-  s.addEventListener("click", function(e) {
-    e.preventDefault();
+  if (r.length > 0) {
+    var s = r[0];
+    s.addEventListener("click", function(e) {
+      e.preventDefault();
 
-    var tracks = getSelectedTracks();
-    if (tracks.length > 0) {
+      var tracks = getSelectedTracks();
+      var trackListing = [];
+      if (tracks.length <= 0) {
+       return;
+      }
+      for (var i=0; i<tracks.length; i++) {
+        trackListing.push(tracks[i].href);
+      }
+
       checkedOnly = true;
-      playlist(tracks[0]);
       for (var i=0; i < childCallbacks.length; i++){
         var callback = childCallbacks[i];
-        callback(tracks[0].href);
+        callback(trackListing);
       }
       setActive(tracks[0]);
 
-    }
-
-    return false;
-  });
+      return false;
+    });
+  }
 
   // Last streams.
   const targetNode = document.getElementById("streams");
@@ -201,16 +164,27 @@ window.addEventListener("load", function() {
   // observer.disconnect();
 
   // Override song links to start player.
-  var x = getAllTracks();
-  for(i=0; i<x.length; i++) {
-    x[i].addEventListener("click", function(e) {
+  var tracks = getAllTracks();
+  var trackListing = [];
+  for (var i=0; i<tracks.length; i++) {
+    trackListing.push(tracks[i].href);
+  }
+  for(i=0; i<tracks.length; i++) {
+    tracks[i].addEventListener("click", function(e) {
       e.preventDefault();
 
       checkedOnly = false;
-      playlist(this);
-      for (var i=0; i < childCallbacks.length; i++){
-        var callback = childCallbacks[i];
-        callback(this.href);
+      var num = 0;
+      // Get current spot.
+      for (var j=0; j<tracks.length; j++) {
+        if (this.href == trackListing[j]) {
+          num = j;
+        }
+      }
+      for (var k=0; k < childCallbacks.length; k++){
+        var callback = childCallbacks[k];
+        // Send trackListing and the current spot.
+        callback(trackListing, num);
       }
       setActive(this);
 
@@ -225,13 +199,12 @@ window.getTheme = function() {
   return theme;
 }
 
-// Randomizer.
+// Randomizer window calls this.
 window.playerParentFunction = function(tracks) {
   trackListing = tracks;
 
   for (var i=0; i < childCallbacks.length; i++){
     var callback = childCallbacks[i];
-    callback(trackListing[0]);
-    playlist(trackListing[0]);
+    callback(trackListing);
   }
 }
