@@ -10,17 +10,6 @@ var checkedOnly = true;
 var trackListing = [];
 var childCallbacks = [];
 
-// Get session value for playback.
-function getCookie(name) {
-  var x = document.cookie.split(';');
-  for(i=0; i<x.length; i++) {
-    var parts = x[i].split('=');
-    if (parts[0] == name) {
-      return parts[1];
-    }
-  }
-}
-
 // Find next playable link in playlist.
 function findNextSong(obj) {
   // Randomizer.
@@ -238,16 +227,11 @@ window.getTheme = function() {
 
 // Randomizer.
 window.playerParentFunction = function(tracks) {
-  var cookie = getCookie('kplaylist');
+  trackListing = tracks;
 
-  for(i=0; i<tracks.length; i++) {
-   var url ='index.php?seek_stream=' + tracks[i].value + '&c=' + cookie;
-   trackListing.push(url);
-  }
-
-  playlist(trackListing[0]);
   for (var i=0; i < childCallbacks.length; i++){
     var callback = childCallbacks[i];
     callback(trackListing[0]);
+    playlist(trackListing[0]);
   }
 }

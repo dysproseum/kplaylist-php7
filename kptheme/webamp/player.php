@@ -17,9 +17,9 @@
 
   // Register callback.
   window.onload = function(){
-    if (parent && parent.registerChild){
-      console.log('Registering with parent');
-      parent.registerChild(playerFrame);
+    if (parent && parent.registerPlayerChild){
+      console.log('Registering with parent (player)');
+      parent.registerPlayerChild(playerFrame);
     }
   };
 </script>

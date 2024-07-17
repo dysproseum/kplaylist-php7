@@ -26,15 +26,18 @@ window.addEventListener("load", function() {
     q.addEventListener("click", function(e) {
       e.preventDefault();
 
+      const url = window.location.href.replace('kptheme/html5_player/player.php', 'index.php');
       var x = getRandomizerTracks();
       var tracks = [];
       for (i=0; i<x.length; i++) {
+        var uri ='index.php?seek_stream=' + x[i].value + '&c=' + cookie;
+        uri = url.replace('index.php', uri);
         var track = {
           metaData: {
             title: x[i].innerText,
             artist: x[i].title,
           },
-          url: 'index.php?seek_stream=' + x[i].value + '&c=' + cookie,
+          url: uri,
         };
         tracks.push(track);
       }

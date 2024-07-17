@@ -46,8 +46,8 @@ echo '</div>';
       var nextSong;
       for (var i=0; i < childCallbacks.length; i++){
         var callback = childCallbacks[i];
-        var nextSong = callback();
-        var nextSong = callback(nextSong);
+        var currentSong = callback();
+        var nextSong = callback(currentSong);
       }
       player.pause();
       player.src = nextSong;
