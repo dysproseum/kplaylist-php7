@@ -1,3 +1,5 @@
+/* webamp kplaylist theme */
+
 let childCallbacks = [];
 
 function getAllTracks() {
