@@ -1,11 +1,5 @@
-/**
- * External JS file for kPlaylist.
- *
- * Provides HTML5 player.
- */
+/* html5_player kplaylist theme */
 
-var listener = false;
-var checkedOnly = true;
 var childCallbacks = [];
 
 // Set visual indication of playing song.
@@ -68,7 +62,6 @@ const callback = (mutationList, observer) => {
         x[i].addEventListener("click", function(e) {
           e.preventDefault();
 
-          checkedOnly = false;
           for (var i=0; i < childCallbacks.length; i++){
             var callback = childCallbacks[i];
             callback([this.href]);
@@ -99,7 +92,6 @@ window.addEventListener("load", function() {
 
   // Register callback.
   if (parent && parent.registerIndexChild){
-    console.log('Registering with parent (index)');
     parent.registerIndexChild(indexFrame);
   }
 
@@ -116,7 +108,6 @@ window.addEventListener("load", function() {
         trackListing.push(tracks[i].href);
       }
 
-      checkedOnly = false;
       for (var i=0; i < childCallbacks.length; i++){
         var callback = childCallbacks[i];
         callback(trackListing);
@@ -143,7 +134,6 @@ window.addEventListener("load", function() {
         trackListing.push(tracks[i].href);
       }
 
-      checkedOnly = true;
       for (var i=0; i < childCallbacks.length; i++){
         var callback = childCallbacks[i];
         callback(trackListing);
@@ -173,7 +163,6 @@ window.addEventListener("load", function() {
     tracks[i].addEventListener("click", function(e) {
       e.preventDefault();
 
-      checkedOnly = false;
       var num = 0;
       // Get current spot.
       for (var j=0; j<tracks.length; j++) {

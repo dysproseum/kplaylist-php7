@@ -37,7 +37,6 @@
   // Register callback.
   window.onload = function(){
     if (parent && parent.registerPlayerChild){
-      console.log('Registering with parent (player)');
       parent.registerPlayerChild(playerFrame);
     }
   };
@@ -47,7 +46,6 @@
     player = document.getElementById("html5player");
 
     player.addEventListener("ended", function() {
-      console.log("ended");
       var nextSong;
 
       if (trackListing.length > 0) {
@@ -66,11 +64,19 @@
       current = nextSong;
       player.pause();
       player.src = nextSong;
-      player.play();
-    });
+      var playPromise = player.play();
 
-    player.addEventListener("playing", function() {
-      console.log("playing");
+      // In browsers that don’t yet support this functionality,
+      // playPromise won’t be defined.
+      if (playPromise !== undefined) {
+        playPromise.then(function() {
+          // Automatic playback started!
+        }).catch(function(error) {
+          // Automatic playback failed.
+          // Show a UI element to let the user manually start playback.
+          console.log(error);
+        });
+      }
     });
   });
 </script>

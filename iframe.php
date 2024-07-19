@@ -1,12 +1,17 @@
 <html>
 <head>
+<title>| kPlaylist</title>
+<style type="text/css">
+  body {
+    margin: 0;
+  }
+</style>
 <script type="text/javascript">
   playerCallbacks = [];
   indexCallbacks = [];
 
   // Player calls these.
   function registerPlayerChild(callback){
-    console.log('Registering player callback');
     playerCallbacks.push(callback);
   }
 
@@ -16,7 +21,6 @@
 
   // Index calls these.
   function registerIndexChild(callback){
-    console.log('Registering index callback');
     indexCallbacks.push(callback);
   }
 
@@ -24,17 +28,14 @@
     return playerCallbacks;
   }
 
-  var width, height;
-
   window.addEventListener("load", function() {
     var theme = document.getElementById("index").contentWindow.getTheme();
-    console.log(theme);
+    console.log("iframe player: " + theme);
+
     var player = document.getElementById("player");
     if (theme == "html5_player") {
-      width="100%";
-      height="54px";
-      player.width=width;
-      player.height=height;
+      player.width = '100%';
+      player.height = '54px';
     }
     player.src = "kptheme/" + theme + "/player.php";
   });
