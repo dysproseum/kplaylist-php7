@@ -7,8 +7,11 @@
   }
 </style>
 <script type="text/javascript">
-  playerCallbacks = [];
-  indexCallbacks = [];
+  let theme = '';
+  let player;
+  let index;
+  let playerCallbacks = [];
+  let indexCallbacks = [];
 
   // Player calls these.
   function registerPlayerChild(callback){
@@ -28,18 +31,72 @@
     return playerCallbacks;
   }
 
-  window.addEventListener("load", function() {
-    var theme = document.getElementById("index").contentWindow.getTheme();
-    console.log("iframe player: " + theme);
+  /*
+   * Init theme and player iframe.
+   * Set player iframe src dynamically based on theme.
+   *
+   * Login:
+   * - First page load iframe.php
+   * - The theme js is not loaded on index frame login page.
+   * - And contentWindow.getTheme is not callable.
+   * - The index frame refreshes and player src is loaded.
+   *
+   * Logout:
+   * - Can no longer call getTheme.
+   * - Unset theme and unset player iframe src.
+   */
+  function init() {
+    player = document.getElementById("player");
 
-    var player = document.getElementById("player");
+    // Unable to get current user theme.
+    if (!index.contentWindow.getTheme) {
+      console.log("Unable to get theme setting");
+    }
+
+    // Detect logout.
+    if (theme != '' && !index.contentWindow.getTheme) {
+      console.log("Logout detected");
+      theme = '';
+      player.src = '';
+      return;
+    }
+
+    // Logged out.
+    if (theme == '' && !index.contentWindow.getTheme) {
+      return;
+    }
+
+    // No theme set, set current value.
+    if (theme == '') {
+      theme = index.contentWindow.getTheme();
+      console.log("Loaded " + theme + " theme");
+    }
+
+    // Init player iframe if theme is set and src is not set.
+    if (player.src == '' || player.src.indexOf('iframe.php') != -1) {
+      player.src = "kptheme/" + theme + "/player.php";
+    }
+
+    // Set iframe sizes.
     if (theme == "html5_player") {
       player.width = '100%';
       player.height = '54px';
     }
-    player.src = "kptheme/" + theme + "/player.php";
-  });
+  }
 
+  // Page load listener on iframe parent.
+  window.addEventListener("load", function() {
+    index = document.getElementById("index");
+    index.addEventListener("load", function(e) {
+      setTimeout(function() {
+        init();
+      }, 1000);
+    });
+
+    setTimeout(function() {
+      init();
+    }, 1000);
+  });
 </script>
 </head>
 <body>
