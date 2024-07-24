@@ -88,6 +88,10 @@ function indexFrame(obj) {
 }
 
 window.addEventListener("load", function() {
+  if (!parent.getPlayerCallbacks) {
+    var msg = document.getElementById("kptheme-message");
+    msg.hidden = false;
+  }
   childCallbacks = parent.getPlayerCallbacks();
 
   // Register callback.
