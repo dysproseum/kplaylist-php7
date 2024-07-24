@@ -1,5 +1,16 @@
 /* kPlaylist: webamp theme supplemental include */
 
+// Get session value for playback.
+function getCookie(name) {
+  var x = document.cookie.split(';');
+  for(i=0; i<x.length; i++) {
+    var parts = x[i].split('=');
+    if (parts[0] == name) {
+      return parts[1];
+    }
+  }
+}
+
 // Get randomizer tracks.
 function getRandomizerTracks() {
   var x = document.querySelectorAll("form[name=randomizer] #selids option");
@@ -8,13 +19,28 @@ function getRandomizerTracks() {
 
 // Set up randomizer behavior.
 window.addEventListener("load", function() {
+  var cookie = getCookie("kplaylist");
   var p = document.getElementsByName("playselected");
   var q = p[0];
   if (q) {
     q.addEventListener("click", function(e) {
       e.preventDefault();
 
-      var tracks = getRandomizerTracks();
+      const url = window.location.href.replace('kptheme/html5_player/player.php', 'index.php');
+      var x = getRandomizerTracks();
+      var tracks = [];
+      for (i=0; i<x.length; i++) {
+        var uri ='index.php?seek_stream=' + x[i].value + '&c=' + cookie;
+        uri = url.replace('index.php', uri);
+        var track = {
+          metaData: {
+            title: x[i].innerText,
+            artist: x[i].title,
+          },
+          url: uri,
+        };
+        tracks.push(track);
+      }
       window.opener.playerParentFunction(tracks);
 
       return false;
