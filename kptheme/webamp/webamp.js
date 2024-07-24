@@ -89,7 +89,12 @@ const callback = (mutationList, observer) => {
 };
 
 window.addEventListener("load", function() {
+  if (!parent.getPlayerCallbacks) {
+    var msg = document.getElementById("kptheme-message");
+    msg.hidden = false;
+  }
   childCallbacks = parent.getPlayerCallbacks();
+
   // Play Album.
   var p = document.getElementsByName("psongsall");
   var q = p[0];
