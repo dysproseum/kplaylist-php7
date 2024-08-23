@@ -1,0 +1,14 @@
+	?>	
+		<table width="90%" bgcolor="#BBCCCC" cellpadding="8" cellspacing="8" border="1">
+			<tr>
+				<td class="importnant"><h3>Welcome to kPlaylist!</h3>
+				To get your site quickly up:
+				
+				<br/><br/>Click Settings on the admin menu, choose \'File handling\' and enter the path to your music directory or directories in the \'base directory\' field. You can also click the <a class="importnantlink" href="#" onclick="javascript: newwinscroll(\'find\', \'<?php echo PHPSELF; ?>?action=findmusic\', 450, 600);">find</a> button to automatically detect music directories. Press F5 when finished.<br/><br/>
+				
+				If you have problems configuring kPlaylist, click <a class="importnantlink" href="http://kplaylist.com/index.php?install=true" target="_blank">here</a> for the kPlaylist installation manual.
+				<br/><br/>
+				</td>
+			</tr>
+			</table>
+
