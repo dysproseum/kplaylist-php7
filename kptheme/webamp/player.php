@@ -1,5 +1,6 @@
-<html>
-<head>
+<?php
+
+$player_head = <<<EOF
 <style type="text/css">
   #webamp {
     display: none;
@@ -22,8 +23,9 @@
     }
   };
 </script>
-</head>
-<body>
+EOF;
+
+$player_body = <<<EOF
 <div id="app"></div>
 <script type="text/javascript">
   // Initialize webamp.
@@ -31,7 +33,7 @@
   const webAmp = new Webamp({
     windowLayout: {
       main: {
-        position: { top: 0, right: 0 },
+        position: { top: 0, left: 0 },
         shadeMode: false,
         closed: false,
       },
@@ -41,13 +43,14 @@
         closed: true,
       },
       playlist: {
-        position: { top: 0, right: 0 },
+        position: { top: 0, left: 0 },
         shadeMode: false,
-        size: { extraHeight: 1, extraWidth: 1 },
+        size: { extraHeight: 4, extraWidth: 0 },
         closed: false,
       },
       milkdrop: {
-        position: { top: 0, right: 0 },
+        position: { top: 0, left: 0 },
+        size: { extraHeight: 4, extraWidth: 0 },
         closed: true,
       },
     },
@@ -260,7 +263,7 @@
           },
           "playlist": {
             x: window.innerWidth - 275,
-            y: window.innerHeight - 232,
+            y: window.innerHeight - 348,
           },
           "milkdrop": {
             x: window.innerWidth - 275,
@@ -276,5 +279,5 @@
     }, 100);
   });
 </script>
-</body>
-</html>
+EOF;
+?>

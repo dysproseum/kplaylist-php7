@@ -6,6 +6,20 @@
     margin: 0;
   }
 </style>
+
+<?php
+  // @todo get theme dynamically.
+  // $theme = "html5_player";
+  $theme = "webamp";
+  $player_head = '';
+  $player_body = '';
+  if ($theme == "webamp") {
+    include("kptheme/$theme/player.php");
+  }
+?>
+
+<?php print $player_head; ?>
+
 <script type="text/javascript">
   let theme = '';
   let player;
@@ -93,6 +107,18 @@
       }, 1000);
     });
 
+    // Prevent underlying iframe from intercepting drag events
+    // and selecting the page during fast drags.
+    var overlay = document.getElementById("iframe-overlay");
+     document.addEventListener("mousedown", function() {
+       index.style.pointerEvents = "none";
+       index.style.userSelect = "none";
+     });
+     document.addEventListener("mouseup", function() {
+       index.style.pointerEvents = "all";
+       index.style.userSelect = "none";
+     });
+
     setTimeout(function() {
       init();
     }, 1000);
@@ -100,7 +126,11 @@
 </script>
 </head>
 <body>
-  <iframe id="player" style="position:absolute; border: 0 none; bottom: 0; right: 0;" width=275 height=232></iframe>
+
+<?php print $player_body; ?>
+  <?php if ($theme == "html5_player"): ?>
+    <iframe id="player" style="position:absolute; border: 0 none; bottom: 0; right: 0;" width=275 height=232></iframe>
+  <?php endif; ?>
   <iframe id="index" src="index.php" style="display:block; float:left; border: 0 none" width=100% height=100%></iframe>
 </body>
 </html>
