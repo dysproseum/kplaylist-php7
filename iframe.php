@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>kPlaylist </title>
+<title>kPlaylist</title>
 <style type="text/css">
   body, input, button {
     font-family: Arial, monospace, sans-serif;

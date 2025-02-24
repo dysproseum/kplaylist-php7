@@ -1,3 +1,4 @@
+
 <?php
 
 $player_head = <<<EOF
