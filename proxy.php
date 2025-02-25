@@ -1,26 +1,33 @@
 <?php
 
-$url = $_GET['url'];
+$url = filter_var($_REQUEST['url'], FILTER_VALIDATE_URL);
+if (!$url) {
+  exit('Invalid URL');
+}
 
 $html = file_get_contents($url);
-if (!$html) {
-  // @todo check status codes https://stackoverflow.com/a/52662522
-  print "Failed to load";
+
+/**
+ * @var array $http_response_header materializes out of thin air
+ */
+
+$status_line = $http_response_header[0];
+preg_match('{HTTP\/\S*\s(\d{3})}', $status_line, $match);
+$status = $match[1];
+
+if (in_array($status, ["400", "401", "402", "403", "404"])) {
+  print $status_line;
   exit;
 }
 
-// $html=<<<HTML
-// <img src="/relative/url/img.jpg" />
-// <form action="/">
-// <a href='/relative/url/'>Note the Single Quote</a>
-// <img src="//site.com/protocol-relative-img.jpg" />
-// HTML;
-//
-// $base='https://example.com';
-//
-// echo preg_replace('~(?:src|action|href)=[\'"]\K/(?!/)[^\'"]*~',"$base$0",$html);
+if (in_array($status, ["301", "302"])) {
+  foreach ($http_response_header as $header) {
+    header($header);
+  }
+}
 
 $base = parse_url($url, PHP_URL_SCHEME) . "://" . parse_url($url, PHP_URL_HOST);
 
-echo preg_replace('~(?:src|action|href)=[\'"]\K/(?!/)[^\'"]*~',"$base$0",$html);
+echo preg_replace('~(?:src|action|href)=[\'"]\K/(?!/)[^\'"]*~', "$base$0", $html);
 
+exit;
