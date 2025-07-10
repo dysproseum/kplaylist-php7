@@ -139,17 +139,17 @@
 
   /*
    * Init theme and player iframe.
-   * Set player iframe src dynamically based on theme.
+   * Setup player dynamically based on theme.
    *
    * Login:
    * - First page load iframe.php
    * - The theme js is not loaded on index frame login page.
    * - And contentWindow.getTheme is not callable.
-   * - The index frame refreshes and player src is loaded.
+   * - The index frame refreshes and player is loaded.
    *
    * Logout:
    * - Can no longer call getTheme.
-   * - Unset theme and unset player iframe src.
+   * - Unset theme and unset player.
    */
   function init() {
     player = document.getElementById("player");
@@ -163,7 +163,6 @@
     if (theme != '' && !index.contentWindow.getTheme) {
       console.log("Logout detected");
       theme = '';
-      player.src = '';
       return;
     }
 
@@ -180,13 +179,13 @@
 
     // Init player iframe if theme is set and src is not set.
     if (player && (player.src == '' || player.src.indexOf('iframe.php') != -1)) {
-      player.src = "kptheme/" + theme + "/player.php";
+      // player.src = "kptheme/" + theme + "/player.php";
     }
 
     // Set iframe sizes.
     if (theme == "html5_player") {
-      player.width = '100%';
-      player.height = '54px';
+      // player.width = '100%';
+      // player.height = '54px';
     }
   }
 
@@ -217,7 +216,7 @@
 
       setTimeout(function() {
         init();
-        animation.src = "netscape.jpg";
+        animation.src = "images/netscape.jpg";
       }, 2000);
     });
 
@@ -244,7 +243,7 @@
     // Browser buttons.
     const goNavigate = function(e) {
       e.preventDefault();
-      animation.src = "netscape.gif";
+      animation.src = "images/netscape.gif";
       if (address.value.startsWith(window.location.origin)) {
         index.src = address.value;
       }
@@ -257,20 +256,20 @@
     back.addEventListener("click", function(e) {
       // try and prevent reloading page when navigating all the way back.
       e.preventDefault();
-      animation.src = "netscape.gif";
+      animation.src = "images/netscape.gif";
       index.contentWindow.history.go(-1);
       return false;
     });
     forward.addEventListener("click", function() {
-      animation.src = "netscape.gif";
+      animation.src = "images/netscape.gif";
       index.contentWindow.history.go(1);
     });
     reload.addEventListener("click", function() {
-      animation.src = "netscape.gif";
+      animation.src = "images/netscape.gif";
       index.contentWindow.location.reload();
     });
     home.addEventListener("click", function() {
-      animation.src = "netscape.gif";
+      animation.src = "images/netscape.gif";
       index.src = baseUrl;
     });
 
@@ -299,7 +298,7 @@
         <button id="home" type="button">Home<br />&#8962;</button>
         <label>Location</label>
         <input id="address" type="text" size="75" spellcheck="false" autocomplete="off" />
-        <img id="animation" src="netscape.gif" width="32" />
+        <img id="animation" src="images/netscape.gif" width="32" />
       </form>
     </div>
     <iframe id="index"></iframe>
