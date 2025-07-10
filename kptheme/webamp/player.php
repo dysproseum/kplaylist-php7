@@ -1,4 +1,3 @@
-
 <?php
 
 $player_head = <<<EOF
@@ -7,31 +6,15 @@ $player_head = <<<EOF
     display: none;
   }
 </style>
-<script src="https://unpkg.com/webamp"></script>
-<script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
-<script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
 <script type="text/javascript">
-  // Player callback.
-  function playerFrame(tracks) {
-    webAmp.setTracksToPlay(tracks);
-    webAmp.play();
-  }
-
-  // Register callback.
-  window.onload = function(){
-    if (parent && parent.registerPlayerChild){
-      parent.registerPlayerChild(playerFrame);
-    }
-  };
+  let webAmp;
 </script>
-EOF;
-
-$player_body = <<<EOF
-<div id="app"></div>
-<script type="text/javascript">
-  // Initialize webamp.
+<script type="module">
   const app = document.getElementById("app");
-  const webAmp = new Webamp({
+
+  // Initialize webamp.
+  await import("https://unpkg.com/webamp@^2");
+  webAmp = new Webamp({
     windowLayout: {
       main: {
         position: { top: 0, left: 0 },
@@ -248,6 +231,7 @@ $player_body = <<<EOF
 
   var webAmpPromise = webAmp.renderWhenReady(app);
   webAmpPromise.then(function(result) {
+    console.log("in promise");
     setTimeout(function() {
 
       // Set window positions.
@@ -280,5 +264,25 @@ $player_body = <<<EOF
     }, 100);
   });
 </script>
+<script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
+<script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
+<script type="text/javascript">
+  // Player callback.
+  function playerFrame(tracks) {
+    webAmp.setTracksToPlay(tracks);
+    webAmp.play();
+  }
+
+  // Register callback.
+  window.onload = function(){
+    if (parent && parent.registerPlayerChild){
+      parent.registerPlayerChild(playerFrame);
+    }
+  };
+</script>
+EOF;
+
+$player_body = <<<EOF
+<div id="app"></div>
 EOF;
 ?>
