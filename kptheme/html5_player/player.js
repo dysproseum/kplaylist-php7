@@ -1,6 +1,3 @@
-<link href='kptheme/html5_player/html5_player.css' rel='stylesheet' type='text/css' />
-<link href='mobile.css' rel='stylesheet' media='only screen and (max-width: 768px)' type='text/css' />
-<script type="text/javascript">
   let player;
   let childCallbacks = [];
   // Store tracks in player iframe in case the index page changes.
@@ -30,14 +27,16 @@
     }
   }
 
-  window.addEventListener("load", function() {
-    player = document.getElementById("html5player");
-
-    // Register callback.
+  // Register callback.
+  window.onload = function(){
     if (parent && parent.registerPlayerChild){
       parent.registerPlayerChild(playerFrame);
     }
+  };
+
+  window.addEventListener("load", function() {
     childCallbacks = parent.getIndexCallbacks();
+    player = document.getElementById("html5player");
 
     player.addEventListener("ended", function() {
       var nextSong;
@@ -73,14 +72,3 @@
       }
     });
   });
-</script>
-
-<?php
-// HTML5 player type.
-$player_type = "audio";
-// $player_type = "video";
-
-echo '<div id="html5container">';
-echo '<' . $player_type . ' id="html5player" controls></video>';
-echo '</div>';
-?>

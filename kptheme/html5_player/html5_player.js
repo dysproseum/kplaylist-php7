@@ -94,11 +94,6 @@ window.addEventListener("load", function() {
   }
   childCallbacks = parent.getPlayerCallbacks();
 
-  // Register callback.
-  if (parent && parent.registerIndexChild){
-    parent.registerIndexChild(indexFrame);
-  }
-
   // Play Album.
   var p = document.getElementsByName("psongsall");
   var q = p[0];

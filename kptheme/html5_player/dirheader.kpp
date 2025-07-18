@@ -22,7 +22,7 @@
 				<td class="importnant"><h3>iframe player not found</h3>
 				This theme uses an iframe player which was not detected.
 				<br><br>
-				Please go to <a style="font-size: 12px; color: blue;" href="iframe.php">iframe.php</a> to use this theme, or select a non-iframe theme under My -> Options.
+				Please go to <a style="font-size: 12px; color: blue;" href="iframe.php?theme=html5_player">iframe.php</a> to use this theme, or select a non-iframe theme under My -> Options.
 				<br><br>
 				</td>
 			</tr>

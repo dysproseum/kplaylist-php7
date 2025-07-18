@@ -89,20 +89,16 @@
   // can get theme in js from index iframe
   // and can load css with js
   // uninstall or refresh if switching themes
-  //$theme = "html5_player";
-  $theme = "webamp";
+  $theme = isset($_GET['theme']) ? $_GET['theme'] : 'webamp';
   $player_head = '';
   $player_body = '';
-  if ($theme == "webamp") {
-    include("kptheme/$theme/player.php");
-  }
+  include("kptheme/$theme/player.php");
 ?>
 
 <?php print $player_head; ?>
 
 <script type="text/javascript">
   let theme = '';
-  let player;
   let index;
   let playerCallbacks = [];
   let indexCallbacks = [];
@@ -152,8 +148,6 @@
    * - Unset theme and unset player.
    */
   function init() {
-    player = document.getElementById("player");
-
     // Unable to get current user theme.
     if (!index.contentWindow.getTheme) {
       console.log("Unable to get theme setting");
@@ -175,11 +169,6 @@
     if (theme == '') {
       theme = index.contentWindow.getTheme();
       console.log("Loaded " + theme + " theme");
-    }
-
-    // Init player iframe if theme is set and src is not set.
-    if (player && (player.src == '' || player.src.indexOf('iframe.php') != -1)) {
-      // player.src = "kptheme/" + theme + "/player.php";
     }
 
     // Set iframe sizes.
@@ -281,11 +270,8 @@
 </head>
 <body>
 
-<?php print $player_body; ?>
+  <?php print $player_body; ?>
 
-  <?php if ($theme == "html5_player"): ?>
-    <iframe id="player" style="position:absolute; border: 0 none; bottom: 0; right: 0;" width=275 height=232></iframe>
-  <?php endif; ?>
   <div class="browser">
     <div class="titlebar">
       <h1>Dysproseum Navigator</h1>
