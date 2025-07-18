@@ -5,7 +5,9 @@ if (!$url) {
   exit('Invalid URL');
 }
 
-$html = file_get_contents($url);
+$options  = array('http' => array('user_agent' => 'Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0'));
+$context  = stream_context_create($options);
+$html = file_get_contents($url, false, $context);
 
 /**
  * @var array $http_response_header materializes out of thin air

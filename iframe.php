@@ -113,7 +113,9 @@
   let form;
   let title = 'Dysproseum Navigator';
   let baseUrl = 'index.php';
-  let proxyUrl = 'https://alt.dysproseum.com:8443/kplaylist-php7/proxy.php?url=';
+  let proxyUrl = window.location.href;
+  proxyUrl = proxyUrl.substr(0, proxyUrl.indexOf('iframe.php'));
+  proxyUrl += 'proxy.php?url=';
 
   // Player calls these.
   function registerPlayerChild(callback){
