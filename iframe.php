@@ -19,6 +19,7 @@
     border: 4px outset;
     overflow: hidden;
     padding-bottom: 64px;
+    resize: both;
   }
   .browser .titlebar {
     background: blue;
@@ -69,7 +70,7 @@
     outline-offset: 10px;
     outline: unset;
   }
-  .browser .addressbar #animation {
+  .browser .addressbar .animation {
     float: right;
     margin-right: 10px;
     margin-top: 4px;
@@ -97,20 +98,13 @@
 
 <?php print $player_head; ?>
 
+<script type="text/javascript" src="include/drag.js"></script>
 <script type="text/javascript">
   let theme = '';
-  let index;
   let playerCallbacks = [];
   let indexCallbacks = [];
 
   // Browser variables.
-  let browser;
-  let titlebar;
-  let back;
-  let forward;
-  let address;
-  let animation;
-  let form;
   let title = 'Dysproseum Navigator';
   let baseUrl = 'index.php';
   let proxyUrl = window.location.href;
@@ -182,14 +176,26 @@
 
   // Page load listener on iframe parent.
   window.addEventListener("load", function() {
-    index = document.getElementById("index");
-    browser = document.querySelector(".browser");
-    titlebar = document.querySelector(".browser .titlebar h1");
-    back = document.getElementById("back");
-    forward = document.getElementById("forward");
-    address = document.getElementById("address");
-    form = document.getElementById("navigate");
-    animation = document.getElementById("animation");
+  // Allow for multiple browsers.
+  browsers = document.querySelectorAll(".browser");
+  for (const browser of browsers) {
+    let index = browser.querySelector("iframe");
+    let titlebar;
+    let back;
+    let forward;
+    let reload;
+    let home;
+    let address;
+    let animation;
+    let form;
+    titlebar = browser.querySelector(".browser .titlebar h1");
+    back = browser.querySelector(".back");
+    forward = browser.querySelector(".forward");
+    reload = browser.querySelector(".reload");
+    home = browser.querySelector(".home");
+    address = browser.querySelector(".address");
+    form = browser.querySelector(".navigate");
+    animation = browser.querySelector(".animation");
 
     // Update address bar if same-origin.
     index.addEventListener("load", function(e) {
@@ -267,6 +273,8 @@
     setTimeout(function() {
       init();
     }, 1000);
+
+  } // end for
   });
 </script>
 </head>
@@ -274,22 +282,25 @@
 
   <?php print $player_body; ?>
 
+<?php $browsers = ["1st-index", "non-index"]; ?>
+<?php foreach ($browsers as $i): ?>
   <div class="browser">
     <div class="titlebar">
       <h1>Dysproseum Navigator</h1>
     </div>
     <div class="addressbar">
-      <form id="navigate">
-        <button id="back" type="button">Back<br />&larrhk;</button>
-        <button id="reload" type="button">Reload<br />&orarr;</button>
-        <button id="forward" type="button">Forward<br />&rarrhk;</button>
-        <button id="home" type="button">Home<br />&#8962;</button>
+      <form class="navigate">
+        <button class="back" type="button">Back<br />&larrhk;</button>
+        <button class="reload" type="button">Reload<br />&orarr;</button>
+        <button class="forward" type="button">Forward<br />&rarrhk;</button>
+        <button class="home" type="button">Home<br />&#8962;</button>
         <label>Location</label>
-        <input id="address" type="text" size="75" spellcheck="false" autocomplete="off" />
-        <img id="animation" src="images/netscape.gif" width="32" />
+        <input class="address" type="text" size="75" spellcheck="false" autocomplete="off" />
+        <img class="animation" src="images/netscape.gif" width="32" />
       </form>
     </div>
-    <iframe id="index"></iframe>
+    <iframe class="<?php print $i; ?>"></iframe>
   </div>
+<?php endforeach; ?>
 </body>
 </html>
