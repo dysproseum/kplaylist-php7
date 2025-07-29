@@ -31,9 +31,16 @@
     line-height: 40px;
   }
   .browser .titlebar h1 {
+    float: left;
     margin: 0px 0px 0px 6px;
     font-size: 14px;
     line-height: 24px;
+    cursor: default;
+  }
+  .browser .titlebar a {
+    float: right;
+    margin-right: 4px;
+    margin-top: 4px;
   }
   .browser .addressbar {
     background: lightgray;
@@ -42,6 +49,7 @@
     width: 100%;
     height: 40px;
     line-height: 40px;
+    user-select: none;
   }
   .browser .addressbar button {
     height: 32px;
@@ -72,7 +80,7 @@
   }
   .browser .addressbar .animation {
     float: right;
-    margin-right: 10px;
+    margin-right: 4px;
     margin-top: 4px;
   }
   .browser iframe {
@@ -82,6 +90,25 @@
     height: 100%;
     border: 0;
     background: white;
+  }
+  .icon {
+    width: 92px;
+    text-align: center;
+    margin-top: 17px;
+  }
+  .icon .caption {
+    font-family: "MS Sans Serif", Segoe UI, sans-serif;
+    margin-top: 6px;
+    font-size: 11px;
+    color: white;
+    -webkit-font-smoothing: none;
+    cursor: default;
+    user-select: none;
+  }
+  .highlight .caption {
+    background: navy;
+    border: 1px dotted transparent;
+    border-color: white;
   }
 </style>
 
@@ -143,7 +170,7 @@
    * - Can no longer call getTheme.
    * - Unset theme and unset player.
    */
-  function init() {
+  function init(index) {
     // Unable to get current user theme.
     if (!index.contentWindow.getTheme) {
       console.log("Unable to get theme setting");
@@ -174,13 +201,10 @@
     }
   }
 
-  // Page load listener on iframe parent.
-  window.addEventListener("load", function() {
-  // Allow for multiple browsers.
-  browsers = document.querySelectorAll(".browser");
-  for (const browser of browsers) {
+  const initIframeBrowser = function(browser) {
     let index = browser.querySelector("iframe");
     let titlebar;
+    let close;
     let back;
     let forward;
     let reload;
@@ -189,6 +213,7 @@
     let animation;
     let form;
     titlebar = browser.querySelector(".browser .titlebar h1");
+    close = browser.querySelector(".titlebar a.close");
     back = browser.querySelector(".back");
     forward = browser.querySelector(".forward");
     reload = browser.querySelector(".reload");
@@ -200,6 +225,7 @@
     // Update address bar if same-origin.
     index.addEventListener("load", function(e) {
       console.log(e);
+      animation.src = "images/netscape.gif";
       if (index.contentWindow && index.contentWindow.location) {
         address.value = index.contentWindow.location.href.replace(proxyUrl, '');
       }
@@ -212,13 +238,13 @@
       }
 
       setTimeout(function() {
-        init();
+        init(index);
         animation.src = "images/netscape.jpg";
       }, 2000);
     });
 
-    // Do first navigation.
-    index.src = "index.php";
+    // Set address bar.
+    address.value = index.src;
 
     // Prevent underlying iframe from intercepting drag events
     // and selecting the page during fast drags.
@@ -235,6 +261,10 @@
     // Attempt to move window to foreground.
     browser.addEventListener("click", function() {
       this.style.zIndex = 1000;
+    });
+
+    close.addEventListener("click", function() {
+      this.parentElement.parentElement.remove();
     });
 
     // Browser buttons.
@@ -271,22 +301,69 @@
     });
 
     setTimeout(function() {
-      init();
+      init(index);
     }, 1000);
 
-  } // end for
+    dragElement(browser);
+
+  };
+
+  // Page load listener on iframe parent.
+  window.addEventListener("load", function() {
+    // Allow for multiple browsers.
+    browsers = document.querySelectorAll(".browser");
+    for (const browser of browsers) {
+      initIframeBrowser(browser);
+    }
+
+    // Icon.
+    let body = document.querySelector("body");
+    let icons = document.querySelectorAll(".icon");
+    for (const icon of icons) {
+      icon.addEventListener("click", function(e) {
+        this.classList.add("highlight");
+      });
+      icon.addEventListener("dblclick", function(e) {
+console.log("double click");
+        // @todo make new browser iframe.
+        var div = document.querySelector('.default').cloneNode(true);
+        div.hidden = false;
+        div.classList.remove('default');
+        initIframeBrowser(div);
+        body.append(div);
+      });
+    }
+
+    // Desktop (body).
+    body.addEventListener("click", function(e) {
+      if (e.target.tagName != "SPAN" && e.target.tagName != "IMG") {
+        for (const icon of icons) {
+          icon.classList.remove("highlight");
+        }
+      }
+    });
   });
 </script>
 </head>
 <body>
 
-  <?php print $player_body; ?>
+<?php print $player_body; ?>
 
-<?php $browsers = ["1st-index", "non-index"]; ?>
-<?php foreach ($browsers as $i): ?>
-  <div class="browser">
+<div class="icon">
+  <img src="images/netscape.jpg" width=32" />
+  <span class="caption">Dysproseum Navigator</span>
+</div>
+
+<?php $browsers = [
+  "kplaylist" => "index.php",
+  "default" => "/vplaylist",
+]; ?>
+
+<?php foreach ($browsers as $index => $url): ?>
+  <div class="browser <?php print $index; ?>" <?php if ($index == "default") print "hidden"; ?>>
     <div class="titlebar">
       <h1>Dysproseum Navigator</h1>
+    <a href="#" class="close"><img src="images/x-icon.png" /></a>
     </div>
     <div class="addressbar">
       <form class="navigate">
@@ -299,7 +376,7 @@
         <img class="animation" src="images/netscape.gif" width="32" />
       </form>
     </div>
-    <iframe class="<?php print $i; ?>"></iframe>
+    <iframe src="<?php print $url; ?>"></iframe>
   </div>
 <?php endforeach; ?>
 </body>
