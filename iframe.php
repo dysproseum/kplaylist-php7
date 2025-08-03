@@ -10,6 +10,11 @@
     margin: 0;
     background: teal;
     box-sizing: border-box;
+    user-select: none;
+    float: left;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
   .browser {
     position: absolute;
@@ -39,9 +44,17 @@
   }
   .browser .titlebar a {
     float: right;
-    margin-right: 4px;
-    margin-top: 4px;
+    margin-right: 5px;
+    margin-top: 5px;
   }
+  .browser .titlebar .close {
+    background: url(images/x-icon.png);
+    width: 15px;
+    height: 14px;
+  }
+  .browser .titlebar .close:active {
+    transform: rotateZ(180deg);
+   }
   .browser .addressbar {
     background: lightgray;
     display: block;
@@ -91,6 +104,10 @@
     border: 0;
     background: white;
   }
+  #selection {
+    border: 1px dotted lightgray;
+    position: absolute;
+  }
   .icon {
     width: 92px;
     text-align: center;
@@ -102,12 +119,11 @@
     font-size: 11px;
     color: white;
     -webkit-font-smoothing: none;
+    border: 1px dotted transparent;
     cursor: default;
-    user-select: none;
   }
   .highlight .caption {
     background: navy;
-    border: 1px dotted transparent;
     border-color: white;
   }
 </style>
@@ -321,11 +337,13 @@
     let icons = document.querySelectorAll(".icon");
     for (const icon of icons) {
       icon.addEventListener("click", function(e) {
+        for (const icon2 of icons) {
+          icon2.classList.remove("highlight");
+        }
         this.classList.add("highlight");
       });
       icon.addEventListener("dblclick", function(e) {
-console.log("double click");
-        // @todo make new browser iframe.
+        // Make new browser iframe.
         var div = document.querySelector('.default').cloneNode(true);
         div.hidden = false;
         div.classList.remove('default');
@@ -334,14 +352,68 @@ console.log("double click");
       });
     }
 
-    // Desktop (body).
-    body.addEventListener("click", function(e) {
-      if (e.target.tagName != "SPAN" && e.target.tagName != "IMG") {
-        for (const icon of icons) {
-          icon.classList.remove("highlight");
+    // Desktop selection rectangle.
+    // https://stackoverflow.com/questions/23284429/select-area-rectangle-in-javascript
+    var div = document.getElementById('selection'), x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    function rectanglesOverlap(rect1, rect2) {
+      return !(
+        rect1.x > rect2.x + rect2.width ||
+        rect2.x > rect1.x + rect1.width ||
+        rect1.y > rect2.y + rect2.height ||
+        rect2.y > rect1.y + rect1.height
+      );
+    }
+    function reCalc() { //This will restyle the div
+      if (div.hidden == true) {
+        return;
+      }
+
+      var x3 = Math.min(x1,x2); //Smaller X
+      var x4 = Math.max(x1,x2); //Larger X
+      var y3 = Math.min(y1,y2); //Smaller Y
+      var y4 = Math.max(y1,y2); //Larger Y
+      div.style.left = x3 + 'px';
+      div.style.top = y3 + 'px';
+      div.style.width = x4 - x3 + 'px';
+      div.style.height = y4 - y3 + 'px';
+
+      // determine if icons were selected
+      var select = {};
+      select.x = x3;
+      select.y = y3;
+      select.width = x4 - x3;
+      select.height = y4 - y3;
+      for (const icon of icons) {
+        icon.classList.remove("highlight");
+        var rect = icon.getBoundingClientRect();
+        if (rectanglesOverlap(select, rect)) {
+          icon.classList.add("highlight");
         }
       }
-    });
+
+    }
+    onmousedown = function(e) {
+        if (e.target.tagName != "BODY") {
+          return;
+        }
+        for (const icon of icons) {
+          icon.draggable = false;
+          icon.classList.remove("highlight");
+        }
+
+        div.hidden = 0; //Unhide the div
+        x1 = e.clientX; //Set the initial X
+        y1 = e.clientY; //Set the initial Y
+        reCalc();
+    };
+    onmousemove = function(e) {
+        x2 = e.clientX; //Update the current position X
+        y2 = e.clientY; //Update the current position Y
+        reCalc();
+    };
+    onmouseup = function(e) {
+        div.hidden = 1; //Hide the div
+    };
   });
 </script>
 </head>
@@ -349,9 +421,19 @@ console.log("double click");
 
 <?php print $player_body; ?>
 
+<div id="selection" hidden></div>
+
+<div class="icon">
+  <img src="images/mycomputer.png" width=32" />
+  <div class="caption">My Computer</div>
+</div>
 <div class="icon">
   <img src="images/netscape.jpg" width=32" />
-  <span class="caption">Dysproseum Navigator</span>
+  <div class="caption">Dysproseum Navigator</div>
+</div>
+<div class="icon" data-id="webamp">
+  <img src="images/webamp.png" width=32" />
+  <div class="caption">Webamp</div>
 </div>
 
 <?php $browsers = [
@@ -363,7 +445,7 @@ console.log("double click");
   <div class="browser <?php print $index; ?>" <?php if ($index == "default") print "hidden"; ?>>
     <div class="titlebar">
       <h1>Dysproseum Navigator</h1>
-    <a href="#" class="close"><img src="images/x-icon.png" /></a>
+    <a href="#" class="close"></a>
     </div>
     <div class="addressbar">
       <form class="navigate">
