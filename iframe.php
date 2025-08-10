@@ -241,7 +241,7 @@
     // Update address bar if same-origin.
     index.addEventListener("load", function(e) {
       console.log(e);
-      animation.src = "images/netscape.gif";
+      animation.src = "images/netscape.jpg";
       if (index.contentWindow && index.contentWindow.location) {
         address.value = index.contentWindow.location.href.replace(proxyUrl, '');
       }
@@ -309,7 +309,9 @@
     });
     reload.addEventListener("click", function() {
       animation.src = "images/netscape.gif";
-      index.contentWindow.location.reload();
+      // May not have cross-origin permission to
+      // index.contentWindow.location.reload();
+      index.src = index.src;
     });
     home.addEventListener("click", function() {
       animation.src = "images/netscape.gif";
