@@ -347,8 +347,19 @@
         this.classList.add("highlight");
       });
       icon.addEventListener("dblclick", function(e) {
+
+        if (this.dataset.id == "webamp") {
+          webAmp.reopen();
+          return;
+        }
+
         // Make new browser iframe.
         var div = document.querySelector('.default').cloneNode(true);
+        var iframe = div.querySelector('iframe');
+        if (this.dataset.url) {
+          console.log(this.dataset.url);
+          iframe.src = this.dataset.url;
+        }
         div.hidden = false;
         div.classList.remove('default');
         initIframeBrowser(div);
@@ -431,7 +442,7 @@
   <img src="images/mycomputer.png" width=32" />
   <div class="caption">My Computer</div>
 </div>
-<div class="icon">
+<div class="icon" data-id="browser" data-url="index.php">
   <img src="images/netscape.jpg" width=32" />
   <div class="caption">Dysproseum Navigator</div>
 </div>
@@ -439,10 +450,21 @@
   <img src="images/webamp.png" width=32" />
   <div class="caption">Webamp</div>
 </div>
+<div class="icon" data-id="browser" data-url="https://jspaint.app/#local:c6c35db1cd4b28">
+  <img src="images/paintbrush.png" width=32" />
+  <div class="caption">JSPaint.app</div>
+</div>
+<div class="icon" data-id="browser" data-url="https://mrdoob.com/lab/javascript/effects/solitaire/">
+  <img src="images/solitaire.png" width=32" />
+  <div class="caption">Solitaire</div>
+</div>
 
 <?php $browsers = [
+  // Named URL(s) to open on startup (optional).
+  // "vplaylist" => "/vplaylist",
   "kplaylist" => "index.php",
-  "default" => "/vplaylist",
+  // Default URL for new windows (required).
+  "default" => "index.php",
 ]; ?>
 
 <?php foreach ($browsers as $index => $url): ?>
