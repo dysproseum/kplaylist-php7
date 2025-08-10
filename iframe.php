@@ -291,7 +291,9 @@
         index.src = address.value;
       }
       else {
-        index.src = proxyUrl + address.value;
+        // @todo add option to use proxy.
+        // index.src = proxyUrl + address.value;
+        index.src = address.value;
       }
       return false;
     };
