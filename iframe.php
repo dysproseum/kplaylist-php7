@@ -417,6 +417,9 @@
 
     }
     onmousedown = function(e) {
+        if (e.button == 2) {
+          return;
+        }
         if (e.target.tagName != "BODY") {
           return;
         }
