@@ -16,6 +16,9 @@
     height: 100%;
     overflow: hidden;
   }
+  .wait, .wait div {
+    cursor: wait;
+  }
   .browser {
     position: absolute;
     margin: 20px;
@@ -347,6 +350,12 @@
         this.classList.add("highlight");
       });
       icon.addEventListener("dblclick", function(e) {
+
+        // Busy pointer icon.
+        body.classList.add("wait");
+        setTimeout(function() {
+          body.classList.remove("wait");
+        }, 3000);
 
         if (this.dataset.id == "webamp") {
           webAmp.reopen();
