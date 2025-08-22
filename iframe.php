@@ -147,6 +147,7 @@
 <script type="text/javascript" src="include/drag.js"></script>
 <script type="text/javascript">
   let theme = '';
+  let body;
   let playerCallbacks = [];
   let indexCallbacks = [];
 
@@ -173,6 +174,13 @@
 
   function getPlayerCallbacks() {
     return playerCallbacks;
+  }
+
+  // Conversations calls these.
+  function openIframeWindow(url) {
+    var div = initIframeDiv(url);
+    initIframeBrowser(div);
+    body.append(div);
   }
 
   /*
@@ -219,6 +227,22 @@
       // player.height = '54px';
     }
   }
+
+  const initIframeDiv = function (url) {
+    // Make new browser iframe.
+    var div = document.querySelector('.default').cloneNode(true);
+    var iframe = div.querySelector('iframe');
+    iframe.src = url;
+    div.hidden = false;
+    div.classList.remove('default');
+
+    // Set window location.
+    //div.style.zIndex = 1000;
+    div.style.left = 230;
+    div.style.top = 100;
+
+    return div;
+  };
 
   const initIframeBrowser = function(browser) {
     let index = browser.querySelector("iframe");
@@ -333,6 +357,8 @@
 
   // Page load listener on iframe parent.
   window.addEventListener("load", function() {
+    body = document.querySelector("body");
+
     // Allow for multiple browsers.
     browsers = document.querySelectorAll(".browser");
     for (const browser of browsers) {
@@ -340,7 +366,6 @@
     }
 
     // Icon.
-    let body = document.querySelector("body");
     let icons = document.querySelectorAll(".icon");
     for (const icon of icons) {
       icon.addEventListener("click", function(e) {
