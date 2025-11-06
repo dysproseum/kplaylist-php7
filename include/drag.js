@@ -20,6 +20,15 @@ function dragElement(elmnt) {
     if (e.button == 2) {
       return;
     }
+
+    // target could be div or h1
+    var target = e.target.parentElement;
+console.log(target);
+    if (!target.classList.contains("browser")) {
+      target = target.parentElement;
+console.log(target);
+    }
+
     e = e || window.event;
     e.preventDefault();
     // get the mouse cursor position at startup:
@@ -32,6 +41,17 @@ function dragElement(elmnt) {
     document.onmousemove = elementDrag;
 
     elmnt.classList.add('dragging');
+
+      // Set window layer.
+      let tmpZ = 0;
+      for (browser of windowManager.windows) {
+console.log(e);
+        if (browser.style.zIndex > tmpZ) {
+          tmpZ = browser.style.zIndex;
+        }
+      }
+      tmpZ++;
+      target.style.zIndex = tmpZ;
   }
 
   function elementDrag(e) {

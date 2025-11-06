@@ -146,6 +146,163 @@
 
 <script type="text/javascript" src="include/drag.js"></script>
 <script type="text/javascript">
+  // window placement and z-index
+  const windowManager =  {
+    windows: [],
+    z: 1000,
+    testFunction: () => {
+      console.log("test");
+    },
+    openIframeWindow(type, id, url) {
+      //var win = document.querySelectorAll("div[class=browser]");
+      if (!this.isWindowOpen(id)) {
+        var div = this.initIframeDiv(url);
+        this.initIframeBrowser(div);
+        this.windows.push(div);
+        body.append(div);
+      }
+      this.makeWindowActive(id);
+    },
+    initIframeDiv(url) {
+      // Make new browser iframe.
+      var div = document.querySelector('.default').cloneNode(true);
+      var iframe = div.querySelector('iframe');
+      iframe.src = url;
+      div.hidden = false;
+      div.classList.remove('default');
+  
+      // Set window location & size.
+      div.style.left = 230;
+      div.style.top = 100;
+      div.style.width = 768;
+      div.style.height = 480;
+
+      // Set window layer.
+      let tmpZ = 0;
+      for (browser of this.windows) {
+console.log(this.z);
+        if (browser.style.zIndex > tmpZ) {
+          tmpZ = browser.style.zIndex;
+        }
+      }
+      tmpZ++;
+      div.style.zIndex = tmpZ;
+  
+      return div;
+    },
+    initIframeBrowser(browser) {
+      let index = browser.querySelector("iframe");
+      let titlebar;
+      let close;
+      let back;
+      let forward;
+      let reload;
+      let home;
+      let address;
+      let animation;
+      let form;
+      titlebar = browser.querySelector(".browser .titlebar h1");
+      close = browser.querySelector(".titlebar a.close");
+      back = browser.querySelector(".back");
+      forward = browser.querySelector(".forward");
+      reload = browser.querySelector(".reload");
+      home = browser.querySelector(".home");
+      address = browser.querySelector(".address");
+      form = browser.querySelector(".navigate");
+      animation = browser.querySelector(".animation");
+  
+      // Update address bar if same-origin.
+      index.addEventListener("load", function(e) {
+        console.log(e);
+        animation.src = "images/netscape.jpg";
+        if (index.contentWindow && index.contentWindow.location) {
+          address.value = index.contentWindow.location.href.replace(proxyUrl, '');
+        }
+        else {
+          address.value = index.src.replace(proxyUrl, '');
+        }
+  
+        if (index.contentDocument && index.contentDocument.title) {
+          titlebar.innerHTML = index.contentDocument.title + " - " + title;
+        }
+  
+        setTimeout(function() {
+          init(index);
+          animation.src = "images/netscape.jpg";
+        }, 2000);
+      });
+  
+      // Set address bar.
+      address.value = index.src;
+  
+      // Prevent underlying iframe from intercepting drag events
+      // and selecting the page during fast drags.
+      document.addEventListener("mousedown", function() {
+        index.style.pointerEvents = "none";
+        index.style.userSelect = "none";
+      });
+      document.addEventListener("mouseup", function() {
+        index.style.pointerEvents = "all";
+        index.style.userSelect = "none";
+      });
+  
+      close.addEventListener("click", function() {
+        this.parentElement.parentElement.remove();
+      });
+  
+      // Browser buttons.
+      const goNavigate = function(e) {
+        e.preventDefault();
+        animation.src = "images/netscape.gif";
+        if (address.value.startsWith(window.location.origin)) {
+          index.src = address.value;
+        }
+        else {
+          // @todo add option to use proxy.
+          // index.src = proxyUrl + address.value;
+          index.src = address.value;
+        }
+        return false;
+      };
+      form.addEventListener("submit", goNavigate);
+      back.addEventListener("click", function(e) {
+        // try and prevent reloading page when navigating all the way back.
+        e.preventDefault();
+        animation.src = "images/netscape.gif";
+        index.contentWindow.history.go(-1);
+        return false;
+      });
+      forward.addEventListener("click", function() {
+        animation.src = "images/netscape.gif";
+        index.contentWindow.history.go(1);
+      });
+      reload.addEventListener("click", function() {
+        animation.src = "images/netscape.gif";
+        // May not have cross-origin permission to
+        // index.contentWindow.location.reload();
+        index.src = index.src;
+      });
+      home.addEventListener("click", function() {
+        animation.src = "images/netscape.gif";
+        index.src = baseUrl;
+      });
+  
+      setTimeout(function() {
+        init(index);
+      }, 1000);
+  
+      dragElement(browser);
+  
+    },
+    isWindowOpen(id) {
+      //type
+      //id
+    },
+    makeWindowActive(id) {
+      // windows[id].zIndex = 1000;
+    }
+  };
+
   let theme = '';
   let body;
   let playerCallbacks = [];
@@ -177,10 +334,11 @@
   }
 
   // Conversations calls these.
-  function openIframeWindow(url) {
-    var div = initIframeDiv(url);
-    initIframeBrowser(div);
-    body.append(div);
+  function openIframeWindow(type, id, url) {
+    // var div = initIframeDiv(url);
+    // initIframeBrowser(div);
+    // body.append(div);
+    windowManager.openIframeWindow(type, id, url);
   }
 
   /*
@@ -228,133 +386,6 @@
     }
   }
 
-  const initIframeDiv = function (url) {
-    // Make new browser iframe.
-    var div = document.querySelector('.default').cloneNode(true);
-    var iframe = div.querySelector('iframe');
-    iframe.src = url;
-    div.hidden = false;
-    div.classList.remove('default');
-
-    // Set window location.
-    //div.style.zIndex = 1000;
-    div.style.left = 230;
-    div.style.top = 100;
-
-    return div;
-  };
-
-  const initIframeBrowser = function(browser) {
-    let index = browser.querySelector("iframe");
-    let titlebar;
-    let close;
-    let back;
-    let forward;
-    let reload;
-    let home;
-    let address;
-    let animation;
-    let form;
-    titlebar = browser.querySelector(".browser .titlebar h1");
-    close = browser.querySelector(".titlebar a.close");
-    back = browser.querySelector(".back");
-    forward = browser.querySelector(".forward");
-    reload = browser.querySelector(".reload");
-    home = browser.querySelector(".home");
-    address = browser.querySelector(".address");
-    form = browser.querySelector(".navigate");
-    animation = browser.querySelector(".animation");
-
-    // Update address bar if same-origin.
-    index.addEventListener("load", function(e) {
-      console.log(e);
-      animation.src = "images/netscape.jpg";
-      if (index.contentWindow && index.contentWindow.location) {
-        address.value = index.contentWindow.location.href.replace(proxyUrl, '');
-      }
-      else {
-        address.value = index.src.replace(proxyUrl, '');
-      }
-
-      if (index.contentDocument && index.contentDocument.title) {
-        titlebar.innerHTML = index.contentDocument.title + " - " + title;
-      }
-
-      setTimeout(function() {
-        init(index);
-        animation.src = "images/netscape.jpg";
-      }, 2000);
-    });
-
-    // Set address bar.
-    address.value = index.src;
-
-    // Prevent underlying iframe from intercepting drag events
-    // and selecting the page during fast drags.
-    document.addEventListener("mousedown", function() {
-      index.style.pointerEvents = "none";
-      index.style.userSelect = "none";
-      browser.style.zIndex = 0;
-    });
-    document.addEventListener("mouseup", function() {
-      index.style.pointerEvents = "all";
-      index.style.userSelect = "none";
-    });
-
-    // Attempt to move window to foreground.
-    browser.addEventListener("click", function() {
-      this.style.zIndex = 1000;
-    });
-
-    close.addEventListener("click", function() {
-      this.parentElement.parentElement.remove();
-    });
-
-    // Browser buttons.
-    const goNavigate = function(e) {
-      e.preventDefault();
-      animation.src = "images/netscape.gif";
-      if (address.value.startsWith(window.location.origin)) {
-        index.src = address.value;
-      }
-      else {
-        // @todo add option to use proxy.
-        // index.src = proxyUrl + address.value;
-        index.src = address.value;
-      }
-      return false;
-    };
-    form.addEventListener("submit", goNavigate);
-    back.addEventListener("click", function(e) {
-      // try and prevent reloading page when navigating all the way back.
-      e.preventDefault();
-      animation.src = "images/netscape.gif";
-      index.contentWindow.history.go(-1);
-      return false;
-    });
-    forward.addEventListener("click", function() {
-      animation.src = "images/netscape.gif";
-      index.contentWindow.history.go(1);
-    });
-    reload.addEventListener("click", function() {
-      animation.src = "images/netscape.gif";
-      // May not have cross-origin permission to
-      // index.contentWindow.location.reload();
-      index.src = index.src;
-    });
-    home.addEventListener("click", function() {
-      animation.src = "images/netscape.gif";
-      index.src = baseUrl;
-    });
-
-    setTimeout(function() {
-      init(index);
-    }, 1000);
-
-    dragElement(browser);
-
-  };
-
   // Page load listener on iframe parent.
   window.addEventListener("load", function() {
     body = document.querySelector("body");
@@ -362,7 +393,7 @@
     // Allow for multiple browsers.
     browsers = document.querySelectorAll(".browser");
     for (const browser of browsers) {
-      initIframeBrowser(browser);
+      windowManager.initIframeBrowser(browser);
     }
 
     // Icon.
@@ -382,22 +413,24 @@
           body.classList.remove("wait");
         }, 3000);
 
-        if (this.dataset.id == "webamp") {
+        if (this.dataset.type == "webamp") {
           webAmp.reopen();
           return;
         }
 
         // Make new browser iframe.
-        var div = document.querySelector('.default').cloneNode(true);
-        var iframe = div.querySelector('iframe');
+        let type;
+        let id;
+        let url;
+        if (this.dataset.type) {
+          console.log(this.dataset.type);
+          type = this.dataset.type;
+        }
         if (this.dataset.url) {
           console.log(this.dataset.url);
-          iframe.src = this.dataset.url;
+          url = this.dataset.url;
         }
-        div.hidden = false;
-        div.classList.remove('default');
-        initIframeBrowser(div);
-        body.append(div);
+        windowManager.openIframeWindow(type, id, url);
       });
     }
 
@@ -479,19 +512,27 @@
   <img src="images/mycomputer.png" width=32" />
   <div class="caption">My Computer</div>
 </div>
-<div class="icon" data-id="browser" data-url="index.php">
+<div class="icon" data-type="browser" data-url="index.php">
   <img src="images/netscape.jpg" width=32" />
   <div class="caption">Dysproseum Navigator</div>
 </div>
-<div class="icon" data-id="webamp">
+<div class="icon" data-type="browser" data-url="/oscillator">
+  <img src="images/keyboard_musical_midi.png" width=32" />
+  <div class="caption">Oscillator</div>
+</div>
+<div class="icon" data-type="conversations_buddylist" data-url="/conversations/iframe/buddylist.php">
+  <img src="images/aol_messenger.png" width=32" />
+  <div class="caption">Conversations</div>
+</div>
+<div class="icon" data-type="webamp">
   <img src="images/webamp.png" width=32" />
   <div class="caption">Webamp</div>
 </div>
-<div class="icon" data-id="browser" data-url="https://jspaint.app/#local:c6c35db1cd4b28">
+<div class="icon" data-type="browser" data-url="https://jspaint.app/#local:c6c35db1cd4b28">
   <img src="images/paintbrush.png" width=32" />
   <div class="caption">JSPaint.app</div>
 </div>
-<div class="icon" data-id="browser" data-url="https://mrdoob.com/lab/javascript/effects/solitaire/">
+<div class="icon" data-type="browser" data-url="https://mrdoob.com/lab/javascript/effects/solitaire/">
   <img src="images/solitaire.png" width=32" />
   <div class="caption">Solitaire</div>
 </div>
@@ -524,5 +565,6 @@
     <iframe src="<?php print $url; ?>"></iframe>
   </div>
 <?php endforeach; ?>
+
 </body>
 </html>
