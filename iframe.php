@@ -146,6 +146,9 @@
 
 <script type="text/javascript" src="include/drag.js"></script>
 <script type="text/javascript">
+  let webAmpDiv;
+  let webAmpAlwaysOnTop = false;
+
   // window placement and z-index
   const windowManager =  {
     windows: [],
@@ -174,20 +177,34 @@
       // Set window location & size.
       div.style.left = 230;
       div.style.top = 100;
-      div.style.width = 768;
+      div.style.width = 1024;
       div.style.height = 480;
 
       // Set window layer.
+      this.setWindowLayer(div);
+
+      return div;
+    },
+    setWindowLayer(div) {
       let tmpZ = 0;
       for (browser of this.windows) {
-console.log(this.z);
+        console.log(div.z);
         if (browser.style.zIndex > tmpZ) {
           tmpZ = browser.style.zIndex;
         }
       }
+      // Include webamp.
+      if (webAmpDiv.style.zIndex > tmpZ) {
+        tmpZ = webAmpDiv.style.zIndex;
+      }
       tmpZ++;
       div.style.zIndex = tmpZ;
-  
+
+      if (webAmpAlwaysOnTop) {
+        tmpZ++;
+        webAmpDiv.style.zIndex = tmpZ;
+      }
+
       return div;
     },
     initIframeBrowser(browser) {
@@ -389,6 +406,7 @@ console.log(this.z);
   // Page load listener on iframe parent.
   window.addEventListener("load", function() {
     body = document.querySelector("body");
+    webAmpDiv = document.getElementById("webamp");
 
     // Allow for multiple browsers.
     browsers = document.querySelectorAll(".browser");
@@ -415,6 +433,8 @@ console.log(this.z);
 
         if (this.dataset.type == "webamp") {
           webAmp.reopen();
+          // @todo bring to front.
+          webAmpDiv.style.zIndex++;
           return;
         }
 
@@ -499,6 +519,33 @@ console.log(this.z);
     onmouseup = function(e) {
         div.hidden = 1; //Hide the div
     };
+
+    // Webamp always on top shim.
+    var a = document.getElementById("button-a");
+    a.addEventListener("click", function() {
+      console.log("Webamp A clicked");
+      if (webAmpAlwaysOnTop) {
+        a.classList.remove("selected");
+        webAmpAlwaysOnTop = false;
+      }
+      else {
+        a.classList.add("selected");
+        webAmpAlwaysOnTop = true;
+      }
+    });
+
+    // Handle webamp window layer.
+    webAmpDiv.addEventListener("mousedown", function(e) {
+      console.log(e);
+      windowManager.setWindowLayer(webAmpDiv);
+
+      // #webamp-context-menu bring to front
+      setTimeout(function() {
+        const menu = document.getElementById("webamp-context-menu");
+        menu.style.zIndex = webAmpDiv.style.zIndex;
+      }, 100);
+    });
+
   });
 </script>
 </head>

@@ -42,16 +42,8 @@ console.log(target);
 
     elmnt.classList.add('dragging');
 
-      // Set window layer.
-      let tmpZ = 0;
-      for (browser of windowManager.windows) {
-console.log(e);
-        if (browser.style.zIndex > tmpZ) {
-          tmpZ = browser.style.zIndex;
-        }
-      }
-      tmpZ++;
-      target.style.zIndex = tmpZ;
+    // Set window layer.
+    windowManager.setWindowLayer(target);
   }
 
   function elementDrag(e) {
