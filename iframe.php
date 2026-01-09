@@ -160,6 +160,8 @@
       //var win = document.querySelectorAll("div[class=browser]");
       if (!this.isWindowOpen(id)) {
         var div = this.initIframeDiv(url);
+        this.setWindowLocation(div);
+        this.setWindowLayer(div);
         this.initIframeBrowser(div);
         this.windows.push(div);
         body.append(div);
@@ -174,14 +176,33 @@
       div.hidden = false;
       div.classList.remove('default');
   
-      // Set window location & size.
-      div.style.left = 230;
-      div.style.top = 100;
-      div.style.width = 1024;
-      div.style.height = 480;
+      return div;
+    },
+    setWindowLocation(div) {
+      let left = 100, top = 60, width = 1024, height = 560;
 
-      // Set window layer.
-      this.setWindowLayer(div);
+      // Is there currently a window in default position?
+      for (const browser of this.windows) {
+        if (parseInt(browser.style.left) == left &&
+          parseInt(browser.style.top) == top &&
+          parseInt(browser.style.width) == width &&
+          parseInt(browser.style.height) == height) {
+            left += 64;
+            top += 64;
+          }
+      }
+
+      // Set window location & size.
+      div.style.left = left;
+      div.style.top = top;
+      div.style.width = width;
+      div.style.height = height;
+
+      // Show browser for the first time.
+      // @todo could it happen sooner?
+      // show titlebar first, then iframe.src last?
+      div.hidden = false;
+      body.classList.remove("wait");
 
       return div;
     },
@@ -265,6 +286,7 @@
   
       close.addEventListener("click", function() {
         this.parentElement.parentElement.remove();
+        //@todo windowManager.windows.remove(div)
       });
   
       // Browser buttons.
@@ -411,7 +433,11 @@
     // Allow for multiple browsers.
     browsers = document.querySelectorAll(".browser");
     for (const browser of browsers) {
-      windowManager.initIframeBrowser(browser);
+      if (!browser.classList.contains("default")) {
+        windowManager.setWindowLocation(browser);
+        windowManager.windows.push(browser);
+        windowManager.initIframeBrowser(browser);
+      }
     }
 
     // Icon.
@@ -549,7 +575,7 @@
   });
 </script>
 </head>
-<body>
+<body class="wait">
 
 <?php print $player_body; ?>
 
@@ -597,7 +623,7 @@
 ]; ?>
 
 <?php foreach ($browsers as $index => $url): ?>
-  <div class="browser <?php print $index; ?>" <?php if ($index == "default") print "hidden"; ?>>
+  <div class="browser <?php print $index; ?>" hidden>
     <div class="titlebar">
       <h1>Dysproseum Navigator</h1>
     <a href="#" class="close"></a>
