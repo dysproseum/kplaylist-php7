@@ -559,6 +559,10 @@
   <img src="images/mycomputer.png" width=32" />
   <div class="caption">My Computer</div>
 </div>
+<div class="icon" data-type="browser" data-url="https://notepad.js.org/rich-text-notes/">
+  <img src="images/notepad-1.png" width=32" />
+  <div class="caption">Wordpad</div>
+</div>
 <div class="icon" data-type="browser" data-url="index.php">
   <img src="images/netscape.jpg" width=32" />
   <div class="caption">Dysproseum Navigator</div>
