@@ -54,6 +54,7 @@
     background: url(images/x-icon.png);
     width: 15px;
     height: 14px;
+    cursor: default;
   }
   .browser .titlebar .close:active {
     transform: rotateZ(180deg);
@@ -152,30 +153,39 @@
   // window placement and z-index
   const windowManager =  {
     windows: [],
-    z: 1000,
-    testFunction: () => {
-      console.log("test");
-    },
-    openIframeWindow(type, id, url) {
-      //var win = document.querySelectorAll("div[class=browser]");
+    openIframeWindow(type, id, url, title) {
+
+      if (!title) {
+        title = "Dysproseum Navigator";
+      }
+
       if (!this.isWindowOpen(id)) {
         var div = this.initIframeDiv(url);
         this.setWindowLocation(div);
         this.setWindowLayer(div);
-        this.initIframeBrowser(div);
+        this.initIframeBrowser(div, url);
         this.windows.push(div);
+
+        // Animation won't run before div is appended.
         body.append(div);
+        var animation = div.querySelector('.animation');
+        animation.src = 'images/netscape.gif';
+        var titlebar = div.querySelector('.titlebar h1');
+        titlebar.innerHTML = title;
+        div.hidden = false;
+
+        //var address = div.querySelector('.address');
+        //address.value = url;
+        var iframe = div.querySelector('iframe');
+        iframe.src = url;
+        body.classList.remove("wait");
       }
       this.makeWindowActive(id);
     },
     initIframeDiv(url) {
       // Make new browser iframe.
       var div = document.querySelector('.default').cloneNode(true);
-      var iframe = div.querySelector('iframe');
-      iframe.src = url;
-      div.hidden = false;
       div.classList.remove('default');
-  
       return div;
     },
     setWindowLocation(div) {
@@ -198,24 +208,17 @@
       div.style.width = width;
       div.style.height = height;
 
-      // Show browser for the first time.
-      // @todo could it happen sooner?
-      // show titlebar first, then iframe.src last?
-      div.hidden = false;
-      body.classList.remove("wait");
-
       return div;
     },
     setWindowLayer(div) {
       let tmpZ = 0;
       for (browser of this.windows) {
-        console.log(div.z);
         if (browser.style.zIndex > tmpZ) {
           tmpZ = browser.style.zIndex;
         }
       }
       // Include webamp.
-      if (webAmpDiv.style.zIndex > tmpZ) {
+      if (webAmpDiv && webAmpDiv.style.zIndex > tmpZ) {
         tmpZ = webAmpDiv.style.zIndex;
       }
       tmpZ++;
@@ -228,7 +231,7 @@
 
       return div;
     },
-    initIframeBrowser(browser) {
+    initIframeBrowser(browser, url) {
       let index = browser.querySelector("iframe");
       let titlebar;
       let close;
@@ -251,17 +254,24 @@
   
       // Update address bar if same-origin.
       index.addEventListener("load", function(e) {
-        console.log(e);
+        console.log(e.eventPhase + " " + this.src);
         animation.src = "images/netscape.jpg";
-        if (index.contentWindow && index.contentWindow.location) {
-          address.value = index.contentWindow.location.href.replace(proxyUrl, '');
-        }
-        else {
-          address.value = index.src.replace(proxyUrl, '');
-        }
+
+        // Check if href and title are available from same-origin first.
+        try {
+          if (index.contentWindow && index.contentWindow.location) {
+            address.value = index.contentWindow.location.href.replace(proxyUrl, '');
+          }
+          else {
+            address.value = index.src.replace(proxyUrl, '');
+          }
   
-        if (index.contentDocument && index.contentDocument.title) {
-          titlebar.innerHTML = index.contentDocument.title + " - " + title;
+          if (index.contentDocument && index.contentDocument.title) {
+            titlebar.innerHTML = index.contentDocument.title + " - " + title;
+          }
+        }
+        catch(e) {
+          address.value = url;
         }
   
         setTimeout(function() {
@@ -269,9 +279,6 @@
           animation.src = "images/netscape.jpg";
         }, 2000);
       });
-  
-      // Set address bar.
-      address.value = index.src;
   
       // Prevent underlying iframe from intercepting drag events
       // and selecting the page during fast drags.
@@ -326,12 +333,13 @@
         index.src = baseUrl;
       });
   
-      setTimeout(function() {
-        init(index);
-      }, 1000);
+      if (browser.classList.contains("kplaylist")) {
+        setTimeout(function() {
+          init(index);
+        }, 500);
+      }
   
       dragElement(browser);
-  
     },
     isWindowOpen(id) {
       //type
@@ -374,9 +382,7 @@
 
   // Conversations calls these.
   function openIframeWindow(type, id, url) {
-    // var div = initIframeDiv(url);
-    // initIframeBrowser(div);
-    // body.append(div);
+    // Start browser window from another app iframe.
     windowManager.openIframeWindow(type, id, url);
   }
 
@@ -428,15 +434,13 @@
   // Page load listener on iframe parent.
   window.addEventListener("load", function() {
     body = document.querySelector("body");
-    webAmpDiv = document.getElementById("webamp");
 
     // Allow for multiple browsers.
     browsers = document.querySelectorAll(".browser");
     for (const browser of browsers) {
       if (!browser.classList.contains("default")) {
-        windowManager.setWindowLocation(browser);
-        windowManager.windows.push(browser);
-        windowManager.initIframeBrowser(browser);
+        // Start launching browsers on page load - based on their html attributes.
+        windowManager.openIframeWindow(browser.dataset.type, browser.id, browser.dataset.url);
       }
     }
 
@@ -453,14 +457,20 @@
 
         // Busy pointer icon.
         body.classList.add("wait");
-        setTimeout(function() {
-          body.classList.remove("wait");
-        }, 3000);
-
         if (this.dataset.type == "webamp") {
           webAmp.reopen();
-          // @todo bring to front.
-          webAmpDiv.style.zIndex++;
+          setTimeout(function() {
+            setupWebAmp();
+            // Bring to front.
+            let tmpZ = 0;
+            for (browser of windowManager.windows) {
+              if (browser.style.zIndex > tmpZ) {
+                tmpZ = browser.style.zIndex;
+              }
+            }
+            webAmpDiv.style.zIndex = tmpZ++;
+            body.classList.remove("wait");
+          }, 2000);
           return;
         }
 
@@ -468,6 +478,7 @@
         let type;
         let id;
         let url;
+        let title;
         if (this.dataset.type) {
           console.log(this.dataset.type);
           type = this.dataset.type;
@@ -476,7 +487,12 @@
           console.log(this.dataset.url);
           url = this.dataset.url;
         }
-        windowManager.openIframeWindow(type, id, url);
+        if (this.dataset.title) {
+          title = this.dataset.title;
+        }
+
+        // Start launching browser from icon - based on its html attributes.
+        windowManager.openIframeWindow(type, id, url, title);
       });
     }
 
@@ -546,31 +562,40 @@
         div.hidden = 1; //Hide the div
     };
 
-    // Webamp always on top shim.
-    var a = document.getElementById("button-a");
-    a.addEventListener("click", function() {
-      console.log("Webamp A clicked");
-      if (webAmpAlwaysOnTop) {
-        a.classList.remove("selected");
-        webAmpAlwaysOnTop = false;
-      }
-      else {
-        a.classList.add("selected");
-        webAmpAlwaysOnTop = true;
-      }
-    });
+    function setupWebAmp() {
+      webAmpDiv = document.getElementById("webamp");
 
-    // Handle webamp window layer.
-    webAmpDiv.addEventListener("mousedown", function(e) {
-      console.log(e);
-      windowManager.setWindowLayer(webAmpDiv);
+      // Webamp always on top shim.
+      var a = document.getElementById("button-a");
+      a.addEventListener("click", function() {
+        console.log("Webamp A clicked");
+        if (webAmpAlwaysOnTop) {
+          a.classList.remove("selected");
+          webAmpAlwaysOnTop = false;
+        }
+        else {
+          a.classList.add("selected");
+          webAmpAlwaysOnTop = true;
+        }
+      });
 
-      // #webamp-context-menu bring to front
-      setTimeout(function() {
-        const menu = document.getElementById("webamp-context-menu");
-        menu.style.zIndex = webAmpDiv.style.zIndex;
-      }, 100);
-    });
+      // Handle webamp window layer.
+      webAmpDiv.addEventListener("mousedown", function(e) {
+        console.log(e);
+        windowManager.setWindowLayer(webAmpDiv);
+
+        // #webamp-context-menu bring to front
+        setTimeout(function() {
+          const menu = document.getElementById("webamp-context-menu");
+          if (menu) {
+            menu.style.zIndex = webAmpDiv.style.zIndex;
+          }
+        }, 100);
+      });
+    }
+    setTimeout(function() {
+      setupWebAmp();
+    }, 2000);
 
   });
 </script>
@@ -585,9 +610,9 @@
   <img src="images/mycomputer.png" width=32" />
   <div class="caption">My Computer</div>
 </div>
-<div class="icon" data-type="browser" data-url="https://notepad.js.org/rich-text-notes/">
+<div class="icon" data-type="browser" data-url="https://notepad.js.org/rich-text-notes/" data-title="Notepad">
   <img src="images/notepad-1.png" width=32" />
-  <div class="caption">Wordpad</div>
+  <div class="caption">Notepad</div>
 </div>
 <div class="icon" data-type="browser" data-url="index.php">
   <img src="images/netscape.jpg" width=32" />
@@ -605,11 +630,11 @@
   <img src="images/webamp.png" width=32" />
   <div class="caption">Webamp</div>
 </div>
-<div class="icon" data-type="browser" data-url="https://jspaint.app/#local:c6c35db1cd4b28">
+<div class="icon" data-type="browser" data-url="https://jspaint.app/#local:c6c35db1cd4b28" data-title="Paint">
   <img src="images/paintbrush.png" width=32" />
   <div class="caption">JSPaint.app</div>
 </div>
-<div class="icon" data-type="browser" data-url="https://mrdoob.com/lab/javascript/effects/solitaire/">
+<div class="icon" data-type="browser" data-url="https://mrdoob.com/lab/javascript/effects/solitaire/" data-title="Solitaire">
   <img src="images/solitaire.png" width=32" />
   <div class="caption">Solitaire</div>
 </div>
@@ -623,7 +648,7 @@
 ]; ?>
 
 <?php foreach ($browsers as $index => $url): ?>
-  <div class="browser <?php print $index; ?>" hidden>
+  <div class="browser <?php print $index; ?>" data-type="<?php print $index; ?>" id="<?php print $index; ?>" data-url="<?php print $url; ?>" hidden>
     <div class="titlebar">
       <h1>Dysproseum Navigator</h1>
     <a href="#" class="close"></a>
@@ -639,7 +664,7 @@
         <img class="animation" src="images/netscape.gif" width="32" />
       </form>
     </div>
-    <iframe src="<?php print $url; ?>"></iframe>
+    <iframe src="about:blank"></iframe>
   </div>
 <?php endforeach; ?>
 
