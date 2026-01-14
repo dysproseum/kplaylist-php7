@@ -273,13 +273,16 @@
           }
         }
         catch(e) {
+          // Fallback to current url when changed.
           address.value = url;
         }
   
+      if (browser.classList.contains("kplaylist")) {
         setTimeout(function() {
           init(index);
           animation.src = "images/netscape.jpg";
         }, 2000);
+      }
       });
   
       // Prevent underlying iframe from intercepting drag events
@@ -302,6 +305,9 @@
       const goNavigate = function(e) {
         e.preventDefault();
         animation.src = "images/netscape.gif";
+
+        // Update url value after navigate.
+        url = address.value;
         if (address.value.startsWith(window.location.origin)) {
           index.src = address.value;
         }
@@ -326,9 +332,14 @@
       });
       reload.addEventListener("click", function() {
         animation.src = "images/netscape.gif";
-        // May not have cross-origin permission to
-        // index.contentWindow.location.reload();
-        index.src = index.src;
+        // No cross-origin permission to index.contentWindow.location.reload();
+        url = index.src;
+        // Try to force a refresh if url contains hash character.
+        var parts = index.src.split("#");
+        if (parts.length > 1) {
+           url = parts[0] + "?_=" + new Date().getTime() + "#" + parts[1];
+        }
+        index.src = url;
       });
       home.addEventListener("click", function() {
         animation.src = "images/netscape.gif";
@@ -449,7 +460,7 @@
     // Icon.
     let icons = document.querySelectorAll(".icon");
     for (const icon of icons) {
-      icon.addEventListener("click", function(e) {
+      icon.addEventListener("mousedown", function(e) {
         for (const icon2 of icons) {
           icon2.classList.remove("highlight");
         }
@@ -570,7 +581,6 @@
       // Webamp always on top shim.
       var a = document.getElementById("button-a");
       a.addEventListener("click", function() {
-        console.log("Webamp A clicked");
         if (webAmpAlwaysOnTop) {
           a.classList.remove("selected");
           webAmpAlwaysOnTop = false;
@@ -583,7 +593,6 @@
 
       // Handle webamp window layer.
       webAmpDiv.addEventListener("mousedown", function(e) {
-        console.log(e);
         windowManager.setWindowLayer(webAmpDiv);
 
         // #webamp-context-menu bring to front
