@@ -46,7 +46,9 @@
     cursor: default;
   }
   .browser .titlebar a {
-    float: right;
+    position: absolute;
+    top: 0;
+    right: 0;
     margin-right: 5px;
     margin-top: 5px;
   }
