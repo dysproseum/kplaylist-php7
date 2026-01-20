@@ -1,37 +1,23 @@
-<html>
-<head>
+<?php
+
+$player_head = <<<EOF
 <style type="text/css">
   #webamp {
     display: none;
   }
 </style>
-<script src="https://unpkg.com/webamp"></script>
-<script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
-<script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
 <script type="text/javascript">
-  // Player callback.
-  function playerFrame(tracks) {
-    webAmp.setTracksToPlay(tracks);
-    webAmp.play();
-  }
-
-  // Register callback.
-  window.onload = function(){
-    if (parent && parent.registerPlayerChild){
-      parent.registerPlayerChild(playerFrame);
-    }
-  };
+  let webAmp;
 </script>
-</head>
-<body>
-<div id="app"></div>
-<script type="text/javascript">
-  // Initialize webamp.
+<script type="module">
   const app = document.getElementById("app");
-  const webAmp = new Webamp({
+
+  // Initialize webamp.
+  await import("https://unpkg.com/webamp@^2");
+  webAmp = new Webamp({
     windowLayout: {
       main: {
-        position: { top: 0, right: 0 },
+        position: { top: 0, left: 0 },
         shadeMode: false,
         closed: false,
       },
@@ -41,13 +27,14 @@
         closed: true,
       },
       playlist: {
-        position: { top: 0, right: 0 },
+        position: { top: 0, left: 0 },
         shadeMode: false,
-        size: { extraHeight: 1, extraWidth: 1 },
+        size: { extraHeight: 4, extraWidth: 0 },
         closed: false,
       },
       milkdrop: {
-        position: { top: 0, right: 0 },
+        position: { top: 0, left: 0 },
+        size: { extraHeight: 4, extraWidth: 0 },
         closed: true,
       },
     },
@@ -244,6 +231,7 @@
 
   var webAmpPromise = webAmp.renderWhenReady(app);
   webAmpPromise.then(function(result) {
+    console.log("in promise");
     setTimeout(function() {
 
       // Set window positions.
@@ -260,7 +248,7 @@
           },
           "playlist": {
             x: window.innerWidth - 275,
-            y: window.innerHeight - 232,
+            y: window.innerHeight - 348,
           },
           "milkdrop": {
             x: window.innerWidth - 275,
@@ -276,5 +264,25 @@
     }, 100);
   });
 </script>
-</body>
-</html>
+<script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
+<script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
+<script type="text/javascript">
+  // Player callback.
+  function playerFrame(tracks) {
+    webAmp.setTracksToPlay(tracks);
+    webAmp.play();
+  }
+
+  // Register callback.
+  window.onload = function(){
+    if (parent && parent.registerPlayerChild){
+      parent.registerPlayerChild(playerFrame);
+    }
+  };
+</script>
+EOF;
+
+$player_body = <<<EOF
+<div id="app"></div>
+EOF;
+?>

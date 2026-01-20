@@ -152,9 +152,11 @@ window.addEventListener("load", function() {
 
   // Later, you can stop observing
   // observer.disconnect();
+  const app = document.getElementById("app");
 
   // Initialize webamp.
-  const app = document.getElementById("app");
+  
+  //import Webamp from "https://unpkg.com/webamp@^2";
   webAmp = new Webamp({
     windowLayout: {
       main: {
