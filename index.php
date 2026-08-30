@@ -2076,7 +2076,7 @@ function checkchs($in, $conv=true)
 
 class kptheme
 {
-	function kptheme()
+	function __construct()
 	{
 		$this->themes = array();
 		$this->theme = false;
@@ -2427,7 +2427,7 @@ function db_execcheck($query)
 
 class settings
 {
-	function settings()
+	function __construct()
 	{
 		$this->dbperform = true;
 		$this->table = TBL_CONFIG;
@@ -2737,7 +2737,7 @@ if (db_gconnect())
 
 class basedir
 {
-	function basedir()
+	function __construct()
 	{
 		$this->basedirs = array();
 		$this->driveaccess = array();
@@ -9979,7 +9979,7 @@ function loadvalidated($uid, $force=false)
 
 class kpuser
 {
-	function kpuser()
+	function __construct()
 	{
 		$this->allowed = false;
 		$this->row = false;
@@ -10923,7 +10923,7 @@ function cache_updateall()
 
 class hotalbum
 {
-	function hotalbum($chars='', $custom=false)
+	function __construct($chars='', $custom=false)
 	{
 		global $cfg;
 		$this->chars = $chars;
