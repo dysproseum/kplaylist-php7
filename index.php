@@ -2291,6 +2291,7 @@ if ($cfg['authtype'] == 2)
 function myescstr($str)
 {
 	global $mysqli;
+	$str = mb_convert_encoding($str, 'UTF-8', 'ISO-8859-1');
 	if (REALESCAPE && DBCONNECTION) return $mysqli->real_escape_string($str);
 	return $mysqli->escape_string($str);
 }
@@ -2411,8 +2412,13 @@ function db_free($res)
 function db_list_processes()
 {
 	global $mysqli;
-	$ids = array();
         $res = db_execquery("show processlist");
+	return $res;
+}
+
+function db_result_to_ids($res) {
+	global $mysqli;
+	$ids = array();
 	while($row = db_fetch_row($res)) {
 		$ids[$row[0]]= true;
         }
@@ -5764,7 +5770,8 @@ class caction
 		global $runinit;
 		if ($runinit['astream'])
 		{
-			$ids = db_list_processes();
+			$res = db_list_processes();
+			$ids = db_result_to_ids($res);
 			$res = db_execquery('SELECT h_id, mid FROM '.TBL_MHISTORY.' WHERE active = 1');
 			$timeout = time() - 30;
 			if ($res) while ($row = db_fetch_assoc($res)) if (!isset($ids[$row['mid']])) db_execquery('UPDATE '.TBL_MHISTORY.' SET active = 0 WHERE h_id = '.$row['h_id'].' AND utime < '.$timeout);
@@ -6206,7 +6213,7 @@ class kpfrontpage
 
 class genkpalbum
 {
-	function genkpalbum()
+	function __construct()
 	{
 		global $setctl;
 		$this->albumfiles = array();
@@ -6295,7 +6302,8 @@ class genkpalbum
 				{
 					$sid = $this->finddirimage($albumsearch);
 					$id3sid = $this->findid3v2image($albumsearch);
-		
+					// Artist column is 255 but allow space for base 64 conversion.
+					$artist = substr($artist, 0, 100);
 					db_execquery('INSERT INTO '.TBL_ALBUMCACHE.' SET album = "'.myescstr($album).'", artist = "'.myescstr($artist).'", id = '.$sid.', idid3 = '.$id3sid);
 				
 				}				
@@ -10521,7 +10529,7 @@ function showviewform()
 
 class genlist
 {
-	function genlist()
+	function __construct()
 	{
 		$this->rows = 0;
 		$this->query = '';
@@ -11079,7 +11087,7 @@ function nextch($ssearch,$pos)
 
 class kpsearch
 {
-	function kpsearch()
+	function __construct()
 	{
 		global $ud;
 		
@@ -11315,7 +11323,7 @@ class kpsearch
 
 class navi
 {
-	function navi($navid = 0, $rows = 0, $start=false, $pos=0)
+	function __construct($navid = 0, $rows = 0, $start=false, $pos=0)
 	{
 		$this->gui = true;
 		
@@ -11530,7 +11538,12 @@ function search_qupdorins($id, $finf, $filein, $md5, $drive, $mtime, $f_stat, $f
 	}
 
 	if ($id > 0) $sql = 'UPDATE '; else $sql = 'INSERT INTO ';
-	
+
+	// Convert UTF-16 byte order chars.
+	$finf['comment'] = ltrim($finf['comment'], "\xFF\xFE");
+	// Leave space for storing base 64 in varchar 255 column.
+	$finf['comment'] = substr($finf['comment'], 0, 100);
+
 	$sql .= TBL_SEARCH.' SET title = "'.myescstr($finf['title']).'", fname = "'.myescstr(kp_basename($filein)).'", fpath = "'.myescstr(getrelative($filein)).'", album = "'.myescstr($finf['album']).'", artist = "'.myescstr($finf['artist']).'", md5 = "'.$md5.'", free = "'.myescstr(kp_basename($utf_filein)).'", genre = '. vernumset($finf['genre'],255).', lengths = '.$finf['lengths'].', ratemode = '.$finf['ratemode'].', bitrate = '.(int)$finf['bitrate'].', drive = '.$drive.', ltime = '.$ltime.', mtime = '.$mtime.', dirname = "'.myescstr(getrelative($utf_filein)).'", f_stat = '.$f_stat.', fsize = '.$fsize.', track = '.$finf['track'].', `year` = '.$finf['year'].', comment = "'.myescstr($finf['comment']).'", ftypeid = '.$finf['ftypeid'].', id3image = '.$finf['id3image'].', xid = '.$xid;
 	if ($id > 0) $sql .= ' WHERE id = '.$id; else $sql .= ', `date` = '.$mtime;
 	
@@ -12161,7 +12174,7 @@ function search_updateautomatic($user, $host, $waittrans=0)
 
 class coverinterface
 {
-	function coverinterface()
+	function __construct()
 	{
 		global $setctl;
 		
@@ -12387,7 +12400,7 @@ class coverinterface
 
 class imagecache
 {
-	function imagecache($sid, $w, $h, $id3v2=false)
+	function __construct($sid, $w, $h, $id3v2=false)
 	{
 		$this->w = $w;
 		$this->h = $h;
@@ -13399,7 +13412,7 @@ class asxgen
 
 class m3ugenerator
 {
-	function m3ugenerator()
+	function __construct()
 	{
 		$this->extension = 'm3u';
 		$pltype = db_guinfo('pltype');
@@ -14016,7 +14029,7 @@ function Kplay_senduser2($sid, $inline=0, $download=false, $tid = 0)
 
 class pollhid
 {
-	function pollhid($hid, $fsize, $fpos)
+	function __construct($hid, $fsize, $fpos)
 	{
 		$this->hid = $hid;
 		$this->fsize = $fsize;
@@ -14125,7 +14138,7 @@ function print_album($drive, $name, $pdir, $ainf=null, $mark='', $hits = 0, $alb
 
 class filedesc
 {
-	function filedesc($fname='')
+	function __construct($fname='')
 	{
 		global $streamtypes;
 		
@@ -14431,6 +14444,10 @@ function get_file_info($name, $return_finfo=false)
 						$ret['track'] = (int)$id3->track;
 						$ret['year'] = (int)$id3->year;
 						$ret['comment'] = trim($id3->comment);
+						// Convert UTF-16 byte order chars.
+						$ret['comment'] = ltrim($id3->comment, "\xFF\xFE");
+						// Leave space for storing base 64 in varchar 255 column.
+						$ret['comment'] = substr($ret['comment'], 0, 100);
 						if ($id3->bitrate) $ret['bitrate'] = $id3->bitrate;
 						if ($id3->lengths > 0) $ret['lengths'] = $id3->lengths;
 						$ret['genre'] = $id3->genreno;
@@ -15591,7 +15608,7 @@ class kpdir
 
 class file2
 {	
-	function file2($sid = -1, $id3 = false, $dbrow=false)
+	function __construct($sid = -1, $id3 = false, $dbrow=false)
 	{
 		$this->fexists = false;
 		$this->fullpath = '';
