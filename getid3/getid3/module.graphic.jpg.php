@@ -109,8 +109,15 @@ class getid3_jpg extends getid3_handler
 
 			if (isset($info['jpg']['exif']['GPS']['GPSVersion'])) {
 				$version_subparts = array();
-				for ($i = 0; $i < 4; $i++) {
-					$version_subparts[$i] = ord(substr($info['jpg']['exif']['GPS']['GPSVersion'], $i, 1));
+				if (is_array($info['jpg']['exif']['GPS']['GPSVersion'])) {
+					for ($i = 0; $i < 4; $i++) {
+						$version_subparts[$i] = $info['jpg']['exif']['GPS']['GPSVersion'][$i];
+					}
+				}
+				else {
+					for ($i = 0; $i < 4; $i++) {
+						$version_subparts[$i] = ord(substr($info['jpg']['exif']['GPS']['GPSVersion'], $i, 1));
+					}
 				}
 				$info['jpg']['exif']['GPS']['computed']['version'] = 'v'.implode('.', $version_subparts);
 			}
