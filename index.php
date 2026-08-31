@@ -12993,7 +12993,14 @@ class kpgenres
 		if ($cfg['genre_auto_create'])
 		{
 			$gname = kp_tolower(trim($name));
-			
+
+			// Prevent duplicate insert.
+			$sql = 'SELECT * FROM '.TBL_GENRE.' WHERE name LIKE "'.myescstr($gname).'" LIMIT 10';
+			$res = db_execquery($sql);
+			if ($res->num_rows > 0) {
+				error_log("Prevent duplicate genre $gname");
+				return;
+			}
 			$sql = 'INSERT INTO '.TBL_GENRE.' SET name = "'.myescstr($gname).'"';
 			if (db_execquery($sql))
 			{
