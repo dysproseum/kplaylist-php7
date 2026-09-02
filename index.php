@@ -1849,7 +1849,7 @@ function jsfunctions()
 
 class kpwinjs
 {
-	function kpwinjs()
+	function __construct()
 	{
 		global $valuser, $setctl, $u_id, $u_cookieid, $cfg, $phpenv;
 
@@ -2629,7 +2629,7 @@ class settings
 
 class usersettings extends settings
 {
-	function usersettings($uid)
+	function __construct($uid)
 	{
 		settings::settings();
 		$this->table = TBL_UCONFIG;
@@ -4526,7 +4526,7 @@ if (isset($_GET['image']))
 
 class kprandomizer
 {
-	function kprandomizer()
+	function __construct()
 	{
 		$this->limit = 25;
 		$this->genre = -1;
@@ -5365,7 +5365,7 @@ class kbulletin
 
 class mailmp3
 {
-	function mailmp3()
+	function __construct()
 	{
 		$this->sid = -1;
 		$this->tomail = '';
@@ -5608,7 +5608,7 @@ class mailmp3
 
 class fupload
 {
-	function fupload()
+	function __construct()
 	{
 		global $cfg;
 
@@ -5728,7 +5728,7 @@ class fupload
 
 class krss
 {
-	function krss($title)
+	function __construct($title)
 	{
 		global $setctl, $phpenv;
 		$this->lf = "\r\n";
@@ -7241,7 +7241,7 @@ class playlistupload
 
 class kp_playlist
 {
-	function kp_playlist($listid=-1)
+	function __construct($listid=-1)
 	{
 		$this->listid = -1;
 		$this->name = '';
@@ -7831,7 +7831,7 @@ function db_getplaylist($u_id)
 
 class kpradio
 {
-	function kpradio($stationid = 0)
+	function __construct($stationid = 0)
 	{
 		$this->stationid = $stationid;
 		$this->name = '';
@@ -9240,7 +9240,7 @@ function adminlogout($uid)
 
 class saveuser
 {
-	function saveuser()
+	function __construct()
 	{
 		$this->kpu = new kpuser();
 		$this->id = -1;
@@ -9670,7 +9670,7 @@ die();
 
 class userhistory
 {
-	function userhistory()
+	function __construct()
 	{
 		$this->rows = 0;
 		$this->uid = -1;
@@ -10419,7 +10419,7 @@ function show_useroptions($admin=false, $id, $msg='', $reload = false)
 
 class swfront
 {
-	function swfront()
+	function __construct()
 	{
 		global $valuser;
 
@@ -12935,7 +12935,7 @@ $genresid3 = array(0   => 'Blues', 1 => 'Classic Rock', 2 => 'Country', 3 => 'Da
 
 class kpgenres
 {
-	function kpgenres()
+	function __construct()
 	{
 	}
 
@@ -13382,7 +13382,7 @@ function httpstreamheader3($ftype=1, $sid, $f2, $unicode=false)
 
 class asxgen
 {
-	function asxgen()
+	function __construct()
 	{
 		$this->crlf = "\r\n";
 		$this->data = '<ASX version="3">'.$this->crlf.'<TITLE>WMA kPlaylist</TITLE>'.$this->crlf;		
@@ -13477,7 +13477,7 @@ class m3ugenerator
 
 class m3ugen
 {
-	function m3ugen()
+	function __construct()
 	{
 		$this->data = '';
 		$this->crlf = "\r\n";
@@ -13536,7 +13536,7 @@ class m3ugen
 
 class m3ugen8
 {
-	function m3ugen8()
+	function __construct()
 	{
 		$this->data = '';
 		$this->crlf = "\r\n";
@@ -14974,7 +14974,7 @@ function kplaylist_filelist($pwd, $d, $n3)
 
 class kparchiver
 {
-	function kparchiver()
+	function __construct()
 	{
 		$this->files = array();
 		$this->tempfile = '';
@@ -15845,7 +15845,7 @@ class kphttpq
 
 class networkinstance
 {
-	function networkinstance($nid=0, $enabled=0, $url='', $username='', $password='')
+	function __construct($nid=0, $enabled=0, $url='', $username='', $password='')
 	{
 		$this->nid = $nid;
 		$this->enabled = $enabled;
@@ -15968,7 +15968,7 @@ class networkdb
 
 class kpnetwork
 {
-	function kpnetwork()
+	function __construct()
 	{
 		$this->netdata = array();
 		$this->predata = array();
@@ -16304,7 +16304,7 @@ class kpnetwork
 
 class kpxspf
 {
-	function kpxspf()
+	function __construct()
 	{
 		$this->crlf = "\r\n";
 		$this->data = '';
@@ -16377,7 +16377,7 @@ class kpxspf
 
 class jwplayer
 {
-	function jwplayer()
+	function __construct()
 	{
 		$this->crlf = "\r\n";
 		$this->data = '';
@@ -16610,7 +16610,7 @@ class jwplayer
 
 class jwplayer6
 {
-	function jwplayer6()
+	function __construct()
 	{
 		$this->crlf = "\r\n";
 		$this->data = '';
