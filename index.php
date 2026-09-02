@@ -1488,13 +1488,16 @@ function kprintheader($title='', $ajax=0, $addonload='')
 
 	if ($setctl->get('includeheaders')) 
 	{
-	?>
+		if (UTF8MODE) $charset = 'UTF-8';
+		else $charset = get_lang(1);
+		?>
+
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
 		<title><?php echo $title; ?></title>
 		<!-- kp build <?php echo $app_build; ?> -->
-		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo get_lang(1); ?>"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $charset; ?>"/>
 		<?php if ($setctl->get('publicrssfeed')) 
 		{
 			?>
@@ -2067,7 +2070,7 @@ function checkchs($in, $conv=true)
 		$ret = @iconv($cfg['filesystemcharset'], get_lang(1).'//TRANSLIT', $in);
 		if ($ret != false) $in = $ret;
 	}
-	$str = @htmlentities($in, ENT_QUOTES, get_lang(1));
+	$str = @htmlspecialchars($in, ENT_QUOTES, get_lang(1));
 	if (strlen($str) > 0) return $str;
 
 	return $in; 
@@ -2249,7 +2252,7 @@ function db_gconnect()
 
 }
 
-//if (!function_exists('mysql_connect')) die('Function \'mysql_connect()\' does not exist! You need to compile PHP with MySQL support or enable MySQL support in your php configuration.');
+if (!function_exists('mysqli_connect')) die('Function \'mysqli_connect()\' does not exist! You need to compile PHP with MySQL support or enable MySQL support in your php configuration.');
 
 if (function_exists('mysql_real_escape_string')) define('REALESCAPE', true); else define('REALESCAPE', false);
 
@@ -2291,14 +2294,13 @@ if ($cfg['authtype'] == 2)
 function myescstr($str)
 {
 	global $mysqli;
-	$str = mb_convert_encoding($str, 'UTF-8', 'ISO-8859-1');
 	if (REALESCAPE && DBCONNECTION) return $mysqli->real_escape_string($str);
 	return $mysqli->escape_string($str);
 }
 
 class kpdbconnection
 {
-	function kpdbconnection($query='')
+	function __construct($query='')
 	{
 		$this->query = $query;
 		$this->res = false;
@@ -2989,7 +2991,7 @@ if (DBCONNECTION)
 
 class kpmysqltable
 {
-	function kpmysqltable()
+	function __construct()
 	{
 		$this->install_sql = array();
 		$this->install_sql_user = array();
@@ -6315,7 +6317,7 @@ class genkpalbum
 
 class kpsqlinstall
 {
-	function kpsqlinstall()
+	function __construct()
 	{
 		global $db;
 		$this->oldbuild = 0;
@@ -6373,8 +6375,8 @@ class kpsqlinstall
 							{
 								if (isset($utfconv[$row['Field']]))
 								{
-									if ($row['Collation'] != 'utf8_general_ci')
-										$sql[] = 'ALTER TABLE '.$name.' CHANGE `'.$row['Field'].'` `'.$row['Field'].'` '.$row['Type'].' CHARACTER SET utf8';
+									if ($row['Collation'] != 'utf8mb4_0900_ai_ci')
+										$sql[] = 'ALTER TABLE '.$name.' CHANGE `'.$row['Field'].'` `'.$row['Field'].'` '.$row['Type'].' CHARACTER SET utf8mb4';
 								}	
 							}
 						}
@@ -6617,7 +6619,7 @@ class kpsqlinstall
 
 		if ($mysqli) 
 		{
-			$this->mysqlserverv = $mysqli->get_server_info();
+			$this->mysqlserverv = $mysqli->server_info;
 
 			$kpsql = new kpmysqltable();
 			$installdb = $kpsql->getinstallsql();
@@ -6639,7 +6641,7 @@ class kpsqlinstall
 					{	
 						// ok, now relogin
 						mysql_close($link);
-						$link = @mysqli_connect($db['host'], $db['user'], $db['pass'], true);
+						$link = new mysqli($db['host'], $db['user'], $db['pass'], true);
 						if ($link) 
 						{
 							$dbaccess = true;
@@ -7053,20 +7055,20 @@ class kpsqlinstall
 		
 		$error = '';
 		
-		$link = @mysqli_connect($db['host'], $this->user, $this->pass, true);
-		if ($link)
+		$mysqli = new mysqli($db['host'], $this->user, $this->pass, $db['name']);
+		if ($mysqli)
 		{
-			$this->mysqlserverv = mysql_get_server_info($link);			
+			$this->mysqlserverv = $mysqli->server_info;
 
-			if (mysqli_select_db($db['name'], $link))
+			if ($mysqli->select_db($db['name']))
 			{
 				for ($i=0,$c=count($sql);$i<$c;$i++)
 				{
 					if (strlen($sql[$i]) > 0)
 					{
-						if (!$mysqli->query($sql[$i], $link))
+						if (!$mysqli->query($sql[$i]))
 						{
-							$error = 'Could not execute: '.$sql[$i].'<br/>MySQL response: '.mysqli_error($link).'<br/>';
+							$error = 'Could not execute: '.$sql[$i].'<br/>MySQL response: '.$mysqli->error.'<br/>';
 							break;
 						}
 					}
@@ -11535,6 +11537,7 @@ function search_qupdorins($id, $finf, $filein, $md5, $drive, $mtime, $f_stat, $f
 	if (UTF8MODE) 
 	{
 		if (!mb_check_encoding($filein, 'UTF-8')) $utf_filein = mb_convert_encoding($filein, 'UTF-8', $cfg['utf8_translate_from']);		
+		$title = mb_convert_encoding(myescstr($finf['title']), 'UTF-8', $cfg['utf8_translate_from']);
 	}
 
 	if ($id > 0) $sql = 'UPDATE '; else $sql = 'INSERT INTO ';
@@ -11544,7 +11547,7 @@ function search_qupdorins($id, $finf, $filein, $md5, $drive, $mtime, $f_stat, $f
 	// Leave space for storing base 64 in varchar 255 column.
 	$finf['comment'] = substr($finf['comment'], 0, 100);
 
-	$sql .= TBL_SEARCH.' SET title = "'.myescstr($finf['title']).'", fname = "'.myescstr(kp_basename($filein)).'", fpath = "'.myescstr(getrelative($filein)).'", album = "'.myescstr($finf['album']).'", artist = "'.myescstr($finf['artist']).'", md5 = "'.$md5.'", free = "'.myescstr(kp_basename($utf_filein)).'", genre = '. vernumset($finf['genre'],255).', lengths = '.$finf['lengths'].', ratemode = '.$finf['ratemode'].', bitrate = '.(int)$finf['bitrate'].', drive = '.$drive.', ltime = '.$ltime.', mtime = '.$mtime.', dirname = "'.myescstr(getrelative($utf_filein)).'", f_stat = '.$f_stat.', fsize = '.$fsize.', track = '.$finf['track'].', `year` = '.$finf['year'].', comment = "'.myescstr($finf['comment']).'", ftypeid = '.$finf['ftypeid'].', id3image = '.$finf['id3image'].', xid = '.$xid;
+	$sql .= TBL_SEARCH.' SET title = "'.$title.'", fname = "'.myescstr(kp_basename($filein)).'", fpath = "'.myescstr(getrelative($filein)).'", album = "'.myescstr($finf['album']).'", artist = "'.myescstr($finf['artist']).'", md5 = "'.$md5.'", free = "'.myescstr(kp_basename($utf_filein)).'", genre = '. vernumset($finf['genre'],255).', lengths = '.$finf['lengths'].', ratemode = '.$finf['ratemode'].', bitrate = '.(int)$finf['bitrate'].', drive = '.$drive.', ltime = '.$ltime.', mtime = '.$mtime.', dirname = "'.myescstr(getrelative($utf_filein)).'", f_stat = '.$f_stat.', fsize = '.$fsize.', track = '.$finf['track'].', `year` = '.$finf['year'].', comment = "'.myescstr($finf['comment']).'", ftypeid = '.$finf['ftypeid'].', id3image = '.$finf['id3image'].', xid = '.$xid;
 	if ($id > 0) $sql .= ' WHERE id = '.$id; else $sql .= ', `date` = '.$mtime;
 	
 	return $sql;
@@ -15282,7 +15285,7 @@ class kparchiver
 
 class kpdir
 {
-	function kpdir()
+	function __construct()
 	{
 		$this->dirlist = array();
 		$this->pwd = '';
