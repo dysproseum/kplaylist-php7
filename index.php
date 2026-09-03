@@ -10723,7 +10723,7 @@ class genlist
 				break;
 		}
 
-		$this->query = 'SELECT s.album, s.artist, s.dirname, count(*) as hits FROM '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s WHERE ';
+		$this->query = 'SELECT s.album, s.artist, ANY_VALUE(s.dirname), count(*) as hits FROM '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s WHERE ';
 		if ($uxfrom != 0) $this->query .= 'h.utime >= '.$uxfrom.' AND h.utime <= '.$uxto.' AND ';
 		$this->query .= 'trim(s.album) != ""'.$bd->genxdrive('s.drive').' AND h.s_id = s.id GROUP BY s.album,s.artist HAVING hits >= '.$cfg['whatshotminimumhits'].' ORDER BY hits DESC';
 
@@ -10768,7 +10768,7 @@ class genlist
 	{
 		global $setctl, $phpenv, $bd;
 
-		$this->query = 'SELECT id,drive,dirname,fsize,date,free,album,artist,xid,COUNT(*) as titles,SUM(lengths) as lengths, year, genre, fpath, fname FROM '.TBL_SEARCH.' WHERE trim(album) != ""'.$bd->genxdrive().' '.grpsql().' ORDER BY date DESC';
+		$this->query = 'SELECT ANY_VALUE(id), drive, ANY_VALUE(dirname), ANY_VALUE(fsize), ANY_VALUE(date), ANY_VALUE(free), album, artist, ANY_VALUE(xid), COUNT(*) as titles, SUM(lengths) as lengths, ANY_VALUE(year), ANY_VALUE(genre), ANY_VALUE(fpath), ANY_VALUE(fname) FROM '.TBL_SEARCH.' WHERE trim(album) != ""'.$bd->genxdrive().' '.grpsql().', date ORDER BY date DESC';
 
 		if ($from && $to) $this->query .= ' LIMIT '.$from.','.$to; else
 			if ($to)  $this->query .= ' LIMIT '.$to;
@@ -10839,7 +10839,7 @@ class genlist
 			
 			if (!isset($row['lengths']))
 			{
-				$sql = 'SELECT *,count(*) as titles, sum(lengths) as lengths FROM '.TBL_SEARCH.' WHERE dirname = "'.myescstr($row['dirname']).'" AND artist = "'.myescstr($row['artist']).'" AND album = "'.myescstr($row['album']).'" GROUP BY dirname';
+				$sql = 'SELECT dirname,count(*) as titles, sum(lengths) as lengths FROM '.TBL_SEARCH.' WHERE dirname = "'.myescstr($row['dirname']).'" AND artist = "'.myescstr($row['artist']).'" AND album = "'.myescstr($row['album']).'" GROUP BY dirname';
 				$result2 = db_execquery($sql);
 				$row = db_fetch_assoc($result2);
 			}					
@@ -10916,7 +10916,7 @@ function updatehotlist()
 {
 	global $bd;
 	$hotsels = '';
-	$qres = db_execquery('SELECT LOWER(SUBSTRING(artist,1,1)) AS ch FROM '.TBL_SEARCH.' WHERE TRIM(album) != "" AND TRIM(artist) != ""'.$bd->genxdrive().' GROUP BY SUBSTRING(artist,1,1)', true);
+	$qres = db_execquery('SELECT LOWER(SUBSTRING(artist,1,1)) AS ch FROM '.TBL_SEARCH.' WHERE TRIM(album) != "" AND TRIM(artist) != ""'.$bd->genxdrive().' GROUP BY ch', true);
 	while ($row = db_fetch_row($qres)) $hotsels .= $row[0];
 	updatecache(10, $hotsels);
 	return $hotsels;
@@ -11533,6 +11533,7 @@ function search_qupdorins($id, $finf, $filein, $md5, $drive, $mtime, $f_stat, $f
 	global $cfg;
 
 	$utf_filein = $filein;
+	$title = myescstr($finf['title']);
 
 	if (UTF8MODE) 
 	{
