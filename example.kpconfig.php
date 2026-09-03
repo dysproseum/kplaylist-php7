@@ -8,6 +8,7 @@ $cfg['window_x'] = 420;
 $cfg['window_y'] = 420;
 $cfg['enablegetid3'] = 1;
 $cfg['getid3include'] = 'getid3/getid3/getid3.php';
+$cfg['utf8mode'] = true;
 
 // Database connection.
 $cfg['db_host'] = 'localhost';
