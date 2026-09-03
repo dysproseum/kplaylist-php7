@@ -8,8 +8,8 @@
 //  see readme.txt for more details                            //
 /////////////////////////////////////////////////////////////////
 //                                                             //
-// module.archive.xz.php                                       //
-// module for analyzing XZ files                               //
+// module.misc.gpx.php                                        //
+// module for analyzing gpx files                             //
 // dependencies: NONE                                          //
 //                                                            ///
 /////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@ if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that acce
 	exit;
 }
 
-class getid3_xz extends getid3_handler
+class getid3_gpx extends getid3_handler
 {
 	/**
 	 * @return bool
@@ -26,17 +26,9 @@ class getid3_xz extends getid3_handler
 	public function Analyze() {
 		$info = &$this->getid3->info;
 
-		$this->fseek($info['avdataoffset']);
-		$xzheader = $this->fread(6);
+		$info['fileformat'] = 'gpx';
 
-		// https://tukaani.org/xz/xz-file-format-1.0.4.txt
-		$info['xz']['stream_header']['magic'] = substr($xzheader, 0, 6);
-		if ($info['xz']['stream_header']['magic'] != "\xFD".'7zXZ'."\x00") {
-			$this->error('Invalid XZ stream header magic (expecting FD 37 7A 58 5A 00, found '.getid3_lib::PrintHexBytes($info['xz']['stream_header']['magic']).') at offset '.$info['avdataoffset']);
-			return false;
-		}
-		$info['fileformat'] = 'xz';
-		$this->error('XZ parsing not enabled in this version of getID3() ['.$this->getid3->version().']');
+		$this->error('gpx parsing not enabled in this version of getID3()');
 		return false;
 
 	}

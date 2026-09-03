@@ -18,6 +18,123 @@
 Version History
 ===============
 
+1.9.25: [2026-03-10] James Heinrich :: 1.9.25-202603060942
+	* #452 better handle some Quicktime metadata
+	* #452 handle ISO639-2/T Quicktime language code
+	* #452 Quicktime incorrect "keys" mapping
+	* #474 WriteMetaFLAC fails on new files on Windows
+	* #476 ID3v2 errors with ord()
+	* #477 int conversion warning in PHP8.5
+	* #477 QT skip comment copy on empty data
+	* #480 allow metadata extraction from streamable FLAC files
+	* #481 ID3v1 should not parse files shorter than 128 bytes
+	* #482 MIDI: Fix duration for files without tempo events
+	* #483 MIDI: Check for minimum filessize of a valid MIDI header
+	* #484 stop calling imagedestroy in PHP8+
+	* #485 Matroska: scan for duration when not provided by metadata
+	* #486 null coalescing operator not available in PHP5
+	* #486 WAV.PCM detected as WAV.MP3
+	* #487 Matroska: Handle missing TrackUID
+	* #488 GPS computed timestamp ignoring date
+	* XML XXE
+	* add PHP_INT_MIN for PHP older than 5.6
+	* IVF fix warnings, improve framerate
+	* xml_parser_free deprecated in PHP8.5
+
+1.9.24: [2025-10-09] James Heinrich :: 1.9.24-202509040923
+	» #462 add HEIF image support
+	» #438 add detection support .gpx files
+	* #470 PHP8.5 compatibility
+	* #468 WAV files with RIFF and data chunk sizes of zero
+	* #463 warning on null description
+	* #460 DSS division by zero
+	* #458 errors with MP3 free-format
+	* #452 incorrect parsing of Quicktime files
+	* #450 ogg file formats wrong duration
+	* #449 Lyrics3 did not respect option_tag_apetag
+	* #444 ID3v2 ininitialized string offset 0
+	* #442 PrintHexBytes warning when $string is not a string
+	* #440 MPEG duration error due to error in GOP parsing
+	* #435 compatibility fix for PHP 5.3
+	* #434 do not crash on empty seconds in DSS module
+	* #430 garbage extracted from a RIFF tag in an AIFF file
+	* #429 libxml_disable_entity_loader is deprecated
+	* quicktime parse com.android.capture.fps
+	* tar allow duplicate filenames
+
+1.9.23: [2023-10-19] James Heinrich :: 1.9.23-202310190849
+	» add detection support for 7-zip archives
+	* #424 RIFF Undefined index "data"
+	* #421 tag.xmp remove GLOBALS
+	* #419 Quicktime Undefined index "time_scale"
+	* #418 tag.xmp zero-length fread
+	* #414 Quicktime bitrate for mp4 audio
+	* #413 Quicktime audio metadata
+	* #410 MPEG-1 pixel aspect ratio
+	* #407 PHP 8.1 compatibility
+	* #404 guard against division by zero
+	* #402 remove utf8_encode/utf8_decode
+
+1.9.22: [2022-09-29] James Heinrich :: 1.9.22-202207161647
+	* bugfix #387 fails to detect h265 video codec (QuickTime)
+	* bugfix #385 Quicktime extended atom size
+	* bugfix #378 AAC bitrate cache warning
+	* bugfix #376 simplexml_load_string improvments
+	* bugfix #374 MOD improved SoundTracker support
+	* bugfix #371 fragmented MP4 unsupported warning
+	* bugfix #369 fix remote URLs pattern
+	* bugfix #366 change @error-suppress to isset (quicktime)
+	* bugfix #365 ZIP array offset on value of type int
+	* bugfix #364 add support for ANIMEXTS1.0 in GIF files
+	* bugfix #363 ASF improve support of Header Extension Object data
+	* bugfix #362 version update for ramsey/composer-install
+	* bugfix #359 MPEG-2 aspect ratio divide-by-zero
+	* bugfix #358 free format mp3 bitrate
+	* bugfix #355 undefined array key in ID3v2 chapters
+	* bugfix #352 avoid false detection of Musepack format
+	* bugfix #351 Incorrect length passed to fread on a flac file
+	* bugfix #348 more targeted usage of clearstatcache calls
+	* bugfix #347 fixed reported by PHPStan v0.12.99
+	* bugfix QuickTime support 'ID32' frame (ID3v2 inside QT)
+	* bugfix fix various PHP 8.1 issues
+	* bugfix PDF prevent undefined index
+
+1.9.21: [2021-09-22] James Heinrich :: 1.9.21-202109171300
+	» add support for RIFF.guan
+	¤ add ID3v1 genres 148-191
+	¤ torrent files easy access key
+	* bugfix #342 demo.mysqli.php XSS
+	* bugfix #340 default quicktime.ReturnAtomData=false
+	* bugfix #338 improved transliterated tag merging
+	* bugfix #337 PHP 8.1 compatibility
+	* bugfix #335 PHP 8.1 compatibility
+	* bugfix #330 QuicktimeContentRatingLookup 'rtng'
+	* bugfix #328 throw exception if a resource seek fails
+	* bugfix #326 improved temporary path detection
+	* bugfix #325 INF/NAN constants instead of float/string
+	* bugfix #324 Nikon-specific atoms in QuickTime
+	* bugfix #321 prevent errors on corrupt JPEGs
+	* bugfix #319 prevent error in ZIP contents MIME detect
+	* bugfix #315 ID3v2 USLT check for data length
+	* bugfix #308 silence libxml deprecation warning
+	* bugfix #304 undefined index: comments
+	* bugfix #299 decbin type error in PHP8
+	* bugfix #298 error scanning WAV via file pointer
+	* bugfix #294 replace IMG_JPG with IMAGETYPE_JPEG
+	* bugfix #292 PDFs take long time to parse
+	* bugfix #291 divzero QuickTime with no playable content
+	* bugfix #290 detect ID3v1 on minimal example files
+	* bugfix #289 avoid crash on invalid TIFF
+	* bugfix #287 mp3 CBR detected as VBR
+	* bugfix #286 corrupt mp3 can cause slow scanning
+	* bugfix #284 allow "0" as a value in tags
+	* bugfix #283 array offset on value of type int
+	* bugfix #277 ID3v2 add new Turkish Lira TRY
+	* bugfix #270 demo.mysqli.php LONGBLOB
+	* bugfix #266 fix possible endless loop on PNG
+	* bugfix #257 undefined variables
+	* bugfix #207 improved LAME version string parsing
+
 1.9.20: [2020-06-30] James Heinrich :: 1.9.20-202006061653
 	» add support for DSDIFF audio
 	» add support for TAK lossess audio
