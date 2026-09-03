@@ -1488,13 +1488,16 @@ function kprintheader($title='', $ajax=0, $addonload='')
 
 	if ($setctl->get('includeheaders')) 
 	{
-	?>
+		if (UTF8MODE) $charset = 'UTF-8';
+		else $charset = get_lang(1);
+		?>
+
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
 		<title><?php echo $title; ?></title>
 		<!-- kp build <?php echo $app_build; ?> -->
-		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo get_lang(1); ?>"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $charset; ?>"/>
 		<?php if ($setctl->get('publicrssfeed')) 
 		{
 			?>
@@ -1846,7 +1849,7 @@ function jsfunctions()
 
 class kpwinjs
 {
-	function kpwinjs()
+	function __construct()
 	{
 		global $valuser, $setctl, $u_id, $u_cookieid, $cfg, $phpenv;
 
@@ -2067,7 +2070,7 @@ function checkchs($in, $conv=true)
 		$ret = @iconv($cfg['filesystemcharset'], get_lang(1).'//TRANSLIT', $in);
 		if ($ret != false) $in = $ret;
 	}
-	$str = @htmlentities($in, ENT_QUOTES, get_lang(1));
+	$str = @htmlspecialchars($in, ENT_QUOTES, get_lang(1));
 	if (strlen($str) > 0) return $str;
 
 	return $in; 
@@ -2076,7 +2079,7 @@ function checkchs($in, $conv=true)
 
 class kptheme
 {
-	function kptheme()
+	function __construct()
 	{
 		$this->themes = array();
 		$this->theme = false;
@@ -2249,7 +2252,7 @@ function db_gconnect()
 
 }
 
-//if (!function_exists('mysql_connect')) die('Function \'mysql_connect()\' does not exist! You need to compile PHP with MySQL support or enable MySQL support in your php configuration.');
+if (!function_exists('mysqli_connect')) die('Function \'mysqli_connect()\' does not exist! You need to compile PHP with MySQL support or enable MySQL support in your php configuration.');
 
 if (function_exists('mysql_real_escape_string')) define('REALESCAPE', true); else define('REALESCAPE', false);
 
@@ -2297,7 +2300,7 @@ function myescstr($str)
 
 class kpdbconnection
 {
-	function kpdbconnection($query='')
+	function __construct($query='')
 	{
 		$this->query = $query;
 		$this->res = false;
@@ -2411,8 +2414,13 @@ function db_free($res)
 function db_list_processes()
 {
 	global $mysqli;
-	$ids = array();
         $res = db_execquery("show processlist");
+	return $res;
+}
+
+function db_result_to_ids($res) {
+	global $mysqli;
+	$ids = array();
 	while($row = db_fetch_row($res)) {
 		$ids[$row[0]]= true;
         }
@@ -2427,7 +2435,7 @@ function db_execcheck($query)
 
 class settings
 {
-	function settings()
+	function __construct()
 	{
 		$this->dbperform = true;
 		$this->table = TBL_CONFIG;
@@ -2621,7 +2629,7 @@ class settings
 
 class usersettings extends settings
 {
-	function usersettings($uid)
+	function __construct($uid)
 	{
 		settings::settings();
 		$this->table = TBL_UCONFIG;
@@ -2737,7 +2745,7 @@ if (db_gconnect())
 
 class basedir
 {
-	function basedir()
+	function __construct()
 	{
 		$this->basedirs = array();
 		$this->driveaccess = array();
@@ -2983,7 +2991,7 @@ if (DBCONNECTION)
 
 class kpmysqltable
 {
-	function kpmysqltable()
+	function __construct()
 	{
 		$this->install_sql = array();
 		$this->install_sql_user = array();
@@ -4518,7 +4526,7 @@ if (isset($_GET['image']))
 
 class kprandomizer
 {
-	function kprandomizer()
+	function __construct()
 	{
 		$this->limit = 25;
 		$this->genre = -1;
@@ -5357,7 +5365,7 @@ class kbulletin
 
 class mailmp3
 {
-	function mailmp3()
+	function __construct()
 	{
 		$this->sid = -1;
 		$this->tomail = '';
@@ -5600,7 +5608,7 @@ class mailmp3
 
 class fupload
 {
-	function fupload()
+	function __construct()
 	{
 		global $cfg;
 
@@ -5720,7 +5728,7 @@ class fupload
 
 class krss
 {
-	function krss($title)
+	function __construct($title)
 	{
 		global $setctl, $phpenv;
 		$this->lf = "\r\n";
@@ -5764,7 +5772,8 @@ class caction
 		global $runinit;
 		if ($runinit['astream'])
 		{
-			$ids = db_list_processes();
+			$res = db_list_processes();
+			$ids = db_result_to_ids($res);
 			$res = db_execquery('SELECT h_id, mid FROM '.TBL_MHISTORY.' WHERE active = 1');
 			$timeout = time() - 30;
 			if ($res) while ($row = db_fetch_assoc($res)) if (!isset($ids[$row['mid']])) db_execquery('UPDATE '.TBL_MHISTORY.' SET active = 0 WHERE h_id = '.$row['h_id'].' AND utime < '.$timeout);
@@ -6206,7 +6215,7 @@ class kpfrontpage
 
 class genkpalbum
 {
-	function genkpalbum()
+	function __construct()
 	{
 		global $setctl;
 		$this->albumfiles = array();
@@ -6295,7 +6304,8 @@ class genkpalbum
 				{
 					$sid = $this->finddirimage($albumsearch);
 					$id3sid = $this->findid3v2image($albumsearch);
-		
+					// Artist column is 255 but allow space for base 64 conversion.
+					$artist = substr($artist, 0, 100);
 					db_execquery('INSERT INTO '.TBL_ALBUMCACHE.' SET album = "'.myescstr($album).'", artist = "'.myescstr($artist).'", id = '.$sid.', idid3 = '.$id3sid);
 				
 				}				
@@ -6307,7 +6317,7 @@ class genkpalbum
 
 class kpsqlinstall
 {
-	function kpsqlinstall()
+	function __construct()
 	{
 		global $db;
 		$this->oldbuild = 0;
@@ -6365,8 +6375,8 @@ class kpsqlinstall
 							{
 								if (isset($utfconv[$row['Field']]))
 								{
-									if ($row['Collation'] != 'utf8_general_ci')
-										$sql[] = 'ALTER TABLE '.$name.' CHANGE `'.$row['Field'].'` `'.$row['Field'].'` '.$row['Type'].' CHARACTER SET utf8';
+									if ($row['Collation'] != 'utf8mb4_0900_ai_ci')
+										$sql[] = 'ALTER TABLE '.$name.' CHANGE `'.$row['Field'].'` `'.$row['Field'].'` '.$row['Type'].' CHARACTER SET utf8mb4';
 								}	
 							}
 						}
@@ -6609,7 +6619,7 @@ class kpsqlinstall
 
 		if ($mysqli) 
 		{
-			$this->mysqlserverv = $mysqli->get_server_info();
+			$this->mysqlserverv = $mysqli->server_info;
 
 			$kpsql = new kpmysqltable();
 			$installdb = $kpsql->getinstallsql();
@@ -6631,7 +6641,7 @@ class kpsqlinstall
 					{	
 						// ok, now relogin
 						mysql_close($link);
-						$link = @mysqli_connect($db['host'], $db['user'], $db['pass'], true);
+						$link = new mysqli($db['host'], $db['user'], $db['pass'], true);
 						if ($link) 
 						{
 							$dbaccess = true;
@@ -7045,20 +7055,20 @@ class kpsqlinstall
 		
 		$error = '';
 		
-		$link = @mysqli_connect($db['host'], $this->user, $this->pass, true);
-		if ($link)
+		$mysqli = new mysqli($db['host'], $this->user, $this->pass, $db['name']);
+		if ($mysqli)
 		{
-			$this->mysqlserverv = mysql_get_server_info($link);			
+			$this->mysqlserverv = $mysqli->server_info;
 
-			if (mysqli_select_db($db['name'], $link))
+			if ($mysqli->select_db($db['name']))
 			{
 				for ($i=0,$c=count($sql);$i<$c;$i++)
 				{
 					if (strlen($sql[$i]) > 0)
 					{
-						if (!$mysqli->query($sql[$i], $link))
+						if (!$mysqli->query($sql[$i]))
 						{
-							$error = 'Could not execute: '.$sql[$i].'<br/>MySQL response: '.mysqli_error($link).'<br/>';
+							$error = 'Could not execute: '.$sql[$i].'<br/>MySQL response: '.$mysqli->error.'<br/>';
 							break;
 						}
 					}
@@ -7231,7 +7241,7 @@ class playlistupload
 
 class kp_playlist
 {
-	function kp_playlist($listid=-1)
+	function __construct($listid=-1)
 	{
 		$this->listid = -1;
 		$this->name = '';
@@ -7821,7 +7831,7 @@ function db_getplaylist($u_id)
 
 class kpradio
 {
-	function kpradio($stationid = 0)
+	function __construct($stationid = 0)
 	{
 		$this->stationid = $stationid;
 		$this->name = '';
@@ -9230,7 +9240,7 @@ function adminlogout($uid)
 
 class saveuser
 {
-	function saveuser()
+	function __construct()
 	{
 		$this->kpu = new kpuser();
 		$this->id = -1;
@@ -9660,7 +9670,7 @@ die();
 
 class userhistory
 {
-	function userhistory()
+	function __construct()
 	{
 		$this->rows = 0;
 		$this->uid = -1;
@@ -9979,7 +9989,7 @@ function loadvalidated($uid, $force=false)
 
 class kpuser
 {
-	function kpuser()
+	function __construct()
 	{
 		$this->allowed = false;
 		$this->row = false;
@@ -10409,7 +10419,7 @@ function show_useroptions($admin=false, $id, $msg='', $reload = false)
 
 class swfront
 {
-	function swfront()
+	function __construct()
 	{
 		global $valuser;
 
@@ -10521,7 +10531,7 @@ function showviewform()
 
 class genlist
 {
-	function genlist()
+	function __construct()
 	{
 		$this->rows = 0;
 		$this->query = '';
@@ -10713,7 +10723,7 @@ class genlist
 				break;
 		}
 
-		$this->query = 'SELECT s.album, s.artist, s.dirname, count(*) as hits FROM '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s WHERE ';
+		$this->query = 'SELECT s.album, s.artist, ANY_VALUE(s.dirname), count(*) as hits FROM '.TBL_MHISTORY.' h, '.TBL_SEARCH.' s WHERE ';
 		if ($uxfrom != 0) $this->query .= 'h.utime >= '.$uxfrom.' AND h.utime <= '.$uxto.' AND ';
 		$this->query .= 'trim(s.album) != ""'.$bd->genxdrive('s.drive').' AND h.s_id = s.id GROUP BY s.album,s.artist HAVING hits >= '.$cfg['whatshotminimumhits'].' ORDER BY hits DESC';
 
@@ -10758,7 +10768,7 @@ class genlist
 	{
 		global $setctl, $phpenv, $bd;
 
-		$this->query = 'SELECT id,drive,dirname,fsize,date,free,album,artist,xid,COUNT(*) as titles,SUM(lengths) as lengths, year, genre, fpath, fname FROM '.TBL_SEARCH.' WHERE trim(album) != ""'.$bd->genxdrive().' '.grpsql().' ORDER BY date DESC';
+		$this->query = 'SELECT ANY_VALUE(id), drive, ANY_VALUE(dirname), ANY_VALUE(fsize), ANY_VALUE(date), ANY_VALUE(free), album, artist, ANY_VALUE(xid), COUNT(*) as titles, SUM(lengths) as lengths, ANY_VALUE(year), ANY_VALUE(genre), ANY_VALUE(fpath), ANY_VALUE(fname) FROM '.TBL_SEARCH.' WHERE trim(album) != ""'.$bd->genxdrive().' '.grpsql().', date ORDER BY date DESC';
 
 		if ($from && $to) $this->query .= ' LIMIT '.$from.','.$to; else
 			if ($to)  $this->query .= ' LIMIT '.$to;
@@ -10829,7 +10839,7 @@ class genlist
 			
 			if (!isset($row['lengths']))
 			{
-				$sql = 'SELECT *,count(*) as titles, sum(lengths) as lengths FROM '.TBL_SEARCH.' WHERE dirname = "'.myescstr($row['dirname']).'" AND artist = "'.myescstr($row['artist']).'" AND album = "'.myescstr($row['album']).'" GROUP BY dirname';
+				$sql = 'SELECT dirname,count(*) as titles, sum(lengths) as lengths FROM '.TBL_SEARCH.' WHERE dirname = "'.myescstr($row['dirname']).'" AND artist = "'.myescstr($row['artist']).'" AND album = "'.myescstr($row['album']).'" GROUP BY dirname';
 				$result2 = db_execquery($sql);
 				$row = db_fetch_assoc($result2);
 			}					
@@ -10906,7 +10916,7 @@ function updatehotlist()
 {
 	global $bd;
 	$hotsels = '';
-	$qres = db_execquery('SELECT LOWER(SUBSTRING(artist,1,1)) AS ch FROM '.TBL_SEARCH.' WHERE TRIM(album) != "" AND TRIM(artist) != ""'.$bd->genxdrive().' GROUP BY SUBSTRING(artist,1,1)', true);
+	$qres = db_execquery('SELECT LOWER(SUBSTRING(artist,1,1)) AS ch FROM '.TBL_SEARCH.' WHERE TRIM(album) != "" AND TRIM(artist) != ""'.$bd->genxdrive().' GROUP BY ch', true);
 	while ($row = db_fetch_row($qres)) $hotsels .= $row[0];
 	updatecache(10, $hotsels);
 	return $hotsels;
@@ -10923,7 +10933,7 @@ function cache_updateall()
 
 class hotalbum
 {
-	function hotalbum($chars='', $custom=false)
+	function __construct($chars='', $custom=false)
 	{
 		global $cfg;
 		$this->chars = $chars;
@@ -11079,7 +11089,7 @@ function nextch($ssearch,$pos)
 
 class kpsearch
 {
-	function kpsearch()
+	function __construct()
 	{
 		global $ud;
 		
@@ -11315,7 +11325,7 @@ class kpsearch
 
 class navi
 {
-	function navi($navid = 0, $rows = 0, $start=false, $pos=0)
+	function __construct($navid = 0, $rows = 0, $start=false, $pos=0)
 	{
 		$this->gui = true;
 		
@@ -11523,15 +11533,22 @@ function search_qupdorins($id, $finf, $filein, $md5, $drive, $mtime, $f_stat, $f
 	global $cfg;
 
 	$utf_filein = $filein;
+	$title = myescstr($finf['title']);
 
 	if (UTF8MODE) 
 	{
 		if (!mb_check_encoding($filein, 'UTF-8')) $utf_filein = mb_convert_encoding($filein, 'UTF-8', $cfg['utf8_translate_from']);		
+		$title = mb_convert_encoding(myescstr($finf['title']), 'UTF-8', $cfg['utf8_translate_from']);
 	}
 
 	if ($id > 0) $sql = 'UPDATE '; else $sql = 'INSERT INTO ';
-	
-	$sql .= TBL_SEARCH.' SET title = "'.myescstr($finf['title']).'", fname = "'.myescstr(kp_basename($filein)).'", fpath = "'.myescstr(getrelative($filein)).'", album = "'.myescstr($finf['album']).'", artist = "'.myescstr($finf['artist']).'", md5 = "'.$md5.'", free = "'.myescstr(kp_basename($utf_filein)).'", genre = '. vernumset($finf['genre'],255).', lengths = '.$finf['lengths'].', ratemode = '.$finf['ratemode'].', bitrate = '.(int)$finf['bitrate'].', drive = '.$drive.', ltime = '.$ltime.', mtime = '.$mtime.', dirname = "'.myescstr(getrelative($utf_filein)).'", f_stat = '.$f_stat.', fsize = '.$fsize.', track = '.$finf['track'].', `year` = '.$finf['year'].', comment = "'.myescstr($finf['comment']).'", ftypeid = '.$finf['ftypeid'].', id3image = '.$finf['id3image'].', xid = '.$xid;
+
+	// Convert UTF-16 byte order chars.
+	$finf['comment'] = ltrim($finf['comment'], "\xFF\xFE");
+	// Leave space for storing base 64 in varchar 255 column.
+	$finf['comment'] = substr($finf['comment'], 0, 100);
+
+	$sql .= TBL_SEARCH.' SET title = "'.$title.'", fname = "'.myescstr(kp_basename($filein)).'", fpath = "'.myescstr(getrelative($filein)).'", album = "'.myescstr($finf['album']).'", artist = "'.myescstr($finf['artist']).'", md5 = "'.$md5.'", free = "'.myescstr(kp_basename($utf_filein)).'", genre = '. vernumset($finf['genre'],255).', lengths = '.$finf['lengths'].', ratemode = '.$finf['ratemode'].', bitrate = '.(int)$finf['bitrate'].', drive = '.$drive.', ltime = '.$ltime.', mtime = '.$mtime.', dirname = "'.myescstr(getrelative($utf_filein)).'", f_stat = '.$f_stat.', fsize = '.$fsize.', track = '.$finf['track'].', `year` = '.$finf['year'].', comment = "'.myescstr($finf['comment']).'", ftypeid = '.$finf['ftypeid'].', id3image = '.$finf['id3image'].', xid = '.$xid;
 	if ($id > 0) $sql .= ' WHERE id = '.$id; else $sql .= ', `date` = '.$mtime;
 	
 	return $sql;
@@ -12161,7 +12178,7 @@ function search_updateautomatic($user, $host, $waittrans=0)
 
 class coverinterface
 {
-	function coverinterface()
+	function __construct()
 	{
 		global $setctl;
 		
@@ -12387,7 +12404,7 @@ class coverinterface
 
 class imagecache
 {
-	function imagecache($sid, $w, $h, $id3v2=false)
+	function __construct($sid, $w, $h, $id3v2=false)
 	{
 		$this->w = $w;
 		$this->h = $h;
@@ -12919,7 +12936,7 @@ $genresid3 = array(0   => 'Blues', 1 => 'Classic Rock', 2 => 'Country', 3 => 'Da
 
 class kpgenres
 {
-	function kpgenres()
+	function __construct()
 	{
 	}
 
@@ -12980,7 +12997,14 @@ class kpgenres
 		if ($cfg['genre_auto_create'])
 		{
 			$gname = kp_tolower(trim($name));
-			
+
+			// Prevent duplicate insert.
+			$sql = 'SELECT * FROM '.TBL_GENRE.' WHERE name LIKE "'.myescstr($gname).'" LIMIT 10';
+			$res = db_execquery($sql);
+			if ($res->num_rows > 0) {
+				error_log("Prevent duplicate genre $gname");
+				return;
+			}
 			$sql = 'INSERT INTO '.TBL_GENRE.' SET name = "'.myescstr($gname).'"';
 			if (db_execquery($sql))
 			{
@@ -13359,7 +13383,7 @@ function httpstreamheader3($ftype=1, $sid, $f2, $unicode=false)
 
 class asxgen
 {
-	function asxgen()
+	function __construct()
 	{
 		$this->crlf = "\r\n";
 		$this->data = '<ASX version="3">'.$this->crlf.'<TITLE>WMA kPlaylist</TITLE>'.$this->crlf;		
@@ -13399,7 +13423,7 @@ class asxgen
 
 class m3ugenerator
 {
-	function m3ugenerator()
+	function __construct()
 	{
 		$this->extension = 'm3u';
 		$pltype = db_guinfo('pltype');
@@ -13454,7 +13478,7 @@ class m3ugenerator
 
 class m3ugen
 {
-	function m3ugen()
+	function __construct()
 	{
 		$this->data = '';
 		$this->crlf = "\r\n";
@@ -13513,7 +13537,7 @@ class m3ugen
 
 class m3ugen8
 {
-	function m3ugen8()
+	function __construct()
 	{
 		$this->data = '';
 		$this->crlf = "\r\n";
@@ -14016,7 +14040,7 @@ function Kplay_senduser2($sid, $inline=0, $download=false, $tid = 0)
 
 class pollhid
 {
-	function pollhid($hid, $fsize, $fpos)
+	function __construct($hid, $fsize, $fpos)
 	{
 		$this->hid = $hid;
 		$this->fsize = $fsize;
@@ -14125,7 +14149,7 @@ function print_album($drive, $name, $pdir, $ainf=null, $mark='', $hits = 0, $alb
 
 class filedesc
 {
-	function filedesc($fname='')
+	function __construct($fname='')
 	{
 		global $streamtypes;
 		
@@ -14431,6 +14455,10 @@ function get_file_info($name, $return_finfo=false)
 						$ret['track'] = (int)$id3->track;
 						$ret['year'] = (int)$id3->year;
 						$ret['comment'] = trim($id3->comment);
+						// Convert UTF-16 byte order chars.
+						$ret['comment'] = ltrim($id3->comment, "\xFF\xFE");
+						// Leave space for storing base 64 in varchar 255 column.
+						$ret['comment'] = substr($ret['comment'], 0, 100);
 						if ($id3->bitrate) $ret['bitrate'] = $id3->bitrate;
 						if ($id3->lengths > 0) $ret['lengths'] = $id3->lengths;
 						$ret['genre'] = $id3->genreno;
@@ -14947,7 +14975,7 @@ function kplaylist_filelist($pwd, $d, $n3)
 
 class kparchiver
 {
-	function kparchiver()
+	function __construct()
 	{
 		$this->files = array();
 		$this->tempfile = '';
@@ -15258,7 +15286,7 @@ class kparchiver
 
 class kpdir
 {
-	function kpdir()
+	function __construct()
 	{
 		$this->dirlist = array();
 		$this->pwd = '';
@@ -15591,7 +15619,7 @@ class kpdir
 
 class file2
 {	
-	function file2($sid = -1, $id3 = false, $dbrow=false)
+	function __construct($sid = -1, $id3 = false, $dbrow=false)
 	{
 		$this->fexists = false;
 		$this->fullpath = '';
@@ -15818,7 +15846,7 @@ class kphttpq
 
 class networkinstance
 {
-	function networkinstance($nid=0, $enabled=0, $url='', $username='', $password='')
+	function __construct($nid=0, $enabled=0, $url='', $username='', $password='')
 	{
 		$this->nid = $nid;
 		$this->enabled = $enabled;
@@ -15941,7 +15969,7 @@ class networkdb
 
 class kpnetwork
 {
-	function kpnetwork()
+	function __construct()
 	{
 		$this->netdata = array();
 		$this->predata = array();
@@ -16277,7 +16305,7 @@ class kpnetwork
 
 class kpxspf
 {
-	function kpxspf()
+	function __construct()
 	{
 		$this->crlf = "\r\n";
 		$this->data = '';
@@ -16350,7 +16378,7 @@ class kpxspf
 
 class jwplayer
 {
-	function jwplayer()
+	function __construct()
 	{
 		$this->crlf = "\r\n";
 		$this->data = '';
@@ -16583,7 +16611,7 @@ class jwplayer
 
 class jwplayer6
 {
-	function jwplayer6()
+	function __construct()
 	{
 		$this->crlf = "\r\n";
 		$this->data = '';
