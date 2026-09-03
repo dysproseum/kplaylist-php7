@@ -6,7 +6,7 @@ kPlaylist is a music database that you manage via the web. With kPlaylist you ca
 
 ### Updates
 
-* A dedicated docker image is now available: [dysproseum/kplaylist-docker](https://github.com/dysproseum/kplaylist-docker)
+* PHP 8 support is here!
 
 ### Project History
 
@@ -27,29 +27,27 @@ kPlaylist is a music database that you manage via the web. With kPlaylist you ca
 | 3 December 2015 | PHP 7.0 released |
 | **2017-2021** | **Maintenance updates to run on PHP 7.x** |
 | 31 December 2018 | PHP 5.6 end of life |
+| 26 November 2020 | PHP 8.0 released |
 | 28 November 2021 | PHP 7.4 end of active support |
 | 28 November 2022 | PHP 7.4 end of security support |
+| **August 2026**   | **Maintenance updates to run on PHP 8.x and MySQL 8** |
+| 31 December 2027 | PHP 8.5 end of active support |
+| 31 December 2029 | PHP 8.5 end of security support |
 
 See [releases page](https://github.com/dysproseum/kplaylist-php7/releases) for past releases.
-
-#### Future plans:
-- PHP 8 version
 
 ---
 
 ### Customization
 
-The goal has always been not to modify the original software any more than necessary. In addition to PHP7 compatibility updates, the following additions have been made:
+The goal of this project has always been to keep the original software running on modern platforms, only making changes necessary for PHP compatibility.
 
-**In-browser playback:** By default, kPlaylist creates M3U playlists that open in a media player like Winamp or VLC, as well as support for a flash player or jwplayer.
+However, new functionality can be added with themes:
 
-This addition enables native playback in the browser with two new themes:
-  - The **HTML5 player** uses the native browser `<audio>` or `<video>` tags.
-  - The **[Webamp player](https://github.com/captbaritone/webamp)**, a reimplementation of Winamp 2.9 in HTML5 and JavaScript, has been integrated.
+  - By default, kPlaylist creates **M3U playlists** that open in a media player like Winamp or VLC, as well as support for a flash player or jwplayer.
+  - To enable **native playback in the browser**, the `html5_player` or `webamp` themes can be set per-user under My -> Options -> Style.
 
-You can set the theme per-user under My -> Options -> Style.
-
-**Mobile layout:** It's now easier to use kPlaylist from mobile devices.
+It's now easier to use kPlaylist from mobile devices (because I also use this in the car!)
 
   - The mobile layout has been created for widths less than 768px.
   - This requires setting `mobile.css` as the "Mobile CSS" value.
@@ -60,18 +58,14 @@ You can find these options under Admin control -> Settings -> Customize.
 
 ### Installing kPlaylist
 
-You will want to have a web server such as Apache or nginx, as well as a MySQL server already installed, or use the tested Docker images.
+You will want to have a web server such as Apache or nginx, as well as a MySQL server already installed.
 
 The current main branch has been tested with the following versions:
-- Apache 2.4.38 :heavy_check_mark:
-- PHP 7.4.20 :heavy_check_mark:
-- MySQL 5.5.60 :heavy_check_mark:
+- Apache 2.4.66 :heavy_check_mark:
+- PHP 8.4.5 :heavy_check_mark:
+- MySQL 8.4.10 :heavy_check_mark:
 
-Runs in Docker on Raspberry Pi 3 and newer:
-- tobi312/php:7.4-apache-arm
-- hypriot/rpi-mysql:5.5
-
-The web server can be configured to run either from the document root (ex. http://localhost:8080) or under a directory path (ex. http://localhost:8080/kplaylist/)
+The web server can be configured to run either from the document root (ex. http://localhost:8080/) or under a directory path (ex. http://localhost:8080/kplaylist/)
 
 Copy the `example.kpconfig.php` to `kpconfig.php` to place the database credentials. Otherwise, these can be entered in the installation wizard and kPlaylist will attempt to create the file.
 
@@ -88,7 +82,6 @@ Upon first load in the browser, you are greeted with installation options.
 - This option will assume the MySQL user and database have already been created
 - Confirm the credentials are correct
 - If this does not work, confirm you can connect to the MySQL server from the web server
-- In docker, use host mode networking for the MySQL container, or make sure port 3306 is exposed
 
 #### First login:
 
@@ -97,7 +90,6 @@ Upon first load in the browser, you are greeted with installation options.
 
 #### Next steps:
 - Point to the directory where kPlaylist can find your music
-- If using docker, make sure the volume bind is configured before performing this step
 - Under Admin control -> Settings -> File handling, enter the directory path and click Save
 - Start the music crawl from Admin control -> Update
 
